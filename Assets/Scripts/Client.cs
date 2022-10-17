@@ -24,6 +24,8 @@ public class Client : MonoBehaviour
 	bool connected = false;
 
 	Thread connectThread = null;
+	Thread receiveThread = null;
+	bool once = true;
 
 	// Start is called before the first frame update
 	void Start()
@@ -33,21 +35,22 @@ public class Client : MonoBehaviour
 		if (server.ProtocolType == ProtocolType.Tcp)
 		{
 			connectThread = new Thread(Connect);
+			receiveThread = new Thread(Receive);
 			connectThread.Start();
 
 		}
-		else if (server.ProtocolType == ProtocolType.Udp)
-		{
-			if (adress != IPAddress.Any)
-			{
-				clientep = new IPEndPoint(adress, 9050);
-				byte[] msg = Encoding.ASCII.GetBytes("Username: " + username);
-				server.SendTo(msg, msg.Length, SocketFlags.None, clientep);
-				Debug.Log("Message sent. Waiting for server feedback...");
+		//else if (server.ProtocolType == ProtocolType.Udp)
+		//{
+		//	if (adress != IPAddress.Any)
+		//	{
+		//		clientep = new IPEndPoint(adress, 9050);
+		//		byte[] msg = Encoding.ASCII.GetBytes("Username: " + username);
+		//		server.SendTo(msg, msg.Length, SocketFlags.None, clientep);
+		//		Debug.Log("Message sent. Waiting for server feedback...");
 
-				recv = server.ReceiveFrom(data, ref clientRemote);
-			}
-		}
+		//		recv = server.ReceiveFrom(data, ref clientRemote);
+		//	}
+		//}
 	}
 
 	void Connect()
@@ -63,14 +66,26 @@ public class Client : MonoBehaviour
 		}
 	}
 
-	// Update is called once per frame
-	void Update()
+	void Receive()
 	{
 		if (connected)
 		{
+			Debug.Log("a");
 			recv = server.Receive(data);
+			Debug.Log("a2");
 			stringData = Encoding.ASCII.GetString(data, 0, recv);
 			Debug.Log(stringData);
+			Debug.Log("CONNECTED");
+		}
+	}
+
+	// Update is called once per frame
+	void Update()
+	{
+		if (once)
+		{
+			receiveThread.Start();
+			once = false;
 		}
 	}
 }

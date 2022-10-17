@@ -32,15 +32,15 @@ public class Server : MonoBehaviour
 			recieveClientsThread = new Thread(RecieveClients);
 			recieveClientsThread.Start();
 		}
-		else if (newSocket.ProtocolType == ProtocolType.Udp)
-		{
-			recv = newSocket.ReceiveFrom(data, ref clientRemote);
-			Debug.Log("Waiting for clients...");
-			clientep = (IPEndPoint)client.RemoteEndPoint;
-			Debug.Log("Connected: " + clientep.ToString() + "\n Sending feedback...");
-			byte[] msg = Encoding.ASCII.GetBytes("Server Feedback. Message Recieved.");
-			newSocket.SendTo(msg, msg.Length, SocketFlags.None, clientRemote);
-		}
+		//else if (newSocket.ProtocolType == ProtocolType.Udp)
+		//{
+		//	recv = newSocket.ReceiveFrom(data, ref clientRemote);
+		//	Debug.Log("Waiting for clients...");
+		//	clientep = (IPEndPoint)client.RemoteEndPoint;
+		//	Debug.Log("Connected: " + clientep.ToString() + "\n Sending feedback...");
+		//	byte[] msg = Encoding.ASCII.GetBytes("Server Feedback. Message Recieved.");
+		//	newSocket.SendTo(msg, msg.Length, SocketFlags.None, clientRemote);
+		//}
 
 	}
 
