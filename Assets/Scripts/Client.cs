@@ -70,12 +70,19 @@ public class Client : MonoBehaviour
 	{
 		if (connected)
 		{
-			Debug.Log("a");
-			recv = server.Receive(data);
-			Debug.Log("a2");
-			stringData = Encoding.ASCII.GetString(data, 0, recv);
-			Debug.Log(stringData);
-			Debug.Log("CONNECTED");
+			try
+			{
+				Debug.Log("a");
+				recv = server.Receive(data);
+				Debug.Log("a2");
+				stringData = Encoding.ASCII.GetString(data, 0, recv);
+				Debug.Log(stringData);
+				Debug.Log("CONNECTED");
+			}
+			catch(Exception e)
+			{
+				Debug.Log("Error receiving: " + e);
+			}
 		}
 	}
 
