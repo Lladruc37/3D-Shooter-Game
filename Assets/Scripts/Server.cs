@@ -9,49 +9,55 @@ using UnityEngine;
 
 public class Server : MonoBehaviour
 {
-    public Socket newSocket;
-    public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 1337);
-    public bool connected = false;
-    public bool exit = false;
+	public Socket newSocket;
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
-    public int recv;
-    public byte[] data;
-    public Socket client;
-    public EndPoint clientRemote;
-    public IPEndPoint clientep;
+	public int recv;
+	public byte[] data;
+	public Socket client;
+	public EndPoint clientRemote;
+	public IPEndPoint clientep;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        newSocket.Bind(ipep);
-    }
+	Thread recieveClientsThread = null;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (exit)
-        {
-            newSocket.Close();
-            return;
-        }
-
-        if (!connected && !exit)
+	// Start is called before the first frame update
+	void Start()
+	{
+		newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+		newSocket.Bind(ipep);
+		if (newSocket.ProtocolType == ProtocolType.Tcp)
 		{
-            try
-            {
-                recv = newSocket.ReceiveFrom(data, ref clientRemote);
-                Debug.Log("Waiting for clients...");
-                clientep = (IPEndPoint)client.RemoteEndPoint;
-                Debug.Log("Connected: " + clientep.ToString() + "\n Sending feedback...");
-                byte[] msg = Encoding.ASCII.GetBytes("Server Feedback. Message Recieved.");
-                newSocket.SendTo(msg,msg.Length,SocketFlags.None, clientRemote);
-                connected = true;
-            }
-            catch (System.Exception e)
-            {
-                Debug.Log("Connection failed.. trying again...\n Error: " + e);
-            }
-        }
-    }
+			newSocket.Listen(10);
+			Debug.Log("Waiting for client...");
+			recieveClientsThread = new Thread(RecieveClients);
+			recieveClientsThread.Start();
+		}
+		else if (newSocket.ProtocolType == ProtocolType.Udp)
+		{
+			recv = newSocket.ReceiveFrom(data, ref clientRemote);
+			Debug.Log("Waiting for clients...");
+			clientep = (IPEndPoint)client.RemoteEndPoint;
+			Debug.Log("Connected: " + clientep.ToString() + "\n Sending feedback...");
+			byte[] msg = Encoding.ASCII.GetBytes("Server Feedback. Message Recieved.");
+			newSocket.SendTo(msg, msg.Length, SocketFlags.None, clientRemote);
+		}
+
+	}
+
+	void RecieveClients()
+	{
+		client = newSocket.Accept();
+		clientep = (IPEndPoint)client.RemoteEndPoint;
+		Debug.Log("Connected: " + clientep.ToString() + "\n Sending feedback...");
+	}
+
+	// Update is called once per frame
+	void Update()
+	{
+	}
+
+	private void OnDestroy()
+	{
+		newSocket.Close();
+	}
 }

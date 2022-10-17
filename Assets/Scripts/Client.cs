@@ -9,38 +9,68 @@ using UnityEngine;
 
 public class Client : MonoBehaviour
 {
-    public Socket newSocket;
-    public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 1337);
-    public bool connected = false;
-    public bool exit = false;
+	public Socket server;
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
 
-    public int recv;
-    public byte[] data;
-    public Socket client;
-    public EndPoint clientRemote;
-    public IPEndPoint clientep;
+	public int recv;
+	public byte[] data;
+	public String stringData, input;
+	public Socket client;
+	public EndPoint clientRemote;
+	public IPEndPoint clientep;
 
-    public IPAddress adress = IPAddress.Any;
-    public string username = "NoNameChad";
+	public IPAddress adress = IPAddress.Any;
+	public string username = "NoNameChad";
+	bool connected = false;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        newSocket.Bind(ipep);
-    }
+	Thread connectThread = null;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if(adress != IPAddress.Any)
+	// Start is called before the first frame update
+	void Start()
+	{
+		server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+		if (server.ProtocolType == ProtocolType.Tcp)
 		{
-            clientep = new IPEndPoint(adress, 1337);
-            byte[] msg = Encoding.ASCII.GetBytes("Username: " + username);
-            newSocket.SendTo(msg, msg.Length, SocketFlags.None, clientep);
-            Debug.Log("Message sent. Waiting for server feedback...");
+			connectThread = new Thread(Connect);
+			connectThread.Start();
 
-            recv = newSocket.ReceiveFrom(data, ref clientRemote);
-        }
-    }
+		}
+		else if (server.ProtocolType == ProtocolType.Udp)
+		{
+			if (adress != IPAddress.Any)
+			{
+				clientep = new IPEndPoint(adress, 9050);
+				byte[] msg = Encoding.ASCII.GetBytes("Username: " + username);
+				server.SendTo(msg, msg.Length, SocketFlags.None, clientep);
+				Debug.Log("Message sent. Waiting for server feedback...");
+
+				recv = server.ReceiveFrom(data, ref clientRemote);
+			}
+		}
+	}
+
+	void Connect()
+	{
+		try
+		{
+			server.Connect(ipep);
+			connected = true;
+		}
+		catch (System.Exception e)
+		{
+			Debug.Log("Connection failed.. trying again...\n Error: " + e);
+		}
+	}
+
+	// Update is called once per frame
+	void Update()
+	{
+		if (connected)
+		{
+			recv = server.Receive(data);
+			stringData = Encoding.ASCII.GetString(data, 0, recv);
+			Debug.Log(stringData);
+		}
+	}
 }
