@@ -59,6 +59,7 @@ public class Client : MonoBehaviour
 		{
 			server.Connect(ipep);
 			connected = true;
+			Debug.Log("Trying to connect to server...");
 		}
 		catch (System.Exception e)
 		{
@@ -77,7 +78,14 @@ public class Client : MonoBehaviour
 				Debug.Log("a2");
 				stringData = Encoding.ASCII.GetString(data, 0, recv);
 				Debug.Log(stringData);
-				Debug.Log("CONNECTED");
+				if (stringData.Equals(""))
+				{
+					Debug.Log("Data was empty :c");
+				}
+				else
+				{
+				Debug.Log("Conected! Data recieved: " + stringData);
+				}
 			}
 			catch(Exception e)
 			{
