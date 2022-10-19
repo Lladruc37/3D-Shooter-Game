@@ -33,7 +33,7 @@ public class Rotate : MonoBehaviour
     void Update()
     {
         transform.Rotate(new Vector3(0, 1, 0), increment);
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (UnityEngine.Input.GetKeyDown(KeyCode.Space))
         {
             loadImageThread.Start();
         }

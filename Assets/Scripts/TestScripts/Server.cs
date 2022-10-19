@@ -21,7 +21,7 @@ public class Server : MonoBehaviour
 	public List<Socket> clientList = null;
 
 	Thread recieveClientsThread = null;
-	Thread recieveDataThread = null;
+	//Thread recieveDataThread = null;
 	bool once = true;
 	String stringData = null;
 
