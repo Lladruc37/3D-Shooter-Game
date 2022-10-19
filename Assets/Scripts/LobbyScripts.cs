@@ -7,6 +7,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Linq;
 
 public class LobbyScripts : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class LobbyScripts : MonoBehaviour
     public Text input;
     public Canvas inputCanvas;
     public Canvas chatCanvas;
+    public Server server;
+    public Client client;
 
     public void Go2Create()
     {
@@ -33,7 +36,8 @@ public class LobbyScripts : MonoBehaviour
     public void StartServer()
     {
         Debug.Log("Created server: " + input.text);
-        title.text = "Welcome to " + input.text + "! IP: " + "";
+        title.text = "Welcome to " + input.text + "! IP: " + GetLocalIPv4();
+        server.start = true;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
     }
@@ -42,7 +46,16 @@ public class LobbyScripts : MonoBehaviour
     {
         Debug.Log("Joined server: " + input.text);
         title.text = "Welcome to " + "" + "! IP: " + input.text;
+        client.start = true;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
+    }
+
+    public string GetLocalIPv4()
+    {
+        return Dns.GetHostEntry(Dns.GetHostName())
+            .AddressList.First(
+                f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            .ToString();
     }
 }

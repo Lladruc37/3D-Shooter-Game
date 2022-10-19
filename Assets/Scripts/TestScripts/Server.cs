@@ -6,12 +6,14 @@ using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Server : MonoBehaviour
 {
 	public Socket newSocket;
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
+	public String newServername;
 	public int recv;
 	public byte[] data;
 	public Socket client;
@@ -24,6 +26,9 @@ public class Server : MonoBehaviour
 	//Thread recieveDataThread = null;
 	bool once = true;
 	String stringData = null;
+	public bool start = false;
+	bool update = false;
+	public Text chat;
 
 	// Start is called before the first frame update
 	void Start()
@@ -38,15 +43,6 @@ public class Server : MonoBehaviour
 			recieveClientsThread = new Thread(RecieveClients);
 			recieveClientsThread.Start();
 		}
-		//else if (newSocket.ProtocolType == ProtocolType.Udp)
-		//{
-		//	recv = newSocket.ReceiveFrom(data, ref clientRemote);
-		//	Debug.Log("Waiting for clients...");
-		//	clientep = (IPEndPoint)client.RemoteEndPoint;
-		//	Debug.Log("Connected: " + clientep.ToString() + "\n Sending feedback...");
-		//	byte[] msg = Encoding.ASCII.GetBytes("Server Feedback. Message Recieved.");
-		//	newSocket.SendTo(msg, msg.Length, SocketFlags.None, clientRemote);
-		//}
 
 	}
 
@@ -80,6 +76,7 @@ public class Server : MonoBehaviour
 		{
 			Debug.Log("Connected! client IP: " + clientep.ToString() + " Sending feedback...");
 			clientList.Add(client);
+			chat.text = chat.text + "Client joined with IP: " + clientep.ToString();
 			if (once)
 			{
 				once = false;
@@ -120,15 +117,33 @@ public class Server : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		if(Input.GetKeyDown(KeyCode.Z))
-		{
-			Debug.Log("Sending...");
-			stringData = "Hello client";
-			foreach (Socket c in clientList)
+		if (start)
+        {
+			clientList = new List<Socket>(8);
+			newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			newSocket.Bind(ipep);
+			if (newSocket.ProtocolType == ProtocolType.Tcp)
 			{
-				data = Encoding.ASCII.GetBytes(stringData);
-				c.Send(data,recv,SocketFlags.None);
-				Debug.Log("sent");
+				newSocket.Listen(10);
+				Debug.Log("Waiting for client...");
+				recieveClientsThread = new Thread(RecieveClients);
+				recieveClientsThread.Start();
+			}
+			start = false;
+			update = true;
+        }
+		if (update)
+		{
+			if (Input.GetKeyDown(KeyCode.Z))
+			{
+				Debug.Log("Sending...");
+				stringData = "Server name: " + newServername.ToString();
+				foreach (Socket c in clientList)
+				{
+					data = Encoding.ASCII.GetBytes(stringData);
+					c.Send(data, recv, SocketFlags.None);
+					Debug.Log("sent");
+				}
 			}
 		}
 	}
