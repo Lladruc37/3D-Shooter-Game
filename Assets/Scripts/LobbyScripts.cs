@@ -13,7 +13,8 @@ public class LobbyScripts : MonoBehaviour
 {
     //UI
     public Text title;
-    public Text input;
+    public Text inputUserName;
+    public Text inputServer;
     public Canvas inputCanvas;
     public Canvas chatCanvas;
     public Server server;
@@ -27,16 +28,22 @@ public class LobbyScripts : MonoBehaviour
     {
         SceneManager.LoadScene(2);
     }
-    public void ReadStringInput(string s)
+    public void ReadStringInputServer(string s)
     {
-        input.text = s;
-        Debug.Log("New name: " + input.text);
+        inputServer.text = s;
+        Debug.Log("New name: " + inputServer.text);
+    }
+
+    public void ReadStringInputUser(string s)
+    {
+        inputUserName.text = s;
+        Debug.Log("Username: " + inputUserName.text);
     }
 
     public void StartServer()
     {
-        Debug.Log("Created server: " + input.text);
-        title.text = "Welcome to " + input.text + "! IP: " + GetLocalIPv4();
+        Debug.Log("Created server: " + inputServer.text);
+        title.text = "Welcome to " + inputServer.text + "! IP: " + GetLocalIPv4();
         server.start = true;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
@@ -44,8 +51,8 @@ public class LobbyScripts : MonoBehaviour
 
     public void JoinServer()
     {
-        Debug.Log("Joined server: " + input.text);
-        title.text = "Welcome to " + "" + "! IP: " + input.text;
+        Debug.Log("Joined server: " + inputServer.text);
+        title.text = "Welcome to " + "" + "! IP: " + inputServer.text;
         client.start = true;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
