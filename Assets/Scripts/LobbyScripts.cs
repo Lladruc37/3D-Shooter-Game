@@ -15,8 +15,7 @@ public class LobbyScripts : MonoBehaviour
     public Text input;
     public Canvas inputCanvas;
     public Canvas chatCanvas;
-    private void Awake()
-    {}
+
     public void Go2Create()
     {
         SceneManager.LoadScene(1);
