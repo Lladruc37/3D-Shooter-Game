@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 11440078}
   - component: {fileID: 11440079}
   m_Layer: 5
-  m_Name: Text
+  m_Name: UsernameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -300,14 +300,11 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 146827586}
         m_TargetAssemblyTypeName: LobbyScripts, Assembly-CSharp
-        m_MethodName: ReadStringInput
-        m_Mode: 5
+        m_MethodName: ReadStringInputServer
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -316,6 +313,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
@@ -372,6 +372,7 @@ GameObject:
   m_Component:
   - component: {fileID: 146827587}
   - component: {fileID: 146827586}
+  - component: {fileID: 146827588}
   m_Layer: 0
   m_Name: ClientManager
   m_TagString: Untagged
@@ -397,7 +398,7 @@ MonoBehaviour:
   inputCanvas: {fileID: 1547650380}
   chatCanvas: {fileID: 1003374596}
   server: {fileID: 0}
-  client: {fileID: 0}
+  client: {fileID: 146827588}
 --- !u!4 &146827587
 Transform:
   m_ObjectHideFlags: 0
@@ -413,6 +414,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &146827588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146827585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dffd99dcc422324e8b50c769d35ea13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recv: 0
+  data: 
+  stringData: 
+  input: 
+  start: 0
+  update: 0
+  hello: 1
+  serverIP: {fileID: 618813385}
+  username: {fileID: 11440079}
+  chatManager: {fileID: 255692766}
+  messageRecieved: 0
 --- !u!1 &169476105
 GameObject:
   m_ObjectHideFlags: 0
@@ -505,7 +529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   txt: {fileID: 1567991851}
-  lobby: {fileID: 0}
+  lobby: {fileID: 146827586}
   input: {fileID: 669917872}
 --- !u!114 &255692767
 MonoBehaviour:
@@ -650,7 +674,7 @@ GameObject:
   - component: {fileID: 618813386}
   - component: {fileID: 618813385}
   m_Layer: 5
-  m_Name: Text
+  m_Name: ServerText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -877,7 +901,7 @@ GameObject:
   - component: {fileID: 820499014}
   - component: {fileID: 820499013}
   m_Layer: 5
-  m_Name: Text
+  m_Name: InputedText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1271,14 +1295,11 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 146827586}
         m_TargetAssemblyTypeName: LobbyScripts, Assembly-CSharp
-        m_MethodName: ReadStringInput
-        m_Mode: 5
+        m_MethodName: ReadStringInputUser
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1287,6 +1308,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
@@ -1620,7 +1644,7 @@ GameObject:
   - component: {fileID: 1304015237}
   - component: {fileID: 1304015236}
   m_Layer: 5
-  m_Name: Title
+  m_Name: ClientTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1998,7 +2022,7 @@ GameObject:
   - component: {fileID: 1479758265}
   - component: {fileID: 1479758264}
   m_Layer: 5
-  m_Name: Text
+  m_Name: JoinText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2250,7 +2274,7 @@ GameObject:
   - component: {fileID: 1567991851}
   - component: {fileID: 1567991850}
   m_Layer: 5
-  m_Name: Text
+  m_Name: ChatText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2273,7 +2297,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -478821.06}
+  m_AnchoredPosition: {x: -0.40000916, y: -120784.766}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1567991850

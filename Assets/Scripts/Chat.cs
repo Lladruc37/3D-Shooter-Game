@@ -27,17 +27,26 @@ public class Chat : MonoBehaviour
             }
         }
     }
-    void SendMsg(string msg)
+    public void SendMsg(string msg/*,bool isServer = false*/)
     {
         //This is where user should send message to server
         //Should also send userName
 
-        RecieveMsg(msg);
+        RecieveMsg(msg/*,isServer*/);
     }
 
-    void RecieveMsg(string msg)
+    void RecieveMsg(string msg/*, bool isServer = false*/)
     {
         //This is where server sends messages to users
-        txt.text += "\n[" + lobby.inputUserName.text + "]>>" + msg;
+        //if (isServer)
+        //{
+        //    txt.text += "\n" + msg;
+        //}
+        //else
+        //{
+        //    txt.text += "\n[" + lobby.inputUserName.text + "]>>" + msg;
+        //}
+
+        txt.text += "\n" + msg;
     }
 }

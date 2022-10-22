@@ -44,18 +44,18 @@ public class LobbyScripts : MonoBehaviour
     {
         Debug.Log("Created server: " + inputServer.text);
         title.text = "Welcome to " + inputServer.text + "! IP: " + GetLocalIPv4();
-        server.start = true;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
+        server.start = true;
     }
 
     public void JoinServer()
     {
         Debug.Log("Joined server: " + inputServer.text);
         title.text = "Welcome to " + "" + "! IP: " + inputServer.text;
-        client.start = true;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
+        client.start = true;
     }
 
     public string GetLocalIPv4()
