@@ -16,16 +16,16 @@ public class Chat : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            if (input.text != "")
-            {
-                string msg = input.text;
-                input.text = "";
+        //if (Input.GetKeyDown(KeyCode.Return))
+        //{
+        //    if (input.text != "")
+        //    {
+        //        string msg = input.text;
+        //        input.text = "";
 
-                SendMsg(msg);
-            }
-        }
+        //        SendMsg(msg);
+        //    }
+        //}
     }
     public void SendMsg(string msg/*,bool isServer = false*/)
     {

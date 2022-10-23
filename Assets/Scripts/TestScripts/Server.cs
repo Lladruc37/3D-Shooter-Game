@@ -94,6 +94,15 @@ public class Server : MonoBehaviour
 					newMessage = false;
 					chatManager.SendMsg(stringData);
 				}
+				if (Input.GetKeyDown(KeyCode.Return))
+				{
+					if (chatManager.input.text != "")
+					{
+						string msg = "\n" + "/>username" + ServerUsername + "</" + chatManager.input.text;
+						chatManager.input.text = "";
+						BroadcastServerMessage(ManageMessage(msg));
+					}
+				}
 			}
 		}
 	}
@@ -159,8 +168,12 @@ public class Server : MonoBehaviour
 				{
 					//TODO: check username
 					stringData = "User '" + stringData + "' joined the lobby!";
+					string tmp = stringData;
 					Debug.Log(stringData);
-					BroadcastServerMessage(ManageMessage(stringData, true));
+					Thread.Sleep(100);
+					BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true, true));
+					Thread.Sleep(100);
+					BroadcastServerMessage(ManageMessage(tmp, true));
 					recieveDataThread = new Thread(RecieveData);
 					recieveDataThread.Start();
 				}
@@ -292,6 +305,7 @@ public class Server : MonoBehaviour
         {
 			foreach (IPEndPoint ip in clientListUDP)
             {
+				data = new byte[1024];
 				data = Encoding.ASCII.GetBytes(m);
 				EndPoint remote = (EndPoint)ip;
 				newSocket.SendTo(data, data.Length, SocketFlags.None, remote);
@@ -360,6 +374,7 @@ public class Server : MonoBehaviour
 						{
 							Debug.Log("Client data recieved: " + stringData);
 							//TODO: chat message from user & send it the all players
+							BroadcastServerMessage(ManageMessage(stringData));
 						}
 						Thread.Sleep(100);
 					}

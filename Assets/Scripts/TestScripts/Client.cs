@@ -120,26 +120,8 @@ public class Client : MonoBehaviour
             {
 				Send(username.text.ToString());
 				connected = true;
-
-				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
-				EndPoint remote = (EndPoint)sender;
-
-				data = new byte[1024];
-				recv = server.ReceiveFrom(data, ref remote);
-
-				stringData = Encoding.ASCII.GetString(data, 0, recv);
-				Debug.Log("Message was: " + stringData);
-				if (stringData.Equals(""))
-				{
-					Debug.Log("Data was empty :c");
-				}
-				else
-				{
-					Debug.Log("Server Data recieved: " + stringData);
-					messageRecieved = true;
-					receiveThread = new Thread(Receive);
-					receiveThread.Start();
-				}
+				receiveThread = new Thread(Receive);
+				receiveThread.Start();
 			}
 			catch (System.Exception e)
 			{
@@ -213,7 +195,25 @@ public class Client : MonoBehaviour
 						else
 						{
 							Debug.Log("Server Data recieved: " + stringData);
-							messageRecieved = true;
+							if (stringData.Contains("/servername"))
+							{
+								newServerName = true;
+								Debug.Log("NEW SERVER NAME");
+							}
+							else
+							{
+								//if(stringData.Contains("/>username"))
+								//{
+
+								//}
+								//else
+								//{
+
+									messageRecieved = true;
+								//}
+								Debug.Log("NO NEW SERVER NAME");
+							}
+							Thread.Sleep(100);
 						}
 					}
 				}
