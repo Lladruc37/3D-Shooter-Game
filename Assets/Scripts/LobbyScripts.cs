@@ -40,18 +40,18 @@ public class LobbyScripts : MonoBehaviour
 		{
             client.newServerIP = true;
 		}
-        Debug.Log("New name: " + inputServer.text);
+        Debug.Log("ReadStringInputServer(): New name: " + inputServer.text);
     }
 
     public void ReadStringInputUser(string s)
     {
         inputUserName.text = s;
-        Debug.Log("Username: " + inputUserName.text);
+        Debug.Log("ReadStringInputUser(): Username: " + inputUserName.text);
     }
 
     public void StartServer()
     {
-        Debug.Log("Created server: " + inputServer.text);
+        Debug.Log("StartServer(): Created server: " + inputServer.text);
         title.text = "Welcome to " + inputServer.text + "!\n IP: " + GetLocalIPv4();
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
@@ -60,7 +60,7 @@ public class LobbyScripts : MonoBehaviour
 
     public void JoinServer()
     {
-        Debug.Log("Joined server: " + inputServer.text);
+        Debug.Log("JoinServer(): Joined server: " + inputServer.text);
         title.text = "Welcome to ... !" /*IP:  + inputServer.text*/;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;

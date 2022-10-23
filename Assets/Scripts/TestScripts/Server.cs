@@ -17,7 +17,6 @@ public class Server : MonoBehaviour
 
 	public string ServerUsername = "Server";
 	public int recv;
-	public byte[] data;
 	//public Socket client;
 	//public EndPoint clientRemote;
 	public IPEndPoint clientep;
@@ -41,9 +40,7 @@ public class Server : MonoBehaviour
 
 	// Start is called before the first frame update
 	void Start()
-	{
-		data = new byte[1024];
-	}
+	{}
 
 	// Update is called once per frame
 	void Update()
@@ -109,9 +106,14 @@ public class Server : MonoBehaviour
 		}
 	}
 
+	public void ToggleTCP(bool boolean)
+    {
+		isTCP = boolean;
+    }
+
 	void ConnectClients()
 	{
-		Debug.Log("Looking for clients...");
+		Debug.Log("ConnectClients(): Looking for clients...");
 		if (isTCP)
 		{
 			try
@@ -119,7 +121,7 @@ public class Server : MonoBehaviour
 				while (true)
 				{
 					newSocket.Listen(10);
-					Debug.Log("Waiting for client...");
+					Debug.Log("ConnectClients(): Waiting for client...");
 					Socket client = newSocket.Accept();
 					clientep = (IPEndPoint)client.RemoteEndPoint;
 					if (clientList.Count.Equals(0))
@@ -136,7 +138,7 @@ public class Server : MonoBehaviour
 							}
 							else
 							{
-								Debug.Log("No clients connected. Waiting to accept...");
+								Debug.Log("ConnectClients(): No clients connected. Waiting to accept...");
 							}
 						}
 					}
@@ -145,7 +147,7 @@ public class Server : MonoBehaviour
 			}
 			catch (Exception e)
 			{
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("ConnectClients(): Error receiving: " + e);
 			}
 		}
 		else
@@ -155,18 +157,16 @@ public class Server : MonoBehaviour
 
 			try
             {
-				data = null;
-				GC.Collect();
-				data = new byte[1024];
-				recv = newSocket.ReceiveFrom(data, ref remote);
+				byte[] dataTMP = new byte[1024];
+				recv = newSocket.ReceiveFrom(dataTMP, ref remote);
 				sender = (IPEndPoint)remote;
 				AddClientUDP(sender);
 
-				stringData = Encoding.ASCII.GetString(data, 0, recv);
-				Debug.Log("Message was: " + stringData);
+				stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+				Debug.Log("ConnectClients(): Message was: " + stringData);
 				if (stringData.Equals(""))
 				{
-					Debug.Log("Data was empty :c");
+					Debug.Log("ConnectClients(): Data was empty :c");
 				}
 				else
 				{
@@ -184,7 +184,7 @@ public class Server : MonoBehaviour
 			}
 			catch (Exception e)
             {
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("ConnectClients(): Error receiving: " + e);
 			}
 		}
 	}
@@ -194,13 +194,13 @@ public class Server : MonoBehaviour
 		if (clientep.ToString() != "")
 		{
 			clientList.Add(newClient);
-			Debug.Log("Connected to: " + clientep.ToString());
-			helloThread = new Thread(Hello);
+			Debug.Log("AddClientTCP(): Connected to: " + clientep.ToString());
+			helloThread = new Thread(Ping);
 			helloThread.Start();
 		}
 		else
 		{
-			Debug.Log("No clients connected. Waiting to accept...");
+			Debug.Log("AddClientTCP(): No clients connected. Waiting to accept...");
 		}
 	}
 
@@ -209,16 +209,16 @@ public class Server : MonoBehaviour
 		if (newClient.ToString() != "")
 		{
 			clientListUDP.Add(newClient);
-			Debug.Log("Connected to: " + newClient.ToString());
+			Debug.Log("AddClientUDP(): Connected to: " + newClient.ToString());
 		}
 		else
 		{
-			Debug.Log("No clients connected. Waiting to accept...");
+			Debug.Log("AddClientUDP(): No clients connected. Waiting to accept...");
 		}
 	}
 
 
-	void Hello()
+	void Ping()
 	{
 		try
 		{
@@ -228,12 +228,10 @@ public class Server : MonoBehaviour
 				Socket.Select(clientList, null, null, -1);
 				foreach (Socket c in clientList)
 				{
-					data = null;
-					GC.Collect();
-					data = new byte[1024];
-					recv = c.Receive(data);
-					stringData = Encoding.ASCII.GetString(data, 0, recv);
-					Debug.Log("Message was: " + stringData);
+					byte[] dataTMP = new byte[1024];
+					recv = c.Receive(dataTMP);
+					stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+					Debug.Log("Ping(): Message was: " + stringData);
 					if (stringData.Equals(""))
 					{
 						Debug.Log("Data was empty :c");
@@ -282,10 +280,10 @@ public class Server : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("Error: No username detected");
+				Debug.Log("ManageMessage(): Error: No username detected");
 			}
 		}
-		Debug.Log("sending message: " + result);
+		Debug.Log("ManageMessage(): Sending message: " + result);
 		if (!isServernameMessage)
 		{
 			stringData = result;
@@ -296,30 +294,27 @@ public class Server : MonoBehaviour
 
 	void BroadcastServerMessage(string m)
 	{
+		Debug.Log("BroadcastServerMessage(): Broadcasting message: " + m);
+
 		if (isTCP)
         {
 			foreach (Socket c in clientsAccepted)
 			{
-				data = null;
-				GC.Collect();
-				data = new byte[1024];
-				Debug.Log("Broadcasting message: " + m);
-				data = Encoding.ASCII.GetBytes(m);
-				c.Send(data, data.Length, SocketFlags.None);
-				Debug.Log("Sent TCP Style");
+				byte[] dataTMP = new byte[1024];
+				dataTMP = Encoding.ASCII.GetBytes(m);
+				c.Send(dataTMP, dataTMP.Length, SocketFlags.None);
+				Debug.Log("BroadcastServerMessage(): Sent TCP Style");
 			}
 		}
 		else
         {
 			foreach (IPEndPoint ip in clientListUDP)
             {
-				data = null;
-				GC.Collect();
-				data = new byte[1024];
-				data = Encoding.ASCII.GetBytes(m);
+				byte[] dataTMP = new byte[1024];
+				dataTMP = Encoding.ASCII.GetBytes(m);
 				EndPoint remote = (EndPoint)ip;
-				newSocket.SendTo(data, data.Length, SocketFlags.None, remote);
-				Debug.Log("Sent UDP Style");
+				newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+				Debug.Log("BroadcastServerMessage(): Sent UDP Style");
 			}
 		}
 	}
@@ -336,20 +331,17 @@ public class Server : MonoBehaviour
 					{
 						if (c.Poll(10, SelectMode.SelectRead))
 						{
-							data = null;
-							GC.Collect();
-
-							data = new byte[1024];
-							recv = c.Receive(data);
-							stringData = Encoding.ASCII.GetString(data, 0, recv);
-							Debug.Log("Message was: " + stringData);
+							byte[] dataTMP = new byte[1024];
+							recv = c.Receive(dataTMP);
+							stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+							Debug.Log("RecieveData(): Message was: " + stringData);
 							if (stringData.Equals(""))
 							{
-								Debug.Log("Data was empty :c");
+								Debug.Log("RecieveData(): Data was empty :c");
 							}
 							else
 							{
-								Debug.Log("Client data recieved: " + stringData);
+								Debug.Log("RecieveData(): Client data recieved: " + stringData);
 								//TODO: chat message from user & send it the all players
 								BroadcastServerMessage(ManageMessage(stringData));
 							}
@@ -360,7 +352,7 @@ public class Server : MonoBehaviour
 			}
 			catch (Exception e)
 			{
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("RecieveData(): Error receiving: " + e);
 			}
 		}
 		else
@@ -375,20 +367,20 @@ public class Server : MonoBehaviour
 						EndPoint remote = (EndPoint)ip;
 						recv = newSocket.ReceiveFrom(dataTmp, ref remote);
 
-						Debug.Log("Count for stringData: " + recv);
-						Debug.Log("Length of Data: " + dataTmp.Length);
+						Debug.Log("RecieveData(): Count for stringData: " + recv);
+						Debug.Log("RecieveData(): Length of Data: " + dataTmp.Length);
 
 						stringData = Encoding.ASCII.GetString(dataTmp, 0, recv);
-						Debug.Log("Message was: " + stringData);
+						Debug.Log("RecieveData(): Message was: " + stringData);
 
 						newSocket.SendTo(dataTmp, recv, SocketFlags.None, remote);
 						if (stringData.Equals(""))
 						{
-							Debug.Log("Data was empty :c");
+							Debug.Log("RecieveData(): Data was empty :c");
 						}
 						else
 						{
-							Debug.Log("Client data recieved: " + stringData);
+							Debug.Log("RecieveData(): Client data recieved: " + stringData);
 							//TODO: chat message from user & send it the all players
 							BroadcastServerMessage(ManageMessage(stringData));
 						}
@@ -398,7 +390,7 @@ public class Server : MonoBehaviour
 			}
 			catch (Exception e)
 			{
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("RecieveData(): Error receiving: " + e);
 			}
 		}
 	}
@@ -408,6 +400,11 @@ public class Server : MonoBehaviour
 	{
 		//TODO: abort() & clear() all ongoing threads
 		//TODO: shutdown() & close() all clients sockets
-		newSocket.Close();
+		if (newSocket != null)
+        {
+			newSocket.Shutdown(SocketShutdown.Both);
+			newSocket.Close();
+			newSocket = null;
+		}
 	}
 }

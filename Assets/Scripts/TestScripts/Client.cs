@@ -14,7 +14,6 @@ public class Client : MonoBehaviour
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
 
 	public int recv;
-	public byte[] data;
 	public string stringData, input;
 	public Socket client;
 	public EndPoint clientRemote;
@@ -46,7 +45,7 @@ public class Client : MonoBehaviour
 			if (messageRecieved)
 			{
 				messageRecieved = false;
-				Debug.Log("CURRENT MESSAGE: " + stringData);
+				Debug.Log("Update(): CurrentMessage: " + stringData);
 				chatManager.SendMsg(stringData);
 				stringData = "";
 			}
@@ -55,7 +54,7 @@ public class Client : MonoBehaviour
 				newServerName = false;
 				string tmp = stringData.Remove(0, 13);
 				clientTitle.text = "Welcome to " + tmp + "!";
-				Debug.Log("BIBUUUUUUUUUUUUUUUUU");
+				Debug.Log("Update(): Changed server title to: "+ clientTitle.text);
 			}
 
 			if (Input.GetKeyDown(KeyCode.Return))
@@ -94,24 +93,29 @@ public class Client : MonoBehaviour
 		}
 	}
 
+	public void ToggleTCP(bool boolean)
+	{
+		isTCP = boolean;
+	}
+
 	void Connect()
 	{
 		if (isTCP)
         {
 			try
 			{
-				Debug.Log("Trying to connect to server...");
+				Debug.Log("Connect(): Trying to connect to server...");
 				server.Connect(ipep);
 				Thread.Sleep(100);
 				connected = true;
-				Debug.Log("Connected to server. Sending Message...");
+				Debug.Log("Connect(): Connected to server. Sending Message...");
 				Send(username.text.ToString());
 				receiveThread = new Thread(Receive);
 				receiveThread.Start();
 			}
 			catch (System.Exception e)
 			{
-				Debug.Log("Connection failed.. trying again...\n Error: " + e);
+				Debug.Log("Connect(): Connection failed.. trying again...\n Error: " + e);
 			}
 		}
 		else
@@ -125,7 +129,7 @@ public class Client : MonoBehaviour
 			}
 			catch (System.Exception e)
 			{
-				Debug.Log("Connection failed.. trying again...\n Error: " + e);
+				Debug.Log("Connect(): Connection failed.. trying again...\n Error: " + e);
 			}
 		}
 	}
@@ -142,20 +146,17 @@ public class Client : MonoBehaviour
 					{
 						if (server.Poll(10, SelectMode.SelectRead))
 						{
-							data = null;
-							GC.Collect();
-
-							data = new byte[1024];
-							recv = server.Receive(data);
-							stringData = Encoding.ASCII.GetString(data, 0, recv);
-							Debug.Log("Message was: " + stringData);
+							byte[] dataTMP = new byte[1024];
+							recv = server.Receive(dataTMP);
+							stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+							Debug.Log("Recieve(): Message was: " + stringData);
 							if (stringData.Equals(""))
 							{
-								Debug.Log("Data was empty :c");
+								Debug.Log("Recieve(): Data was empty :c");
 							}
 							else
 							{
-								Debug.Log("Server Data recieved: " + stringData);
+								Debug.Log("Recieve(): Server Data recieved: " + stringData);
 								if(stringData.Contains("/servername"))
 								{
 									newServerName = true;
@@ -172,7 +173,7 @@ public class Client : MonoBehaviour
 			}
 			catch (Exception e)
 			{
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("Recieve(): Error receiving: " + e);
 			}
 		}
 		else
@@ -186,25 +187,22 @@ public class Client : MonoBehaviour
 				{
 					if (connected)
 					{
-						data = null;
-						GC.Collect();
+						byte[] dataTMP = new byte[1024];
 
-						data = new byte[1024];
-
-						recv = server.ReceiveFrom(data, ref Remote);
-						stringData = Encoding.ASCII.GetString(data, 0, recv);
-						Debug.Log("Message was: " + stringData);
+						recv = server.ReceiveFrom(dataTMP, ref Remote);
+						stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+						Debug.Log("Recieve(): Message was: " + stringData);
 						if (stringData.Equals(""))
 						{
-							Debug.Log("Data was empty :c");
+							Debug.Log("Recieve(): Data was empty :c");
 						}
 						else
 						{
-							Debug.Log("Server Data recieved: " + stringData);
+							Debug.Log("Recieve(): Server Data recieved: " + stringData);
 							if (stringData.Contains("/servername"))
 							{
 								newServerName = true;
-								Debug.Log("NEW SERVER NAME");
+								Debug.Log("Recieve(): New server name change detected");
 							}
 							else
 							{
@@ -213,7 +211,7 @@ public class Client : MonoBehaviour
 								{
 									messageRecieved = true;
 								}
-                                Debug.Log("NO NEW SERVER NAME");
+                                Debug.Log("Recieve(): No new server name changes detected");
 							}
 							Thread.Sleep(100);
 						}
@@ -222,27 +220,27 @@ public class Client : MonoBehaviour
 			}
 			catch (Exception e)
 			{
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("Recieve(): Error receiving: " + e);
 			}
 		}
 	}
 
 	void Send(string m)
 	{
-		data = Encoding.ASCII.GetBytes(m);
+		byte[] dataTMP = Encoding.ASCII.GetBytes(m);
 		if (isTCP)
         {
-			server.Send(data, data.Length, SocketFlags.None);
+			server.Send(dataTMP, dataTMP.Length, SocketFlags.None);
 		}
 		else
         {
 			try
 			{
-				server.SendTo(data, data.Length, SocketFlags.None, ipep);
+				server.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
 			}
 			catch (Exception e)
             {
-				Debug.Log("Error receiving: " + e);
+				Debug.Log("Send(): Error receiving: " + e);
 			}
 		}
 	}
@@ -250,7 +248,11 @@ public class Client : MonoBehaviour
 	// Update is called once per frame
 	private void OnDestroy()
 	{
-		server.Shutdown(SocketShutdown.Both);
-		server.Close();
+		if (server != null)
+        {
+			server.Shutdown(SocketShutdown.Both);
+			server.Close();
+			server = null;
+		}
 	}
 }
