@@ -22,7 +22,6 @@ public class Client : MonoBehaviour
 	bool connected = false;
 
 	Thread connectThread = null;
-	Thread sendThread = null;
 	Thread helloThread = null;
 	Thread receiveThread = null;
 	public bool start = false;
@@ -46,7 +45,7 @@ public class Client : MonoBehaviour
 			Thread.Sleep(100);
 			connected = true;
 			Debug.Log("Connected to server. Sending Message...");
-			sendThread.Start();
+			Send(username.text.ToString());
 			helloThread = new Thread(Hello);
 			helloThread.Start();
 		}
@@ -124,8 +123,9 @@ public class Client : MonoBehaviour
 		}
 	}
 
-	void Send()
+	void Send(string m)
 	{
+		data = Encoding.ASCII.GetBytes(m);
 		server.Send(data, data.Length, SocketFlags.None);
 	}
 
@@ -134,16 +134,21 @@ public class Client : MonoBehaviour
 	{
 		if (update)
 		{
-			if (hello)
-			{
-				data = Encoding.ASCII.GetBytes(username.text.ToString());
-			}
-
 			if (messageRecieved)
 			{
 				messageRecieved = false;
 				chatManager.SendMsg(stringData);
 			}
+			//if (Input.GetKeyDown(KeyCode.Return))
+			//{
+			//	if (chatManager.input.text != "")
+			//	{
+			//		string msg = chatManager.input.text;
+			//		chatManager.input.text = "";
+			//		Send(msg);
+			//		chatManager.SendMsg(msg);
+			//	}
+			//}
 		}
 		if (start)
 		{
@@ -153,7 +158,6 @@ public class Client : MonoBehaviour
 			if (server.ProtocolType == ProtocolType.Tcp)
 			{
 				connectThread = new Thread(Connect);
-				sendThread = new Thread(Send);
 				connectThread.Start();
 			}
 			start = false;

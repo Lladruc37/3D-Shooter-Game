@@ -31,7 +31,7 @@ public class Server : MonoBehaviour
 	public bool start = false;
 	bool update = false;
 	public Chat chatManager;
-	public bool clientJoined = false;
+	public bool newMessage = false;
 
 	// Start is called before the first frame update
 	void Start()
@@ -56,9 +56,9 @@ public class Server : MonoBehaviour
         }
 		if (update)
 		{
-			if(clientJoined)
+			if(newMessage)
 			{
-				clientJoined = false;
+				newMessage = false;
 				chatManager.SendMsg(stringData);
 			}
 		}
@@ -139,9 +139,9 @@ public class Server : MonoBehaviour
 						//TODO: check username
 						stringData = "User '" + stringData + "' joined the lobby!";
 						Debug.Log(stringData);
-						clientJoined = true;
+						newMessage = true;
 						clientsAccepted.Add(c);
-						BroadcastMessage(stringData, true);
+						BroadcastServerMessage(ManageMessage(stringData, true));
 						recieveDataThread = new Thread(RecieveData);
 						recieveDataThread.Start();
 						done = true;
@@ -156,31 +156,36 @@ public class Server : MonoBehaviour
 		}
 	}
 
-	void BroadcastMessage(string m, bool isServer = false)
+	string ManageMessage(string m, bool isServer = false)
 	{
-		foreach (Socket c in clientsAccepted)
+		if (isServer)
 		{
-			if (isServer)
+			m += "\n" + m;
+		}
+		else
+		{
+			string[] name;
+			if (m.Contains("/>username"))
 			{
-				m += "\n" + m;
+				string tmp = m.Remove(0, 11);
+				name = tmp.Split("</");
+				m = name[1];
+				m += "\n[" + name[0] + "]>>" + m;
 			}
 			else
 			{
-				string[] name;
-				if(m.Contains("/>username"))
-				{
-					string tmp = m.Remove(0, 11);
-					name = tmp.Split("</");
-					m = name[1];
-				}
-				else
-				{
-					Debug.Log("Error: No username detected");
-					return;
-				}
-				m += "\n[" + name[0] + "]>>" + m;
+				Debug.Log("Error: No username detected");
 			}
-			data = Encoding.ASCII.GetBytes(stringData);
+		}
+		stringData = m;
+		return m;
+	}
+
+	void BroadcastServerMessage(string m)
+	{
+		foreach (Socket c in clientsAccepted)
+		{
+			data = Encoding.ASCII.GetBytes(m);
 			c.Send(data, data.Length, SocketFlags.None);
 			Debug.Log("sent");
 		}
