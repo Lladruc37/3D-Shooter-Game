@@ -223,11 +223,13 @@ public class Server : MonoBehaviour
 					{
 						//TODO: check username
 						stringData = "User '" + stringData + "' joined the lobby!";
+						string tmp = stringData;
 						Debug.Log(stringData);
 						clientsAccepted.Add(c);
 						Thread.Sleep(100);
-						//BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true));
-						BroadcastServerMessage(ManageMessage(stringData, true));
+						BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true,true));
+						Thread.Sleep(100);
+						BroadcastServerMessage(ManageMessage(tmp, true));
 						recieveDataThread = new Thread(RecieveData);
 						recieveDataThread.Start();
 						done = true;
@@ -242,7 +244,7 @@ public class Server : MonoBehaviour
 		}
 	}
 
-	string ManageMessage(string m, bool isServer = false)
+	string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
 	{
 		string result = "";
 		if (isServer)
@@ -265,8 +267,11 @@ public class Server : MonoBehaviour
 			}
 		}
 		Debug.Log("sending message: " + result);
-		stringData = result;
-		newMessage = true;
+		if (!isServernameMessage)
+		{
+			stringData = result;
+			newMessage = true;
+		}
 		return result;
 	}
 

@@ -36,6 +36,10 @@ public class LobbyScripts : MonoBehaviour
 		{
             server.ServerUsername = s;
 		}
+        else
+		{
+            client.newServerIP = true;
+		}
         Debug.Log("New name: " + inputServer.text);
     }
 
@@ -57,7 +61,7 @@ public class LobbyScripts : MonoBehaviour
     public void JoinServer()
     {
         Debug.Log("Joined server: " + inputServer.text);
-        title.text = "Welcome to " + client.serverName + "!" /*IP:  + inputServer.text*/;
+        title.text = "Welcome to ... !" /*IP:  + inputServer.text*/;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
         client.start = true;

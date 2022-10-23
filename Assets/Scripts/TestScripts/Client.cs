@@ -31,7 +31,9 @@ public class Client : MonoBehaviour
 	public Text username;
 	public Chat chatManager;
 	public bool messageRecieved = false;
-	public string serverName = "";
+	public bool newServerName = false;
+	public bool newServerIP = false;
+	public Text clientTitle;
 
 	// Start is called before the first frame update
 	void Start()
@@ -48,6 +50,13 @@ public class Client : MonoBehaviour
 				chatManager.SendMsg(stringData);
 				stringData = "";
 			}
+			if(newServerName)
+			{
+				newServerName = false;
+				string tmp = stringData.Remove(0, 13);
+				clientTitle.text = "Welcome to " + tmp + "!";
+				Debug.Log("BIBUUUUUUUUUUUUUUUUU");
+			}
 
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
@@ -62,6 +71,10 @@ public class Client : MonoBehaviour
 
 		if (start)
 		{
+			if (newServerIP)
+			{
+				ipep = new IPEndPoint(IPAddress.Parse(serverIP.text.ToString()), 9050);
+			}
 			if (isTCP)
 			{
 				server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -158,7 +171,14 @@ public class Client : MonoBehaviour
 							else
 							{
 								Debug.Log("Server Data recieved: " + stringData);
-								messageRecieved = true;
+								if(stringData.Contains("/servername"))
+								{
+									newServerName = true;
+								}
+								else
+								{
+									messageRecieved = true;
+								}
 								Thread.Sleep(100);
 							}
 						}
