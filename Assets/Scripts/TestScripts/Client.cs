@@ -11,7 +11,7 @@ public class Client : MonoBehaviour
 	public bool isTCP = true;
 
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.68"), 9050);
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
 
 	public int recv;
 	public byte[] data;
@@ -37,7 +37,7 @@ public class Client : MonoBehaviour
 
 	// Start is called before the first frame update
 	void Start()
-	{ }
+	{}
 
 	void Update()
 	{
@@ -142,6 +142,9 @@ public class Client : MonoBehaviour
 					{
 						if (server.Poll(10, SelectMode.SelectRead))
 						{
+							data = null;
+							GC.Collect();
+
 							data = new byte[1024];
 							recv = server.Receive(data);
 							stringData = Encoding.ASCII.GetString(data, 0, recv);
@@ -183,6 +186,9 @@ public class Client : MonoBehaviour
 				{
 					if (connected)
 					{
+						data = null;
+						GC.Collect();
+
 						data = new byte[1024];
 
 						recv = server.ReceiveFrom(data, ref Remote);
@@ -202,16 +208,12 @@ public class Client : MonoBehaviour
 							}
 							else
 							{
-								//if(stringData.Contains("/>username"))
-								//{
-
-								//}
-								//else
-								//{
-
+								//TODO: This if shouldn't exist
+								if (!stringData.Contains("/>username"))
+								{
 									messageRecieved = true;
-								//}
-								Debug.Log("NO NEW SERVER NAME");
+								}
+                                Debug.Log("NO NEW SERVER NAME");
 							}
 							Thread.Sleep(100);
 						}

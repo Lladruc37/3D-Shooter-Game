@@ -41,7 +41,9 @@ public class Server : MonoBehaviour
 
 	// Start is called before the first frame update
 	void Start()
-	{}
+	{
+		data = new byte[1024];
+	}
 
 	// Update is called once per frame
 	void Update()
@@ -153,6 +155,8 @@ public class Server : MonoBehaviour
 
 			try
             {
+				data = null;
+				GC.Collect();
 				data = new byte[1024];
 				recv = newSocket.ReceiveFrom(data, ref remote);
 				sender = (IPEndPoint)remote;
@@ -224,6 +228,8 @@ public class Server : MonoBehaviour
 				Socket.Select(clientList, null, null, -1);
 				foreach (Socket c in clientList)
 				{
+					data = null;
+					GC.Collect();
 					data = new byte[1024];
 					recv = c.Receive(data);
 					stringData = Encoding.ASCII.GetString(data, 0, recv);
@@ -294,6 +300,8 @@ public class Server : MonoBehaviour
         {
 			foreach (Socket c in clientsAccepted)
 			{
+				data = null;
+				GC.Collect();
 				data = new byte[1024];
 				Debug.Log("Broadcasting message: " + m);
 				data = Encoding.ASCII.GetBytes(m);
@@ -305,6 +313,8 @@ public class Server : MonoBehaviour
         {
 			foreach (IPEndPoint ip in clientListUDP)
             {
+				data = null;
+				GC.Collect();
 				data = new byte[1024];
 				data = Encoding.ASCII.GetBytes(m);
 				EndPoint remote = (EndPoint)ip;
@@ -326,6 +336,9 @@ public class Server : MonoBehaviour
 					{
 						if (c.Poll(10, SelectMode.SelectRead))
 						{
+							data = null;
+							GC.Collect();
+
 							data = new byte[1024];
 							recv = c.Receive(data);
 							stringData = Encoding.ASCII.GetString(data, 0, recv);
@@ -358,14 +371,17 @@ public class Server : MonoBehaviour
 				{
 					foreach (IPEndPoint ip in clientListUDP)
 					{
-						data = new byte[1024];
+						byte[] dataTmp = new byte[1024];
 						EndPoint remote = (EndPoint)ip;
-						recv = newSocket.ReceiveFrom(data, ref remote);
+						recv = newSocket.ReceiveFrom(dataTmp, ref remote);
 
-						stringData = Encoding.ASCII.GetString(data, 0, recv);
+						Debug.Log("Count for stringData: " + recv);
+						Debug.Log("Length of Data: " + dataTmp.Length);
+
+						stringData = Encoding.ASCII.GetString(dataTmp, 0, recv);
 						Debug.Log("Message was: " + stringData);
 
-						newSocket.SendTo(data, recv, SocketFlags.None, remote);
+						newSocket.SendTo(dataTmp, recv, SocketFlags.None, remote);
 						if (stringData.Equals(""))
 						{
 							Debug.Log("Data was empty :c");
