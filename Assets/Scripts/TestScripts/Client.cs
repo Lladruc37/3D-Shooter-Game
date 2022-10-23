@@ -11,7 +11,7 @@ public class Client : MonoBehaviour
 	public bool isTcp = true;
 
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.68"), 9050);
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
 
 	public int recv;
 	public byte[] data;
@@ -114,6 +114,7 @@ public class Client : MonoBehaviour
 
 				data = new byte[1024];
 				server.ReceiveFrom(data, ref remote);
+				//sender = (IPEndPoint)remote;
 
 				stringData = Encoding.ASCII.GetString(data, 0, recv);
 				Debug.Log("Message was: " + stringData);

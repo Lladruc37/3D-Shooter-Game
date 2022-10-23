@@ -130,13 +130,14 @@ public class Server : MonoBehaviour
 		}
 		else
         {
-			IPEndPoint sender = new IPEndPoint(IPAddress.Any, 8050);
+			IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
 			EndPoint remote = (EndPoint)(sender);
 
 			try
             {
 				data = new byte[1024];
 				recv = newSocket.ReceiveFrom(data, ref remote);
+				sender = (IPEndPoint)remote;
 				AddClientUDP(sender);
 
 				stringData = Encoding.ASCII.GetString(data, 0, recv);
