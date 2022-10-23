@@ -54,7 +54,6 @@ public class Server : MonoBehaviour
 				newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 				newSocket.Bind(ipep);
 				connectClientsThread = new Thread(ConnectClients);
-				helloThread = new Thread(Hello);
 				connectClientsThread.Start();
 				start = false;
 				update = true;
@@ -170,6 +169,7 @@ public class Server : MonoBehaviour
 		{
 			clientList.Add(newClient);
 			Debug.Log("Connected to: " + clientep.ToString());
+			helloThread = new Thread(Hello);
 			helloThread.Start();
 		}
 		else
@@ -217,6 +217,7 @@ public class Server : MonoBehaviour
 						Debug.Log(stringData);
 						newMessage = true;
 						clientsAccepted.Add(c);
+						Thread.Sleep(100);
 						BroadcastServerMessage(ManageMessage(stringData, true));
 						recieveDataThread = new Thread(RecieveData);
 						recieveDataThread.Start();
@@ -236,7 +237,7 @@ public class Server : MonoBehaviour
 	{
 		if (isServer)
 		{
-			m += "\n" + m;
+			m = "\n" + m;
 		}
 		else
 		{
@@ -246,13 +247,14 @@ public class Server : MonoBehaviour
 				string tmp = m.Remove(0, 11);
 				name = tmp.Split("</");
 				m = name[1];
-				m += "\n[" + name[0] + "]>>" + m;
+				m = "\n[" + name[0] + "]>>" + m;
 			}
 			else
 			{
 				Debug.Log("Error: No username detected");
 			}
 		}
+		Debug.Log(m);
 		stringData = m;
 		return m;
 	}
@@ -265,7 +267,7 @@ public class Server : MonoBehaviour
 			{
 				data = Encoding.ASCII.GetBytes(m);
 				c.Send(data, data.Length, SocketFlags.None);
-				Debug.Log("Semt TCP Style");
+				Debug.Log("Sent TCP Style");
 			}
 		}
 		else

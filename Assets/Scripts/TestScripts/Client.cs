@@ -11,7 +11,7 @@ public class Client : MonoBehaviour
 	public bool isTcp = true;
 
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.68"), 9050);
 
 	public int recv;
 	public byte[] data;
@@ -45,6 +45,7 @@ public class Client : MonoBehaviour
 			if (messageRecieved)
 			{
 				messageRecieved = false;
+				Debug.Log("CURRENT MESSAGE: " + stringData);
 				chatManager.SendMsg(stringData);
 			}
 			//if (Input.GetKeyDown(KeyCode.Return))
@@ -137,41 +138,38 @@ public class Client : MonoBehaviour
 
 	void Hello()
 	{
-		if (isTcp)
-        {
-			try
+		try
+		{
+			while (hello)
 			{
-				while (hello)
+				if (server.Poll(10, SelectMode.SelectRead))
 				{
-					if (server.Poll(10, SelectMode.SelectRead))
+					data = new byte[1024];
+					Debug.Log("a");
+					recv = server.Receive(data);
+					Debug.Log("a2");
+					stringData = Encoding.ASCII.GetString(data, 0, recv);
+					Debug.Log("Message was: " + stringData);
+					if (stringData.Equals(""))
 					{
-						data = new byte[1024];
-						Debug.Log("a");
-						recv = server.Receive(data);
-						Debug.Log("a2");
-						stringData = Encoding.ASCII.GetString(data, 0, recv);
-						Debug.Log("Message was: " + stringData);
-						if (stringData.Equals(""))
-						{
-							Debug.Log("Data was empty :c");
-							hello = false;
-						}
-						else
-						{
-							Debug.Log("Server Data recieved: " + stringData);
-							messageRecieved = true;
-							hello = false;
-							receiveThread = new Thread(Receive);
-							receiveThread.Start();
-						}
+						Debug.Log("Data was empty :c");
+					}
+					else
+					{
+						Debug.Log("Server Data recieved: " + stringData);
+						messageRecieved = true;
+						hello = false;
+						Thread.Sleep(100);
+						receiveThread = new Thread(Receive);
+						receiveThread.Start();
 					}
 				}
+			}
 
-			}
-			catch (Exception e)
-			{
-				Debug.Log("Error receiving: " + e);
-			}
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Error receiving: " + e);
 		}
 	}
 

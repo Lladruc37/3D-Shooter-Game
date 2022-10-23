@@ -47,6 +47,6 @@ public class Chat : MonoBehaviour
         //    txt.text += "\n[" + lobby.inputUserName.text + "]>>" + msg;
         //}
 
-        txt.text += "\n" + msg;
+        txt.text += /*"\n" +*/ msg;
     }
 }
