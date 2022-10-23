@@ -11,7 +11,7 @@ public class Client : MonoBehaviour
 	public bool isTCP = true;
 
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
 	public int recv;
 	public string stringData, input;
@@ -250,7 +250,6 @@ public class Client : MonoBehaviour
 	{
 		if (server != null)
         {
-			server.Shutdown(SocketShutdown.Both);
 			server.Close();
 			server = null;
 		}

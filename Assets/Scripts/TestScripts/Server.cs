@@ -398,11 +398,8 @@ public class Server : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		//TODO: abort() & clear() all ongoing threads
-		//TODO: shutdown() & close() all clients sockets
 		if (newSocket != null)
         {
-			newSocket.Shutdown(SocketShutdown.Both);
 			newSocket.Close();
 			newSocket = null;
 		}
