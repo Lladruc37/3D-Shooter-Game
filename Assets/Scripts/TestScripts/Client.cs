@@ -8,10 +8,10 @@ using UnityEngine.UI;
 
 public class Client : MonoBehaviour
 {
-	public bool isTcp = true;
+	public bool isTCP = true;
 
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.68"), 9050);
 
 	public int recv;
 	public byte[] data;
@@ -24,15 +24,14 @@ public class Client : MonoBehaviour
 	bool connected = false;
 
 	Thread connectThread = null;
-	Thread helloThread = null;
 	Thread receiveThread = null;
 	public bool start = false;
 	public bool update = false;
-	public bool hello = true;
 	public Text serverIP;
 	public Text username;
 	public Chat chatManager;
 	public bool messageRecieved = false;
+	public string serverName = "";
 
 	// Start is called before the first frame update
 	void Start()
@@ -63,7 +62,7 @@ public class Client : MonoBehaviour
 
 		if (start)
 		{
-			if (isTcp)
+			if (isTCP)
 			{
 				server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 				connectThread = new Thread(Connect);
@@ -84,7 +83,7 @@ public class Client : MonoBehaviour
 
 	void Connect()
 	{
-		if (isTcp)
+		if (isTCP)
         {
 			try
 			{
@@ -94,8 +93,8 @@ public class Client : MonoBehaviour
 				connected = true;
 				Debug.Log("Connected to server. Sending Message...");
 				Send(username.text.ToString());
-				helloThread = new Thread(Hello);
-				helloThread.Start();
+				receiveThread = new Thread(Receive);
+				receiveThread.Start();
 			}
 			catch (System.Exception e)
 			{
@@ -113,8 +112,7 @@ public class Client : MonoBehaviour
 				EndPoint remote = (EndPoint)sender;
 
 				data = new byte[1024];
-				server.ReceiveFrom(data, ref remote);
-				//sender = (IPEndPoint)remote;
+				recv = server.ReceiveFrom(data, ref remote);
 
 				stringData = Encoding.ASCII.GetString(data, 0, recv);
 				Debug.Log("Message was: " + stringData);
@@ -137,66 +135,32 @@ public class Client : MonoBehaviour
 		}
 	}
 
-
-	void Hello()
-	{
-		try
-		{
-			while (hello)
-			{
-				if (server.Poll(10, SelectMode.SelectRead))
-				{
-					data = new byte[1024];
-					Debug.Log("a");
-					recv = server.Receive(data);
-					Debug.Log("a2");
-					stringData = Encoding.ASCII.GetString(data, 0, recv);
-					Debug.Log("Message was: " + stringData);
-					if (stringData.Equals(""))
-					{
-						Debug.Log("Data was empty :c");
-					}
-					else
-					{
-						Debug.Log("Server Data recieved: " + stringData);
-						messageRecieved = true;
-						hello = false;
-						Thread.Sleep(100);
-						receiveThread = new Thread(Receive);
-						receiveThread.Start();
-					}
-				}
-			}
-
-		}
-		catch (Exception e)
-		{
-			Debug.Log("Error receiving: " + e);
-		}
-	}
-
 	void Receive()
 	{
-		if (isTcp)
+		if (isTCP)
         {
 			try
 			{
 				while (true)
 				{
-					if (connected && !hello)
+					if (connected)
 					{
-						data = new byte[1024];
-						recv = server.Receive(data);
-						stringData = Encoding.ASCII.GetString(data, 0, recv);
-						Debug.Log("Message was: " + stringData);
-						if (stringData.Equals(""))
+						if (server.Poll(10, SelectMode.SelectRead))
 						{
-							Debug.Log("Data was empty :c");
-						}
-						else
-						{
-							Debug.Log("Server Data recieved: " + stringData);
-							messageRecieved = true;
+							data = new byte[1024];
+							recv = server.Receive(data);
+							stringData = Encoding.ASCII.GetString(data, 0, recv);
+							Debug.Log("Message was: " + stringData);
+							if (stringData.Equals(""))
+							{
+								Debug.Log("Data was empty :c");
+							}
+							else
+							{
+								Debug.Log("Server Data recieved: " + stringData);
+								messageRecieved = true;
+								Thread.Sleep(100);
+							}
 						}
 					}
 				}
@@ -244,7 +208,7 @@ public class Client : MonoBehaviour
 	void Send(string m)
 	{
 		data = Encoding.ASCII.GetBytes(m);
-		if (isTcp)
+		if (isTCP)
         {
 			server.Send(data, data.Length, SocketFlags.None);
 		}

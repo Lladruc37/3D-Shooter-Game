@@ -15,7 +15,7 @@ public class Server : MonoBehaviour
 	public Socket newSocket;
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
-	public String newServername;
+	public string ServerUsername = "Server";
 	public int recv;
 	public byte[] data;
 	//public Socket client;
@@ -64,6 +64,15 @@ public class Server : MonoBehaviour
 				{
 					newMessage = false;
 					chatManager.SendMsg(stringData);
+				}
+				if (Input.GetKeyDown(KeyCode.Return))
+				{
+					if (chatManager.input.text != "")
+					{
+						string msg = "\n" + "/>username" + ServerUsername + "</" + chatManager.input.text;
+						chatManager.input.text = "";
+						BroadcastServerMessage(ManageMessage(msg));
+					}
 				}
 			}
 		}
@@ -217,6 +226,7 @@ public class Server : MonoBehaviour
 						Debug.Log(stringData);
 						clientsAccepted.Add(c);
 						Thread.Sleep(100);
+						//BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true));
 						BroadcastServerMessage(ManageMessage(stringData, true));
 						recieveDataThread = new Thread(RecieveData);
 						recieveDataThread.Start();

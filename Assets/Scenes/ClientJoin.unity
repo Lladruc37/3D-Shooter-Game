@@ -426,18 +426,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dffd99dcc422324e8b50c769d35ea13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isTcp: 0
+  isTCP: 1
   recv: 0
   data: 
   stringData: 
   input: 
   start: 0
   update: 0
-  hello: 1
   serverIP: {fileID: 618813385}
   username: {fileID: 11440079}
   chatManager: {fileID: 255692766}
   messageRecieved: 0
+  serverName: 
 --- !u!1 &169476105
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,7 +514,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 769, y: -228}
+  m_AnchoredPosition: {x: 533, y: -157}
   m_SizeDelta: {x: 624.79944, y: 489.40433}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &255692766
@@ -887,7 +887,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 768.9071, y: -503.79996}
+  m_AnchoredPosition: {x: 532.9071, y: -432.79996}
   m_SizeDelta: {x: 613.5297, y: 56.56237}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &820499012
@@ -1033,7 +1033,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1670762931}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0
+  m_Size: 0.15099029
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2298,7 +2298,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -6929.1904}
+  m_AnchoredPosition: {x: -0.40000916, y: -7178.8223}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1567991850
