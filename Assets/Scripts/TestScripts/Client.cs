@@ -47,17 +47,18 @@ public class Client : MonoBehaviour
 				messageRecieved = false;
 				Debug.Log("CURRENT MESSAGE: " + stringData);
 				chatManager.SendMsg(stringData);
+				stringData = "";
 			}
-			//if (Input.GetKeyDown(KeyCode.Return))
-			//{
-			//	if (chatManager.input.text != "")
-			//	{
-			//		string msg = chatManager.input.text;
-			//		chatManager.input.text = "";
-			//		Send(msg);
-			//		chatManager.SendMsg(msg);
-			//	}
-			//}
+
+			if (Input.GetKeyDown(KeyCode.Return))
+			{
+				if (chatManager.input.text != "")
+				{
+					string msg = "\n" + "/>username" + username.text.ToString() + "</" + chatManager.input.text;
+					chatManager.input.text = "";
+					Send(msg);
+				}
+			}
 		}
 
 		if (start)
@@ -108,7 +109,7 @@ public class Client : MonoBehaviour
 				Send(username.text.ToString());
 				connected = true;
 
-				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
 				EndPoint remote = (EndPoint)sender;
 
 				data = new byte[1024];

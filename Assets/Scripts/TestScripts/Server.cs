@@ -130,7 +130,7 @@ public class Server : MonoBehaviour
 		}
 		else
         {
-			IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+			IPEndPoint sender = new IPEndPoint(IPAddress.Any, 8050);
 			EndPoint remote = (EndPoint)(sender);
 
 			try
@@ -150,7 +150,6 @@ public class Server : MonoBehaviour
 					//TODO: check username
 					stringData = "User '" + stringData + "' joined the lobby!";
 					Debug.Log(stringData);
-					newMessage = true;
 					BroadcastServerMessage(ManageMessage(stringData, true));
 					recieveDataThread = new Thread(RecieveData);
 					recieveDataThread.Start();
@@ -215,7 +214,6 @@ public class Server : MonoBehaviour
 						//TODO: check username
 						stringData = "User '" + stringData + "' joined the lobby!";
 						Debug.Log(stringData);
-						newMessage = true;
 						clientsAccepted.Add(c);
 						Thread.Sleep(100);
 						BroadcastServerMessage(ManageMessage(stringData, true));
@@ -235,9 +233,10 @@ public class Server : MonoBehaviour
 
 	string ManageMessage(string m, bool isServer = false)
 	{
+		string result = "";
 		if (isServer)
 		{
-			m = "\n" + m;
+			result = "\n" + m;
 		}
 		else
 		{
@@ -247,16 +246,17 @@ public class Server : MonoBehaviour
 				string tmp = m.Remove(0, 11);
 				name = tmp.Split("</");
 				m = name[1];
-				m = "\n[" + name[0] + "]>>" + m;
+				result = "\n[" + name[0] + "]>>" + m;
 			}
 			else
 			{
 				Debug.Log("Error: No username detected");
 			}
 		}
-		Debug.Log(m);
-		stringData = m;
-		return m;
+		Debug.Log("sending message: " + result);
+		stringData = result;
+		newMessage = true;
+		return result;
 	}
 
 	void BroadcastServerMessage(string m)
@@ -265,6 +265,8 @@ public class Server : MonoBehaviour
         {
 			foreach (Socket c in clientsAccepted)
 			{
+				data = new byte[1024];
+				Debug.Log("Broadcasting message: " + m);
 				data = Encoding.ASCII.GetBytes(m);
 				c.Send(data, data.Length, SocketFlags.None);
 				Debug.Log("Sent TCP Style");
@@ -306,6 +308,7 @@ public class Server : MonoBehaviour
 							{
 								Debug.Log("Client data recieved: " + stringData);
 								//TODO: chat message from user & send it the all players
+								BroadcastServerMessage(ManageMessage(stringData));
 							}
 						}
 						Thread.Sleep(100);
