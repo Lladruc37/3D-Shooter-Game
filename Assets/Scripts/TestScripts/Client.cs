@@ -8,8 +8,10 @@ using UnityEngine.UI;
 
 public class Client : MonoBehaviour
 {
+	public bool isTcp = true;
+
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.68"), 9050);
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("192.168.1.67"), 9050);
 
 	public int recv;
 	public byte[] data;
@@ -36,100 +38,6 @@ public class Client : MonoBehaviour
 	void Start()
 	{ }
 
-	void Connect()
-	{
-		try
-		{
-			Debug.Log("Trying to connect to server...");
-			server.Connect(ipep);
-			Thread.Sleep(100);
-			connected = true;
-			Debug.Log("Connected to server. Sending Message...");
-			Send(username.text.ToString());
-			helloThread = new Thread(Hello);
-			helloThread.Start();
-		}
-		catch (System.Exception e)
-		{
-			Debug.Log("Connection failed.. trying again...\n Error: " + e);
-		}
-	}
-
-
-	void Hello()
-	{
-		try
-		{
-			while (hello)
-			{
-				if (server.Poll(10, SelectMode.SelectRead))
-				{
-					data = new byte[1024];
-					Debug.Log("a");
-					recv = server.Receive(data);
-					Debug.Log("a2");
-					stringData = Encoding.ASCII.GetString(data, 0, recv);
-					Debug.Log("Message was: " + stringData);
-					if (stringData.Equals(""))
-					{
-						Debug.Log("Data was empty :c");
-						hello = false;
-					}
-					else
-					{
-						Debug.Log("Server Data recieved: " + stringData);
-						messageRecieved = true;
-						hello = false;
-						receiveThread = new Thread(Receive);
-						receiveThread.Start();
-					}
-				}
-			}
-
-		}
-		catch (Exception e)
-		{
-			Debug.Log("Error receiving: " + e);
-		}
-	}
-
-	void Receive()
-	{
-		try
-		{
-			while (true)
-			{
-				if (connected && !hello)
-				{
-					data = new byte[1024];
-					recv = server.Receive(data);
-					stringData = Encoding.ASCII.GetString(data, 0, recv);
-					Debug.Log("Message was: " + stringData);
-					if (stringData.Equals(""))
-					{
-						Debug.Log("Data was empty :c");
-					}
-					else
-					{
-						Debug.Log("Server Data recieved: " + stringData);
-						messageRecieved = true;
-					}
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			Debug.Log("Error receiving: " + e);
-		}
-	}
-
-	void Send(string m)
-	{
-		data = Encoding.ASCII.GetBytes(m);
-		server.Send(data, data.Length, SocketFlags.None);
-	}
-
-	// Update is called once per frame
 	void Update()
 	{
 		if (update)
@@ -150,20 +58,210 @@ public class Client : MonoBehaviour
 			//	}
 			//}
 		}
+
 		if (start)
 		{
-			server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-
-			if (server.ProtocolType == ProtocolType.Tcp)
+			if (isTcp)
 			{
+				server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 				connectThread = new Thread(Connect);
 				connectThread.Start();
+				start = false;
+				update = true;
 			}
-			start = false;
-			update = true;
+			else
+			{
+				server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+				connectThread = new Thread(Connect);
+				connectThread.Start();
+				start = false;
+				update = true;
+			}
 		}
 	}
+
+	void Connect()
+	{
+		if (isTcp)
+        {
+			try
+			{
+				Debug.Log("Trying to connect to server...");
+				server.Connect(ipep);
+				Thread.Sleep(100);
+				connected = true;
+				Debug.Log("Connected to server. Sending Message...");
+				Send(username.text.ToString());
+				helloThread = new Thread(Hello);
+				helloThread.Start();
+			}
+			catch (System.Exception e)
+			{
+				Debug.Log("Connection failed.. trying again...\n Error: " + e);
+			}
+		}
+		else
+        {
+			try
+            {
+				Send(username.text.ToString());
+				connected = true;
+
+				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+				EndPoint remote = (EndPoint)sender;
+
+				data = new byte[1024];
+				server.ReceiveFrom(data, ref remote);
+
+				stringData = Encoding.ASCII.GetString(data, 0, recv);
+				Debug.Log("Message was: " + stringData);
+				if (stringData.Equals(""))
+				{
+					Debug.Log("Data was empty :c");
+				}
+				else
+				{
+					Debug.Log("Server Data recieved: " + stringData);
+					messageRecieved = true;
+					receiveThread = new Thread(Receive);
+					receiveThread.Start();
+				}
+			}
+			catch (System.Exception e)
+			{
+				Debug.Log("Connection failed.. trying again...\n Error: " + e);
+			}
+		}
+	}
+
+
+	void Hello()
+	{
+		if (isTcp)
+        {
+			try
+			{
+				while (hello)
+				{
+					if (server.Poll(10, SelectMode.SelectRead))
+					{
+						data = new byte[1024];
+						Debug.Log("a");
+						recv = server.Receive(data);
+						Debug.Log("a2");
+						stringData = Encoding.ASCII.GetString(data, 0, recv);
+						Debug.Log("Message was: " + stringData);
+						if (stringData.Equals(""))
+						{
+							Debug.Log("Data was empty :c");
+							hello = false;
+						}
+						else
+						{
+							Debug.Log("Server Data recieved: " + stringData);
+							messageRecieved = true;
+							hello = false;
+							receiveThread = new Thread(Receive);
+							receiveThread.Start();
+						}
+					}
+				}
+
+			}
+			catch (Exception e)
+			{
+				Debug.Log("Error receiving: " + e);
+			}
+		}
+	}
+
+	void Receive()
+	{
+		if (isTcp)
+        {
+			try
+			{
+				while (true)
+				{
+					if (connected && !hello)
+					{
+						data = new byte[1024];
+						recv = server.Receive(data);
+						stringData = Encoding.ASCII.GetString(data, 0, recv);
+						Debug.Log("Message was: " + stringData);
+						if (stringData.Equals(""))
+						{
+							Debug.Log("Data was empty :c");
+						}
+						else
+						{
+							Debug.Log("Server Data recieved: " + stringData);
+							messageRecieved = true;
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.Log("Error receiving: " + e);
+			}
+		}
+		else
+        {
+			try
+			{
+				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+				EndPoint Remote = (EndPoint)sender;
+
+				while (true)
+				{
+					if (connected)
+					{
+						data = new byte[1024];
+
+						recv = server.ReceiveFrom(data, ref Remote);
+						stringData = Encoding.ASCII.GetString(data, 0, recv);
+						Debug.Log("Message was: " + stringData);
+						if (stringData.Equals(""))
+						{
+							Debug.Log("Data was empty :c");
+						}
+						else
+						{
+							Debug.Log("Server Data recieved: " + stringData);
+							messageRecieved = true;
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.Log("Error receiving: " + e);
+			}
+		}
+	}
+
+	void Send(string m)
+	{
+		data = Encoding.ASCII.GetBytes(m);
+		if (isTcp)
+        {
+			server.Send(data, data.Length, SocketFlags.None);
+		}
+		else
+        {
+			try
+			{
+				server.SendTo(data, data.Length, SocketFlags.None, ipep);
+			}
+			catch (Exception e)
+            {
+				Debug.Log("Error receiving: " + e);
+			}
+		}
+	}
+
+	// Update is called once per frame
 	private void OnDestroy()
 	{
 		server.Shutdown(SocketShutdown.Both);
