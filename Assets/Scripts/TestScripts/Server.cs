@@ -16,7 +16,6 @@ public class Server : MonoBehaviour
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
 	public string ServerUsername = "Server";
-	public int recv;
 	//public Socket client;
 	//public EndPoint clientRemote;
 	public IPEndPoint clientep;
@@ -157,6 +156,7 @@ public class Server : MonoBehaviour
 
 			try
             {
+				int recv;
 				byte[] dataTMP = new byte[1024];
 				recv = newSocket.ReceiveFrom(dataTMP, ref remote);
 				sender = (IPEndPoint)remote;
@@ -228,6 +228,7 @@ public class Server : MonoBehaviour
 				Socket.Select(clientList, null, null, -1);
 				foreach (Socket c in clientList)
 				{
+					int recv;
 					byte[] dataTMP = new byte[1024];
 					recv = c.Receive(dataTMP);
 					stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
@@ -331,6 +332,7 @@ public class Server : MonoBehaviour
 					{
 						if (c.Poll(10, SelectMode.SelectRead))
 						{
+							int recv;
 							byte[] dataTMP = new byte[1024];
 							recv = c.Receive(dataTMP);
 							stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
@@ -363,6 +365,7 @@ public class Server : MonoBehaviour
 				{
 					foreach (IPEndPoint ip in clientListUDP)
 					{
+						int recv;
 						byte[] dataTmp = new byte[1024];
 						EndPoint remote = (EndPoint)ip;
 						recv = newSocket.ReceiveFrom(dataTmp, ref remote);

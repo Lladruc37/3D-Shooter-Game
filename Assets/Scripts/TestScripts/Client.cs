@@ -13,7 +13,6 @@ public class Client : MonoBehaviour
 	public Socket server;
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
-	public int recv;
 	public string stringData, input;
 	public Socket client;
 	public EndPoint clientRemote;
@@ -146,6 +145,7 @@ public class Client : MonoBehaviour
 					{
 						if (server.Poll(10, SelectMode.SelectRead))
 						{
+							int recv;
 							byte[] dataTMP = new byte[1024];
 							recv = server.Receive(dataTMP);
 							stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
@@ -187,6 +187,7 @@ public class Client : MonoBehaviour
 				{
 					if (connected)
 					{
+						int recv;
 						byte[] dataTMP = new byte[1024];
 
 						recv = server.ReceiveFrom(dataTMP, ref Remote);
