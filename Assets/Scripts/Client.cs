@@ -32,6 +32,7 @@ public class Client : MonoBehaviour
 	public bool newServerName = false;
 	public bool newServerIP = false;
 	public Text clientTitle;
+	public Canvas chatCanvas = null;
 
 	// Start is called before the first frame update
 	void Start()
@@ -53,6 +54,7 @@ public class Client : MonoBehaviour
 				newServerName = false;
 				string tmp = stringData.Remove(0, 13);
 				clientTitle.text = "Welcome to " + tmp + "!";
+				chatCanvas.GetComponent<Canvas>().enabled = true;
 				Debug.Log("Update(): Changed server title to: "+ clientTitle.text);
 			}
 

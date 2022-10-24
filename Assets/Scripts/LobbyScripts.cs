@@ -63,7 +63,6 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("JoinServer(): Joined server: " + inputServer.text);
         title.text = "No server found..." /*IP:  + inputServer.text*/;
         inputCanvas.GetComponent<Canvas>().enabled = false;
-        chatCanvas.GetComponent<Canvas>().enabled = true;
         client.start = true;
     }
 

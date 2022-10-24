@@ -9,12 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/HostJoin.unity
     guid: aa22894cf97b5ec459d1370133abeea2
   - enabled: 1
-    path: Assets/Scenes/CreateSceneRoom.unity
-    guid: 14dd7ecf414bfce499c6a581248af328
+    path: Assets/Scenes/ServerHost.unity
+    guid: a145c6dfaa3245d4ca656a8fddbabfb0
   - enabled: 1
-    path: Assets/Scenes/JoinServerRoom.unity
-    guid: d7366119f0d59fa45bd5f3286c564d9b
-  - enabled: 1
-    path: Assets/Scenes/Testing/Chat.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/ClientJoin.unity
+    guid: 6b395cc142097b34ebc873cd9447859c
   m_configObjects: {}
