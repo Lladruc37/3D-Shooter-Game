@@ -15,6 +15,7 @@ public class LobbyScripts : MonoBehaviour
     public Text title;
     public Text inputUserName;
     public Text inputServer;
+    public GameObject gamePlayScene;
     public Canvas inputCanvas;
     public Canvas chatCanvas;
     public Server server;
@@ -55,6 +56,7 @@ public class LobbyScripts : MonoBehaviour
         title.text = "Welcome to " + inputServer.text + "!\n IP: " + GetLocalIPv4();
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
+        gamePlayScene.SetActive(true);
         server.start = true;
     }
 
@@ -63,6 +65,7 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("JoinServer(): Joined server: " + inputServer.text);
         title.text = "No server found..." /*IP:  + inputServer.text*/;
         inputCanvas.GetComponent<Canvas>().enabled = false;
+        gamePlayScene.SetActive(true);
         client.start = true;
     }
 
