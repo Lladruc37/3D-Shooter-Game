@@ -17,6 +17,7 @@ public class Client : MonoBehaviour
 	public Socket client;
 	public EndPoint clientRemote;
 	public IPEndPoint clientep;
+	public SendRecieve sendRecieve;
 
 	public IPAddress adress = IPAddress.Any;
 	bool connected = false;
@@ -207,6 +208,13 @@ public class Client : MonoBehaviour
 								newServerName = true;
 								Debug.Log("Recieve(): New server name change detected");
 							}
+							else if (stringData.Contains("/>PlayerInfo:"))
+							{
+								Debug.Log("Recieve(): New game state detected.");
+								sendRecieve.data = dataTMP;
+								sendRecieve.recieveThread = new Thread(sendRecieve.RecieveGameState);
+								sendRecieve.recieveThread.Start();
+							}
 							else
 							{
 								//TODO: This if shouldn't exist
@@ -214,7 +222,7 @@ public class Client : MonoBehaviour
 								{
 									messageRecieved = true;
 								}
-                                Debug.Log("Recieve(): No new server name changes detected");
+								Debug.Log("Recieve(): No new server name changes detected");
 							}
 							Thread.Sleep(100);
 						}

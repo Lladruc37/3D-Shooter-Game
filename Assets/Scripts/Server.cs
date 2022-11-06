@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 public class Server : MonoBehaviour
 {
@@ -309,14 +310,32 @@ public class Server : MonoBehaviour
 		}
 		else
         {
+			byte[] dataTMP = new byte[1024];
+			dataTMP = Encoding.ASCII.GetBytes(m);
+
 			foreach (IPEndPoint ip in clientListUDP)
             {
-				byte[] dataTMP = new byte[1024];
-				dataTMP = Encoding.ASCII.GetBytes(m);
 				EndPoint remote = (EndPoint)ip;
 				newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
 				Debug.Log("BroadcastServerMessage(): Sent UDP Style");
 			}
+		}
+	}
+
+	public void BroadcastServerInfo(MemoryStream stream)
+    {
+		Debug.Log("BroadcastServerInfo(): Sending gameplay state...");
+
+		byte[] dataTMP = new byte[1024];
+		dataTMP = stream.GetBuffer();
+
+		Debug.Log("BroadcastServerInfo(): Data Length is: " + stream.Length);
+
+		foreach (IPEndPoint ip in clientListUDP)
+		{
+			EndPoint remote = (EndPoint)ip;
+			newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+			Debug.Log("BroadcastServerInfo(): Sent UDP Style");
 		}
 	}
 
