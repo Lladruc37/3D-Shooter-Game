@@ -24,6 +24,7 @@ public class SendRecieve : MonoBehaviour
     bool lerp = false;
     float myTimer = 0.0f;
     float lerpTime = 0.0f;
+    float interpolationTimer = 0.1f;
     // Update is called once per frame
     void Update()
     {
@@ -34,7 +35,7 @@ public class SendRecieve : MonoBehaviour
             {
                 lastp = currentp;
                 currentp = this.transform.localPosition;
-                if (myTimer >= 0.1f)
+                if (myTimer >= interpolationTimer)
                 {
                     myTimer = 0;
                     Debug.Log("Update(): Current position: " + currentp);
@@ -49,22 +50,23 @@ public class SendRecieve : MonoBehaviour
             if (updatePosition)
             {
                 updatePosition = false;
-                lerp = true;
+                //lerp = true;
+                //lastp = currentp;
 
-
-                //this.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
+                this.transform.localPosition = currentp;
             }
-            if(lerp)
-			{
-                Vector3 startPosition = transform.position;
-                transform.position = Vector3.Lerp(lastp, currentp, lerpTime / 1);
-                lerpTime += Time.deltaTime;
-                if(lerpTime >= 1)
-				{
-                    lerp = false;
-                    lerpTime = 0;
-				}
-            }
+            //TODO: LERP
+   //         if (lerp)
+			//{
+   //             Debug.Log("LERP: " + lastp + ";" + currentp);
+   //             transform.localPosition = Vector3.Lerp(lastp, currentp, lerpTime / interpolationTimer);
+   //             lerpTime += Time.deltaTime;
+   //             if(lerpTime >= 1)
+			//	{
+   //                 lerp = false;
+   //                 lerpTime = 0;
+			//	}
+   //         }
         }
     }
 
@@ -77,9 +79,9 @@ public class SendRecieve : MonoBehaviour
         writer.Write("/>PlayerInfo:");
 
         //Position
-        writer.Write(currentp.x);
-        writer.Write(currentp.y);
-        writer.Write(currentp.z);
+        writer.Write((double)currentp.x);
+        writer.Write((double)currentp.y);
+        writer.Write((double)currentp.z);
 
         //WeaponAction
 
