@@ -14,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     public float groundDistance = 0.4f;
     public LayerMask floorMask;
     bool isGrounded;
-    public bool GodMode = false;
+    public bool GodMode = true;
     public bool WeaponMode = false;
     void Update()
     {
