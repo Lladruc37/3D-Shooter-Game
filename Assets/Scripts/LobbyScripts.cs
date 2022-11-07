@@ -20,9 +20,13 @@ public class LobbyScripts : MonoBehaviour
     public Canvas chatCanvas;
     public Server server;
     public Client client;
-    //public string serverName = "";
+	//public string serverName = "";
 
-    public void Go2Create()
+	private void Start()
+	{
+        Application.targetFrameRate = 60;
+	}
+	public void Go2Create()
     {
         SceneManager.LoadScene(1);
     }

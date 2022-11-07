@@ -18,8 +18,12 @@ public class SendRecieve : MonoBehaviour
     public Thread recieveThread = null;
 
     bool updatePosition;
-    double x = 0.0f, y = 0.0f, z = 0.0f;
+    //double x = 0.0f, y = 0.0f, z = 0.0f;
+    Vector3 currentp;
+    Vector3 lastp;
+    bool lerp = false;
     float myTimer = 0.0f;
+    float lerpTime = 0.0f;
     // Update is called once per frame
     void Update()
     {
@@ -28,13 +32,12 @@ public class SendRecieve : MonoBehaviour
         {
             if(moving)
             {
-                x = (double)this.transform.localPosition.x;
-                y = (double)this.transform.localPosition.y;
-                z = (double)this.transform.localPosition.z;
-                if (myTimer >= 0.2f)
+                lastp = currentp;
+                currentp = this.transform.localPosition;
+                if (myTimer >= 0.1f)
                 {
                     myTimer = 0;
-                    Debug.Log("Update(): Current position: " + x + "," + y + "," + z);
+                    Debug.Log("Update(): Current position: " + currentp);
 
                     sendThread = new Thread(SendGameState);
                     sendThread.Start();
@@ -46,10 +49,25 @@ public class SendRecieve : MonoBehaviour
             if (updatePosition)
             {
                 updatePosition = false;
-                this.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
+                lerp = true;
+
+
+                //this.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
+            }
+            if(lerp)
+			{
+                Vector3 startPosition = transform.position;
+                transform.position = Vector3.Lerp(lastp, currentp, lerpTime / 1);
+                lerpTime += Time.deltaTime;
+                if(lerpTime >= 1)
+				{
+                    lerp = false;
+                    lerpTime = 0;
+				}
             }
         }
     }
+
     public void SendGameState()
     {
         MemoryStream stream = new MemoryStream();
@@ -59,9 +77,9 @@ public class SendRecieve : MonoBehaviour
         writer.Write("/>PlayerInfo:");
 
         //Position
-        writer.Write(x);
-        writer.Write(y);
-        writer.Write(z);
+        writer.Write(currentp.x);
+        writer.Write(currentp.y);
+        writer.Write(currentp.z);
 
         //WeaponAction
 
@@ -85,11 +103,11 @@ public class SendRecieve : MonoBehaviour
         //Position
         if(!isControlling)
         {
-            x = reader.ReadDouble();
-            y = reader.ReadDouble();
-            z = reader.ReadDouble();
+            currentp.x = (float)reader.ReadDouble();
+            currentp.y = (float)reader.ReadDouble();
+            currentp.z = (float)reader.ReadDouble();
 
-            Debug.Log("RecieveGameState(): New position: " + x + "," + y + "," + z);
+            Debug.Log("RecieveGameState(): New position: " + currentp);
             updatePosition = true;
         }
 
