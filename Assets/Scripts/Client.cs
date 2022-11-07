@@ -76,183 +76,96 @@ public class Client : MonoBehaviour
 			{
 				ipep = new IPEndPoint(IPAddress.Parse(serverIP.text.ToString()), 9050);
 			}
-			if (isTCP)
-			{
-				server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-				connectThread = new Thread(Connect);
-				connectThread.Start();
-				start = false;
-				update = true;
-			}
-			else
-			{
-				server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-				connectThread = new Thread(Connect);
-				connectThread.Start();
-				start = false;
-				update = true;
-			}
-		}
-	}
 
-	public void ToggleTCP(bool boolean)
-	{
-		isTCP = boolean;
+			server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+			connectThread = new Thread(Connect);
+			connectThread.Start();
+			start = false;
+			update = true;
+		}
 	}
 
 	void Connect()
 	{
-		if (isTCP)
+		try
         {
-			try
-			{
-				Debug.Log("Connect(): Trying to connect to server...");
-				server.Connect(ipep);
-				Thread.Sleep(100);
-				connected = true;
-				Debug.Log("Connect(): Connected to server. Sending Message...");
-				Send(username.text.ToString());
-				receiveThread = new Thread(Receive);
-				receiveThread.Start();
-			}
-			catch (System.Exception e)
-			{
-				Debug.Log("Connect(): Connection failed.. trying again...\n Error: " + e);
-			}
+			Send(username.text.ToString());
+			connected = true;
+			receiveThread = new Thread(Receive);
+			receiveThread.Start();
 		}
-		else
-        {
-			try
-            {
-				Send(username.text.ToString());
-				connected = true;
-				receiveThread = new Thread(Receive);
-				receiveThread.Start();
-			}
-			catch (System.Exception e)
-			{
-				Debug.Log("Connect(): Connection failed.. trying again...\n Error: " + e);
-			}
+		catch (System.Exception e)
+		{
+			Debug.Log("Connect(): Connection failed.. trying again...\n Error: " + e);
 		}
 	}
 
 	void Receive()
 	{
-		if (isTCP)
-        {
-			try
+		try
+		{
+			IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+			EndPoint Remote = (EndPoint)sender;
+
+			while (true)
 			{
-				while (true)
+				if (connected)
 				{
-					if (connected)
+					int recv;
+					byte[] dataTMP = new byte[1024];
+
+					recv = server.ReceiveFrom(dataTMP, ref Remote);
+					stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+					Debug.Log("Recieve(): Message was: " + stringData);
+					if (stringData.Equals(""))
 					{
-						if (server.Poll(10, SelectMode.SelectRead))
-						{
-							int recv;
-							byte[] dataTMP = new byte[1024];
-							recv = server.Receive(dataTMP);
-							stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-							Debug.Log("Recieve(): Message was: " + stringData);
-							if (stringData.Equals(""))
-							{
-								Debug.Log("Recieve(): Data was empty :c");
-							}
-							else
-							{
-								Debug.Log("Recieve(): Server Data recieved: " + stringData);
-								if(stringData.Contains("/servername"))
-								{
-									newServerName = true;
-								}
-								else
-								{
-									messageRecieved = true;
-								}
-								Thread.Sleep(100);
-							}
-						}
+						Debug.Log("Recieve(): Data was empty :c");
 					}
-				}
-			}
-			catch (Exception e)
-			{
-				Debug.Log("Recieve(): Error receiving: " + e);
-			}
-		}
-		else
-        {
-			try
-			{
-				IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-				EndPoint Remote = (EndPoint)sender;
-
-				while (true)
-				{
-					if (connected)
+					else
 					{
-						int recv;
-						byte[] dataTMP = new byte[1024];
-
-						recv = server.ReceiveFrom(dataTMP, ref Remote);
-						stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-						Debug.Log("Recieve(): Message was: " + stringData);
-						if (stringData.Equals(""))
+						Debug.Log("Recieve(): Server Data recieved: " + stringData);
+						if (stringData.Contains("/servername"))
 						{
-							Debug.Log("Recieve(): Data was empty :c");
+							newServerName = true;
+							Debug.Log("Recieve(): New server name change detected");
+						}
+						else if (stringData.Contains("/>PlayerInfo:"))
+						{
+							Debug.Log("Recieve(): New game state detected.");
+							sendRecieve.data = dataTMP;
+							sendRecieve.recieveThread = new Thread(sendRecieve.RecieveGameState);
+							sendRecieve.recieveThread.Start();
 						}
 						else
 						{
-							Debug.Log("Recieve(): Server Data recieved: " + stringData);
-							if (stringData.Contains("/servername"))
+							//TODO: This if shouldn't exist
+							if (!stringData.Contains("/>username"))
 							{
-								newServerName = true;
-								Debug.Log("Recieve(): New server name change detected");
+								messageRecieved = true;
 							}
-							else if (stringData.Contains("/>PlayerInfo:"))
-							{
-								Debug.Log("Recieve(): New game state detected.");
-								sendRecieve.data = dataTMP;
-								sendRecieve.recieveThread = new Thread(sendRecieve.RecieveGameState);
-								sendRecieve.recieveThread.Start();
-							}
-							else
-							{
-								//TODO: This if shouldn't exist
-								if (!stringData.Contains("/>username"))
-								{
-									messageRecieved = true;
-								}
-								Debug.Log("Recieve(): No new server name changes detected");
-							}
-							Thread.Sleep(100);
+							Debug.Log("Recieve(): No new server name changes detected");
 						}
+						Thread.Sleep(100);
 					}
 				}
 			}
-			catch (Exception e)
-			{
-				Debug.Log("Recieve(): Error receiving: " + e);
-			}
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Recieve(): Error receiving: " + e);
 		}
 	}
 
 	void Send(string m)
 	{
 		byte[] dataTMP = Encoding.ASCII.GetBytes(m);
-		if (isTCP)
-        {
-			server.Send(dataTMP, dataTMP.Length, SocketFlags.None);
+		try
+		{
+			server.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
 		}
-		else
+		catch (Exception e)
         {
-			try
-			{
-				server.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
-			}
-			catch (Exception e)
-            {
-				Debug.Log("Send(): Error receiving: " + e);
-			}
+			Debug.Log("Send(): Error receiving: " + e);
 		}
 	}
 
