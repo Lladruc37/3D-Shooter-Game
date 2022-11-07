@@ -5,17 +5,19 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public CharacterController cc;
-    public float Velocidad = 12;
+    public float speed = 12;
 
-    public float Gravedad = -9.81f;
+    public float gravity = -9.81f;
     public Vector3 velocity;
 
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask floorMask;
     bool isGrounded;
-    public bool GodMode = true;
-    public bool WeaponMode = false;
+    public bool GodMode = false;
+    public bool WeaponMode = true;
+    public Rigidbody playerBody;
+
     void Update()
     {
         //Move with WASD in case the Weapon Mode is not working
@@ -32,7 +34,7 @@ public class PlayerMovement : MonoBehaviour
             //Jump
             if (Input.GetButtonDown("Jump") && isGrounded)
             {
-                velocity.y = Mathf.Sqrt(3 * -2 * Gravedad);
+                velocity.y = Mathf.Sqrt(3 * -2 * gravity);
             }
 
             //Move with WASD inputs
@@ -40,16 +42,26 @@ public class PlayerMovement : MonoBehaviour
             float z = Input.GetAxis("Vertical");
 
             Vector3 move = transform.right * x + transform.forward * z;
-            cc.Move(move * Velocidad * Time.deltaTime);
+            cc.Move(move * speed * Time.deltaTime);
         }
 
-        velocity.y += Gravedad * Time.deltaTime;
+        velocity.y += gravity * Time.deltaTime;
         cc.Move(velocity * Time.deltaTime);
 
-        //Move with the retrieval of the weapons
+        //Move with the recoil of the weapons
         if (WeaponMode)
         {
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
 
+            if (isGrounded && velocity.y < 0)
+            {
+                velocity.y = -2f;
+            }
+
+            if (Input.GetButtonDown("Fire1") && isGrounded)
+            {
+                velocity.y = Mathf.Sqrt(3 * -2 * gravity);
+            }
         }
 
     }

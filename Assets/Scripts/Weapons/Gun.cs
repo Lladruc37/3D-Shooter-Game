@@ -10,6 +10,15 @@ public class Gun : MonoBehaviour
     public Camera fpsCam;
     public ParticleSystem muzzeFlash;
 
+    //Recoil settings
+    public Vector3 upRecoil;
+    Vector3 originalRotation;
+
+    void Start()
+    {
+        originalRotation = transform.localEulerAngles;
+    }
+
     void Update()
     {
         //Shoot with the left click button
@@ -37,5 +46,16 @@ public class Gun : MonoBehaviour
                 target.takeDamage(damage);
             }
         }
+    }
+
+    //Add recoil animation to the weapon
+    void AddRecoil()
+    {
+        transform.localEulerAngles += upRecoil;
+    }
+
+    void StopRecoil()
+    {
+        transform.localEulerAngles = originalRotation;
     }
 }
