@@ -24,9 +24,6 @@ public class Server : MonoBehaviour
 	//UDP
 	public List<IPEndPoint> clientListUDP = new List<IPEndPoint>();
 
-	//TCP
-	public List<Socket> clientList = new List<Socket>();
-	public List<Socket> clientsAccepted = new List<Socket>();
 	//List<string> usernames = new List<string>(); // TODO: ADD usernames must be different
 
 	Thread connectClientsThread = null;

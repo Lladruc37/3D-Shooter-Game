@@ -19,9 +19,11 @@ public class SendRecieve : MonoBehaviour
 
     bool updatePosition;
     double x = 0.0f, y = 0.0f, z = 0.0f;
+    float myTimer = 0.0f;
     // Update is called once per frame
     void Update()
     {
+        myTimer += Time.deltaTime;
         if(isControlling)
         {
             if(moving)
@@ -29,11 +31,14 @@ public class SendRecieve : MonoBehaviour
                 x = (double)this.transform.localPosition.x;
                 y = (double)this.transform.localPosition.y;
                 z = (double)this.transform.localPosition.z;
+                if (myTimer >= 0.2f)
+                {
+                    myTimer = 0;
+                    Debug.Log("Update(): Current position: " + x + "," + y + "," + z);
 
-                Debug.Log("Update(): Current position: " + x + "," + y + "," + z);
-
-                sendThread = new Thread(SendGameState);
-                sendThread.Start();
+                    sendThread = new Thread(SendGameState);
+                    sendThread.Start();
+                }
             }
         }
         else
