@@ -9,8 +9,6 @@ using UnityEngine.UI;
 
 public class Client : MonoBehaviour
 {
-	public bool isTCP = true;
-
 	public Socket server;
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 
