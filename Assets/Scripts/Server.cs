@@ -24,8 +24,6 @@ public class Server : MonoBehaviour
 	//UDP
 	public List<IPEndPoint> clientListUDP = new List<IPEndPoint>();
 
-	//List<string> usernames = new List<string>(); // TODO: ADD usernames must be different
-
 	Thread connectClientsThread = null;
 	Thread recieveDataThread = null;
 	string stringData = null;
@@ -33,6 +31,8 @@ public class Server : MonoBehaviour
 	bool update = false;
 	public Chat chatManager;
 	public bool newMessage = false;
+	public GameObject gameplayScene;
+	public LobbyScripts lobby;
 
 	// Start is called before the first frame update
 	void Start()
@@ -57,6 +57,13 @@ public class Server : MonoBehaviour
 				newMessage = false;
 				chatManager.SendMsg(stringData);
 			}
+			if (Input.GetKeyDown(KeyCode.Tab)) //START BUTTON
+			{
+				SendPlayerList();
+				gameplayScene.SetActive(true);
+				string msg = "/>startgame</Starting game...";
+				BroadcastServerMessage(ManageMessage(msg, true));
+			}
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
 				if (chatManager.input.text != "")
@@ -67,6 +74,30 @@ public class Server : MonoBehaviour
 				}
 			}
 		}
+	}
+	public void SendPlayerList()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
+
+		//Header
+		writer.Write("/>list</");
+		writer.Write(lobby.usernameList.Count);
+
+		//List
+		int i = 0;
+		foreach (string user in lobby.usernameList)
+		{
+			writer.Write(user);
+			writer.Write(i);
+			i++;
+		}
+
+		Debug.Log("SendList(): Sending list...");
+		BroadcastServerInfo(stream);
+
+		//TODO: Temporary solution
+		Thread.Sleep(100);
 	}
 
 	void ConnectClients()
@@ -92,11 +123,12 @@ public class Server : MonoBehaviour
 			else
 			{
 				//TODO: check username
+				lobby.usernameList.Add(stringData);
 				stringData = "User '" + stringData + "' joined the lobby!";
 				string tmp = stringData;
 				Debug.Log(stringData);
 				Thread.Sleep(100);
-				BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true, true));
+				BroadcastServerMessage(ManageMessage("/>servername " + ServerUsername, true, true));
 				Thread.Sleep(100);
 				BroadcastServerMessage(ManageMessage(tmp, true));
 				recieveDataThread = new Thread(RecieveData);
@@ -125,19 +157,25 @@ public class Server : MonoBehaviour
 	string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
 	{
 		string result = "";
+		string[] splitName;
 		if (isServer)
 		{
+			if (m.Contains("/>startgame"))
+			{
+				string tmp = m;
+				splitName = tmp.Split("</");
+				m = splitName[1];
+			}
 			result = "\n" + m;
 		}
 		else
 		{
-			string[] name;
 			if (m.Contains("/>username"))
 			{
 				string tmp = m.Remove(0, 11);
-				name = tmp.Split("</");
-				m = name[1];
-				result = "\n[" + name[0] + "]>>" + m;
+				splitName = tmp.Split("</");
+				m = splitName[1];
+				result = "\n[" + splitName[0] + "]>>" + m;
 			}
 			else
 			{

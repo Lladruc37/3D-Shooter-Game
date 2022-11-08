@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -24,6 +25,7 @@ public class Client : MonoBehaviour
 
 	Thread connectThread = null;
 	Thread receiveThread = null;
+	Thread RecievePlayerListThread = null;
 	public bool start = false;
 	public bool update = false;
 	public Text serverIP;
@@ -34,6 +36,9 @@ public class Client : MonoBehaviour
 	public bool newServerIP = false;
 	public Text clientTitle;
 	public Canvas chatCanvas = null;
+	public GameObject gameplayScene;
+	bool startGame = false;
+	public LobbyScripts lobby;
 
 	// Start is called before the first frame update
 	void Start()
@@ -53,10 +58,16 @@ public class Client : MonoBehaviour
 			if(newServerName)
 			{
 				newServerName = false;
-				string tmp = stringData.Remove(0, 13);
+				string tmp = stringData.Remove(0, 14);
 				clientTitle.text = "Welcome to " + tmp + "!";
 				chatCanvas.GetComponent<Canvas>().enabled = true;
 				Debug.Log("Update(): Changed server title to: "+ clientTitle.text);
+			}
+			if(startGame)
+			{
+				startGame = false;
+				gameplayScene.SetActive(true);
+				Debug.Log("Starting client game...");
 			}
 
 			if (Input.GetKeyDown(KeyCode.Return))
@@ -124,20 +135,30 @@ public class Client : MonoBehaviour
 					else
 					{
 						Debug.Log("Recieve(): Server Data recieved: " + stringData);
-						if (stringData.Contains("/servername"))
+						if (stringData.Contains("/>servername"))
 						{
 							newServerName = true;
 							Debug.Log("Recieve(): New server name change detected");
 						}
 						else if (stringData.Contains("/>PlayerInfo:"))
 						{
-							Debug.Log("Recieve(): New game state detected.");
+							Debug.Log("Recieve(): New game state detected");
 							sendRecieve.data = dataTMP;
 							sendRecieve.recieveThread = new Thread(sendRecieve.RecieveGameState);
 							sendRecieve.recieveThread.Start();
 						}
+						else if(stringData.Contains("/>list</"))
+						{
+							Debug.Log("Recieve(): New users list detected");
+							RecievePlayerListThread = new Thread(RecievePlayerList);
+							RecievePlayerListThread.Start();
+						}
 						else
 						{
+							if(stringData == "\nStarting game...")
+							{
+								startGame = true;
+							}
 							//TODO: This if shouldn't exist
 							if (!stringData.Contains("/>username"))
 							{
@@ -155,9 +176,9 @@ public class Client : MonoBehaviour
 			Debug.Log("Recieve(): Error receiving: " + e);
 		}
 	}
-
 	void Send(string m)
 	{
+		Debug.Log("SENDING MESSAGE" + m);
 		byte[] dataTMP = Encoding.ASCII.GetBytes(m);
 		try
 		{
@@ -167,6 +188,32 @@ public class Client : MonoBehaviour
         {
 			Debug.Log("Send(): Error receiving: " + e);
 		}
+	}
+
+	public void RecievePlayerList()
+	{
+		byte[] data = null;
+		Debug.Log("RecieveList(): Recieved info");
+		MemoryStream stream = new MemoryStream(data);
+		BinaryReader reader = new BinaryReader(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		//Header
+		string header = reader.ReadString();
+		Debug.Log("RecieveList(): Header is " + header);
+
+		//List
+		int count = reader.ReadInt32();
+		for (int i = 0; i <= count; i++)
+		{
+			string tmp = reader.ReadString();
+			lobby.usernameList.Add(tmp);
+			int tmpi = reader.ReadInt32();
+			Debug.Log(tmpi);
+		}
+
+		//TODO: Temporary solution
+		Thread.Sleep(100);
 	}
 
 	// Update is called once per frame

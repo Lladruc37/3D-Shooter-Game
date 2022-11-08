@@ -91,6 +91,7 @@ public class SendRecieve : MonoBehaviour
         //TODO: Temporary solution
         Thread.Sleep(100);
     }
+
     public void RecieveGameState()
     {
         Debug.Log("RecieveGameState(): Recieved info");
