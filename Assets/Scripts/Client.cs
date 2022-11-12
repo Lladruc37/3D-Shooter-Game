@@ -65,11 +65,8 @@ public class Client : MonoBehaviour
 			if(startGame && lobby.usernameList.Count != 0)
 			{
 				startGame = false;
-				gameplayScene.SetActive(true);
-				manager = gameplayScene.GetComponent<GameplayManager>();
-				manager.start = true;
 				manager.UserName = username;
-				Debug.Log("Starting client game...");
+				lobby.StartGame();
 			}
 
 			if (Input.GetKeyDown(KeyCode.Return))
@@ -109,7 +106,7 @@ public class Client : MonoBehaviour
 		}
 		catch (System.Exception e)
 		{
-			Debug.Log("Connect(): Connection failed.. trying again...\n Error: " + e);
+			Debug.LogError("Connect(): Connection failed.. trying again...\n Error: " + e);
 		}
 	}
 
@@ -176,7 +173,7 @@ public class Client : MonoBehaviour
 		}
 		catch (Exception e)
 		{
-			Debug.Log("Recieve(): Error receiving: " + e);
+			Debug.LogError("Recieve(): Error receiving: " + e);
 		}
 	}
 	void Send(string m)
@@ -189,7 +186,7 @@ public class Client : MonoBehaviour
 		}
 		catch (Exception e)
         {
-			Debug.Log("Send(): Error receiving: " + e);
+			Debug.LogError("Send(): Error receiving: " + e);
 		}
 	}
 
@@ -208,7 +205,7 @@ public class Client : MonoBehaviour
 		}
 		catch (Exception e)
 		{
-			Debug.Log("SendInfo(): Error receiving: " + e);
+			Debug.LogError("SendInfo(): Error receiving: " + e);
 		}
 	}
 

@@ -70,15 +70,16 @@ public class GameplayManager : MonoBehaviour
 
                 switch (c)
                 {
+                    //TODO: Bug Start Position
                     case 1:
                         {
-                            playerList[0].transform.localPosition = new Vector3(0.5f, 1.234f, 0.5f);
+                            p1.transform.localPosition = new Vector3(1.0f, 1.234f, -1.0f);
                             break;
                         }
                     case 2:
                         {
-                            playerList[0].transform.localPosition = new Vector3(-1.0f, 1.234f, -1.0f);
-                            playerList[1].transform.localPosition = new Vector3(1.0f, 1.234f, 1.0f);
+                            p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
+                            p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
                             break;
                         }
                 }

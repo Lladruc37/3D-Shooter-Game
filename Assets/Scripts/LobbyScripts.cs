@@ -15,10 +15,13 @@ public class LobbyScripts : MonoBehaviour
     public Text title;
     public Text inputUserName;
     public Text inputServer;
+    public Canvas lobbyCanvas;
     public Canvas inputCanvas;
     public Canvas chatCanvas;
+    public GameObject startGameButton;
     public Server server;
     public Client client;
+    public GameObject gameplayScene;
     public List<string> usernameList;
 	//public string serverName = "";
 
@@ -69,6 +72,7 @@ public class LobbyScripts : MonoBehaviour
         title.text = "Welcome to " + inputServer.text + "!\n IP: " + GetLocalIPv4();
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
+        startGameButton.SetActive(true);
         server.start = true;
     }
 
@@ -78,6 +82,24 @@ public class LobbyScripts : MonoBehaviour
         title.text = "No server found..." /*IP:  + inputServer.text*/;
         inputCanvas.GetComponent<Canvas>().enabled = false;
         client.start = true;
+    }
+
+    public void StartGame()
+    {
+        GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+        lobbyCanvas.GetComponent<Canvas>().enabled = false;
+        gameplayScene.SetActive(true);
+        manager.start = true;
+
+        if (server)
+        {
+            server.SendPlayerList();
+            manager.UserName = server.hostUsername;
+            string msg = "/>startgame</Starting game...";
+            server.BroadcastServerMessage(server.ManageMessage(msg, true));
+        }
+
+        Debug.Log("LobbyScripts(): Game scene enabled...");
     }
 
     public string GetLocalIPv4()

@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class SendRecieve : MonoBehaviour
 {
-    // Start is called before the first frame update
     public bool isControlling = false;
     public bool assigned = false;
     public GameplayManager gm;
@@ -29,7 +28,10 @@ public class SendRecieve : MonoBehaviour
     void Update()
     {
         username = name;
-        position = transform.localPosition;
+        if (!updatePosition)
+        {
+            position = transform.localPosition;
+        }
         myTimer += Time.deltaTime;
         if(isControlling)
         {
@@ -51,24 +53,25 @@ public class SendRecieve : MonoBehaviour
         {
             if (updatePosition)
             {
+                Debug.Log("Update(): New Position of " + username + ": " + position);
                 updatePosition = false;
                 //lerp = true;
                 //lastp = currentp;
 
                 this.transform.localPosition = position;
             }
-            //TODO: LERP
-   //         if (lerp)
-			//{
-   //             Debug.Log("LERP: " + lastp + ";" + currentp);
-   //             transform.localPosition = Vector3.Lerp(lastp, currentp, lerpTime / interpolationTimer);
-   //             lerpTime += Time.deltaTime;
-   //             if(lerpTime >= 1)
-			//	{
-   //                 lerp = false;
-   //                 lerpTime = 0;
-			//	}
-   //         }
+                //TODO: LERP
+                //    if (lerp)
+                //    {
+                //        Debug.Log("LERP: " + lastp + ";" + currentp);
+                //        transform.localPosition = Vector3.Lerp(lastp, currentp, lerpTime / interpolationTimer);
+                //        lerpTime += Time.deltaTime;
+                //        if (lerpTime >= 1)
+                //        {
+                //            lerp = false;
+                //            lerpTime = 0;
+                //        }
+                //    }
         }
     }
 }

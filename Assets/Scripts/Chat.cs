@@ -14,13 +14,16 @@ public class Chat : MonoBehaviour
     {}
     // Update is called once per frame
     void Update()
-    {}
+    {
+        if (!chatInput) input.text = "";
+    }
     public void SendMsg(string msg/*,bool isServer = false*/)
     {
         txt.text += /*"\n" +*/ msg;
     }
     public void ToggleChat(bool toggle)
     {
+        input.text = "";
         chatText.SetActive(toggle);
         chatInput.SetActive(toggle);
     }

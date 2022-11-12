@@ -29,6 +29,7 @@ public class Server : MonoBehaviour
 	public bool newMessage = false;
 	public GameObject gameplayScene;
 	public LobbyScripts lobby;
+	public GameplayManager manager;
 
 	// Start is called before the first frame update
 	void Start()
@@ -56,13 +57,7 @@ public class Server : MonoBehaviour
 			}
 			if (Input.GetKeyDown(KeyCode.Tab)) //START BUTTON
 			{
-				SendPlayerList();
-				gameplayScene.SetActive(true);
-				GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
-				manager.start = true;
-				manager.UserName = hostUsername;
-				string msg = "/>startgame</Starting game...";
-				BroadcastServerMessage(ManageMessage(msg, true));
+				lobby.StartGame();
 			}
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
@@ -118,7 +113,7 @@ public class Server : MonoBehaviour
 			Debug.Log("ConnectClients(): Message was: " + stringData);
 			if (stringData.Equals(""))
 			{
-				Debug.Log("ConnectClients(): Data was empty :c");
+				Debug.LogError("ConnectClients(): Data was empty :c");
 			}
 			else
 			{
@@ -126,7 +121,7 @@ public class Server : MonoBehaviour
 				lobby.usernameList.Add(stringData);
 				stringData = "User '" + stringData + "' joined the lobby!";
 				string tmp = stringData;
-				Debug.Log(stringData);
+				Debug.Log("ConnectClients(): " + stringData);
 				Thread.Sleep(100);
 				BroadcastServerMessage(ManageMessage("/>servername " + serverName, true, true));
 				Thread.Sleep(100);
@@ -137,7 +132,7 @@ public class Server : MonoBehaviour
 		}
 		catch (Exception e)
         {
-			Debug.Log("ConnectClients(): Error receiving: " + e);
+			Debug.LogError("ConnectClients(): Error receiving: " + e);
 		}
 	}
 
@@ -150,11 +145,11 @@ public class Server : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("AddClientUDP(): No clients connected. Waiting to accept...");
+			Debug.LogError("AddClientUDP(): No clients connected. Waiting to accept...");
 		}
 	}
 
-	string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
+	public string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
 	{
 		string result = "";
 		string[] splitName;
@@ -179,7 +174,7 @@ public class Server : MonoBehaviour
 			}
 			else
 			{
-				Debug.Log("ManageMessage(): Error: No username detected");
+				Debug.LogError("ManageMessage(): Error: No username detected");
 			}
 		}
 		Debug.Log("ManageMessage(): Sending message: " + result);
@@ -191,7 +186,7 @@ public class Server : MonoBehaviour
 		return result;
 	}
 
-	void BroadcastServerMessage(string m)
+	public void BroadcastServerMessage(string m)
 	{
 		Debug.Log("BroadcastServerMessage(): Broadcasting message: " + m);
 
@@ -202,7 +197,7 @@ public class Server : MonoBehaviour
         {
 			EndPoint remote = (EndPoint)ip;
 			newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-			Debug.Log("BroadcastServerMessage(): Sent UDP Style");
+			Debug.Log("BroadcastServerMessage(): Message sent successfully");
 		}
 	}
 
@@ -219,7 +214,19 @@ public class Server : MonoBehaviour
 		{
 			EndPoint remote = (EndPoint)ip;
 			newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-			Debug.Log("BroadcastServerInfo(): Sent UDP Style");
+			Debug.Log("BroadcastServerInfo(): Message sent successfully");
+		}
+	}
+
+	public void BroadcastPlayerInfo(byte[] data)
+	{
+		Debug.Log("BroadcastPlayerInfo(): Sending gameplay state from player...");
+
+		foreach (IPEndPoint ip in clientListUDP)
+		{
+			EndPoint remote = (EndPoint)ip;
+			newSocket.SendTo(data, data.Length, SocketFlags.None, remote);
+			Debug.Log("BroadcastPlayerInfo(): Message sent successfully");
 		}
 	}
 
@@ -232,20 +239,28 @@ public class Server : MonoBehaviour
 				foreach (IPEndPoint ip in clientListUDP)
 				{
 					int recv;
-					byte[] dataTmp = new byte[1024];
+					byte[] dataTMP = new byte[1024];
 					EndPoint remote = (EndPoint)ip;
-					recv = newSocket.ReceiveFrom(dataTmp, ref remote);
+					recv = newSocket.ReceiveFrom(dataTMP, ref remote);
 
 					Debug.Log("RecieveData(): Count for stringData: " + recv);
-					Debug.Log("RecieveData(): Length of Data: " + dataTmp.Length);
+					Debug.Log("RecieveData(): Length of Data: " + dataTMP.Length);
 
-					stringData = Encoding.ASCII.GetString(dataTmp, 0, recv);
+					stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
 					Debug.Log("RecieveData(): Message was: " + stringData);
 
-					newSocket.SendTo(dataTmp, recv, SocketFlags.None, remote);
+					newSocket.SendTo(dataTMP, recv, SocketFlags.None, remote);
 					if (stringData.Equals(""))
 					{
-						Debug.Log("RecieveData(): Data was empty :c");
+						Debug.LogError("RecieveData(): Data was empty :c");
+					}
+					else if (stringData.Contains("/>PlayerInfo:"))
+					{
+						Debug.Log("RecieveData(): New game state detected");
+						manager.data = dataTMP;
+						manager.recieveThread = new Thread(manager.RecieveGameState);
+						manager.recieveThread.Start();
+						BroadcastPlayerInfo(dataTMP);
 					}
 					else
 					{
@@ -259,7 +274,7 @@ public class Server : MonoBehaviour
 		}
 		catch (Exception e)
 		{
-			Debug.Log("RecieveData(): Error receiving: " + e);
+			Debug.LogError("RecieveData(): Error receiving: " + e);
 		}
 	}
 
