@@ -253,11 +253,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UserName: 
-  p1: {fileID: 0}
-  p2: {fileID: 0}
   start: 0
   update: 0
   comunicationDevice: {fileID: 146827589}
+  p1: {fileID: 1212291589}
+  p2: {fileID: 782436188}
+  p3: {fileID: 1408575310}
+  p4: {fileID: 591633443}
+  playerList: []
+  data: 
+  server: {fileID: 0}
+  client: {fileID: 146827588}
+  pScripts: []
 --- !u!1 &135020956
 GameObject:
   m_ObjectHideFlags: 0
@@ -462,11 +469,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dffd99dcc422324e8b50c769d35ea13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sendRecieve: {fileID: 0}
   stringData: 
   input: 
   username: 
   serverIP: 
+  data: 
   start: 0
   update: 0
   chatManager: {fileID: 540381367}
@@ -476,6 +483,7 @@ MonoBehaviour:
   clientTitle: {fileID: 1304015236}
   chatCanvas: {fileID: 540381370}
   gameplayScene: {fileID: 45302124}
+  manager: {fileID: 45302126}
   lobby: {fileID: 146827589}
 --- !u!114 &146827589
 MonoBehaviour:
@@ -1003,7 +1011,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &591633444
 Transform:
   m_ObjectHideFlags: 0
@@ -1012,7 +1020,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 591633443}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -399.99, y: 1.234, z: -4.39}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1032,11 +1040,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 0}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 45302126}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &591633446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1051,6 +1061,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 591633447}
   sendRecieve: {fileID: 591633445}
+  altMovement: 0
 --- !u!143 &591633447
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1438,7 +1449,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &782436189
 Transform:
   m_ObjectHideFlags: 0
@@ -1447,7 +1458,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 782436188}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -399.99, y: 1.234, z: -4.39}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1467,11 +1478,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 0}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 45302126}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &782436191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1486,6 +1499,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 782436192}
   sendRecieve: {fileID: 782436190}
+  altMovement: 1
 --- !u!143 &782436192
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2106,7 +2120,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1212291590
 Transform:
   m_ObjectHideFlags: 0
@@ -2115,7 +2129,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1212291589}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -399.99, y: 1.234, z: 4.34}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2135,11 +2149,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 0}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 45302126}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &1212291592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2154,6 +2170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1212291593}
   sendRecieve: {fileID: 1212291591}
+  altMovement: 0
 --- !u!143 &1212291593
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2515,7 +2532,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1408575311
 Transform:
   m_ObjectHideFlags: 0
@@ -2524,7 +2541,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1408575310}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -399.99, y: 1.234, z: -4.39}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2544,11 +2561,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 0}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 45302126}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &1408575313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2563,6 +2582,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1408575314}
   sendRecieve: {fileID: 1408575312}
+  altMovement: 0
 --- !u!143 &1408575314
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2998,7 +3018,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -1493225.5}
+  m_AnchoredPosition: {x: -0.40000916, y: -1839382.9}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1604552425

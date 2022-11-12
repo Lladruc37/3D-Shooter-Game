@@ -144,7 +144,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &47780704
 Transform:
   m_ObjectHideFlags: 0
@@ -153,7 +153,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 47780703}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.234, z: -4.39}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -173,11 +173,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 146827586}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 360293319}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &47780706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +194,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 47780707}
   sendRecieve: {fileID: 47780705}
+  altMovement: 1
 --- !u!143 &47780707
 CharacterController:
   m_ObjectHideFlags: 0
@@ -635,11 +638,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UserName: 
-  p1: {fileID: 1525016094}
-  p2: {fileID: 47780703}
   start: 0
   update: 0
   comunicationDevice: {fileID: 146827587}
+  p1: {fileID: 1525016094}
+  p2: {fileID: 47780703}
+  p3: {fileID: 2011116970}
+  p4: {fileID: 1212291589}
+  playerList: []
+  data: 
+  server: {fileID: 146827586}
+  client: {fileID: 0}
+  pScripts: []
 --- !u!1 &575176907
 GameObject:
   m_ObjectHideFlags: 0
@@ -1685,7 +1695,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1212291590
 Transform:
   m_ObjectHideFlags: 0
@@ -1694,7 +1704,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1212291589}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.234, z: -4.39}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1714,11 +1724,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 146827586}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 360293319}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &1212291592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1733,6 +1745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1212291593}
   sendRecieve: {fileID: 1212291591}
+  altMovement: 0
 --- !u!143 &1212291593
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2663,7 +2676,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -1496323.9}
+  m_AnchoredPosition: {x: -0.40000916, y: -1819562}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1471888350
@@ -2823,7 +2836,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1525016095
 Transform:
   m_ObjectHideFlags: 0
@@ -2832,7 +2845,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1525016094}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.234, z: 4.34}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2935,6 +2948,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1525016096}
   sendRecieve: {fileID: 1525016101}
+  altMovement: 0
 --- !u!114 &1525016101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2948,11 +2962,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 146827586}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 360293319}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!1 &1547650377
 GameObject:
   m_ObjectHideFlags: 0
@@ -3458,7 +3474,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2011116971
 Transform:
   m_ObjectHideFlags: 0
@@ -3467,7 +3483,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2011116970}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.234, z: -4.39}
+  m_LocalPosition: {x: 2, y: 2, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3487,11 +3503,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlling: 1
-  server: {fileID: 146827586}
-  client: {fileID: 0}
+  assigned: 0
+  gm: {fileID: 360293319}
   moving: 0
   timer: 0
-  data: 
+  updatePosition: 0
+  position: {x: 0, y: 0, z: 0}
+  username: 
 --- !u!114 &2011116973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3506,6 +3524,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 2011116974}
   sendRecieve: {fileID: 2011116972}
+  altMovement: 0
 --- !u!143 &2011116974
 CharacterController:
   m_ObjectHideFlags: 0

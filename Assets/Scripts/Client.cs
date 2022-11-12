@@ -16,7 +16,6 @@ public class Client : MonoBehaviour
 	public IPAddress adress = IPAddress.Any;
 	public EndPoint clientRemote;
 	
-	public SendRecieve sendRecieve;
 	public string stringData, input;
 	bool connected = false;
 	Thread connectThread = null;
@@ -25,6 +24,7 @@ public class Client : MonoBehaviour
 	
 	public string username;
 	public string serverIP;
+	public byte[] data;
 
 	public bool start = false;
 	bool startGame = false;
@@ -36,6 +36,7 @@ public class Client : MonoBehaviour
 	public Text clientTitle;
 	public Canvas chatCanvas = null;
 	public GameObject gameplayScene;
+	public GameplayManager manager;
 	public LobbyScripts lobby;
 
 	// Start is called before the first frame update
@@ -65,7 +66,7 @@ public class Client : MonoBehaviour
 			{
 				startGame = false;
 				gameplayScene.SetActive(true);
-				GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+				manager = gameplayScene.GetComponent<GameplayManager>();
 				manager.start = true;
 				manager.UserName = username;
 				Debug.Log("Starting client game...");
@@ -144,13 +145,14 @@ public class Client : MonoBehaviour
 						else if (stringData.Contains("/>PlayerInfo:"))
 						{
 							Debug.Log("Recieve(): New game state detected");
-							sendRecieve.data = dataTMP;
-							sendRecieve.recieveThread = new Thread(sendRecieve.RecieveGameState);
-							sendRecieve.recieveThread.Start();
+							manager.data = dataTMP;
+							manager.recieveThread = new Thread(manager.RecieveGameState);
+							manager.recieveThread.Start();
 						}
 						else if(stringData.Contains("/>list</"))
 						{
 							Debug.Log("Recieve(): New users list detected");
+							data = dataTMP;
 							RecievePlayerListThread = new Thread(RecievePlayerList);
 							RecievePlayerListThread.Start();
 						}
@@ -191,9 +193,27 @@ public class Client : MonoBehaviour
 		}
 	}
 
+	public void SendInfo(MemoryStream stream)
+	{
+		Debug.Log("SendInfo(): Sending gameplay state...");
+
+		byte[] dataTMP = new byte[1024];
+		dataTMP = stream.GetBuffer();
+
+		Debug.Log("SendInfo(): Data Length is: " + stream.Length);
+
+		try
+		{
+			server.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
+		}
+		catch (Exception e)
+		{
+			Debug.Log("SendInfo(): Error receiving: " + e);
+		}
+	}
+
 	public void RecievePlayerList()
 	{
-		byte[] data = null;
 		Debug.Log("RecieveList(): Recieved info");
 		MemoryStream stream = new MemoryStream(data);
 		BinaryReader reader = new BinaryReader(stream);
@@ -205,7 +225,7 @@ public class Client : MonoBehaviour
 
 		//List
 		int count = reader.ReadInt32();
-		for (int i = 0; i <= count; i++)
+		for (int i = 0; i < count; i++)
 		{
 			string tmp = reader.ReadString();
 			lobby.usernameList.Add(tmp);
@@ -214,6 +234,7 @@ public class Client : MonoBehaviour
 		}
 
 		//TODO: Temporary solution
+		data = null;
 		Thread.Sleep(100);
 	}
 
