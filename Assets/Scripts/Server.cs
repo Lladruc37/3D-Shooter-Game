@@ -11,22 +11,18 @@ using System.IO;
 
 public class Server : MonoBehaviour
 {
-	public bool isTCP = true;
-
 	public Socket newSocket;
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
-
-	public string ServerUsername = "Server";
-	//public Socket client;
-	//public EndPoint clientRemote;
 	public IPEndPoint clientep;
-
-	//UDP
 	public List<IPEndPoint> clientListUDP = new List<IPEndPoint>();
-
+	
 	Thread connectClientsThread = null;
 	Thread recieveDataThread = null;
 	string stringData = null;
+
+	public string hostUsername = "";
+	public string serverName = "Server";
+
 	public bool start = false;
 	bool update = false;
 	public Chat chatManager;
@@ -43,6 +39,7 @@ public class Server : MonoBehaviour
 	{
 		if(start)
 		{
+			lobby.usernameList.Add(hostUsername);
 			newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 			newSocket.Bind(ipep);
 			connectClientsThread = new Thread(ConnectClients);
@@ -61,6 +58,9 @@ public class Server : MonoBehaviour
 			{
 				SendPlayerList();
 				gameplayScene.SetActive(true);
+				GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+				manager.start = true;
+				manager.UserName = hostUsername;
 				string msg = "/>startgame</Starting game...";
 				BroadcastServerMessage(ManageMessage(msg, true));
 			}
@@ -68,7 +68,7 @@ public class Server : MonoBehaviour
 			{
 				if (chatManager.input.text != "")
 				{
-					string msg = "\n" + "/>username" + ServerUsername + "</" + chatManager.input.text;
+					string msg = "\n" + "/>username" + hostUsername + "</" + chatManager.input.text;
 					chatManager.input.text = "";
 					BroadcastServerMessage(ManageMessage(msg));
 				}
@@ -128,7 +128,7 @@ public class Server : MonoBehaviour
 				string tmp = stringData;
 				Debug.Log(stringData);
 				Thread.Sleep(100);
-				BroadcastServerMessage(ManageMessage("/>servername " + ServerUsername, true, true));
+				BroadcastServerMessage(ManageMessage("/>servername " + serverName, true, true));
 				Thread.Sleep(100);
 				BroadcastServerMessage(ManageMessage(tmp, true));
 				recieveDataThread = new Thread(RecieveData);

@@ -10,24 +10,25 @@ using UnityEngine.UI;
 public class Client : MonoBehaviour
 {
 	public Socket server;
-	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
-
-	public string stringData, input;
 	public Socket client;
-	public EndPoint clientRemote;
+	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
 	public IPEndPoint clientep;
-	public SendRecieve sendRecieve;
-
 	public IPAddress adress = IPAddress.Any;
+	public EndPoint clientRemote;
+	
+	public SendRecieve sendRecieve;
+	public string stringData, input;
 	bool connected = false;
-
 	Thread connectThread = null;
 	Thread receiveThread = null;
 	Thread RecievePlayerListThread = null;
+	
+	public string username;
+	public string serverIP;
+
 	public bool start = false;
+	bool startGame = false;
 	public bool update = false;
-	public Text serverIP;
-	public Text username;
 	public Chat chatManager;
 	public bool messageRecieved = false;
 	public bool newServerName = false;
@@ -35,7 +36,6 @@ public class Client : MonoBehaviour
 	public Text clientTitle;
 	public Canvas chatCanvas = null;
 	public GameObject gameplayScene;
-	bool startGame = false;
 	public LobbyScripts lobby;
 
 	// Start is called before the first frame update
@@ -61,10 +61,13 @@ public class Client : MonoBehaviour
 				chatCanvas.GetComponent<Canvas>().enabled = true;
 				Debug.Log("Update(): Changed server title to: "+ clientTitle.text);
 			}
-			if(startGame)
+			if(startGame && lobby.usernameList.Count != 0)
 			{
 				startGame = false;
 				gameplayScene.SetActive(true);
+				GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+				manager.start = true;
+				manager.UserName = username;
 				Debug.Log("Starting client game...");
 			}
 
@@ -72,7 +75,7 @@ public class Client : MonoBehaviour
 			{
 				if (chatManager.input.text != "")
 				{
-					string msg = "\n" + "/>username" + username.text.ToString() + "</" + chatManager.input.text;
+					string msg = "\n" + "/>username" + username + "</" + chatManager.input.text;
 					chatManager.input.text = "";
 					Send(msg);
 				}
@@ -83,7 +86,7 @@ public class Client : MonoBehaviour
 		{
 			if (newServerIP)
 			{
-				ipep = new IPEndPoint(IPAddress.Parse(serverIP.text.ToString()), 9050);
+				ipep = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
 			}
 
 			server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -98,7 +101,7 @@ public class Client : MonoBehaviour
 	{
 		try
         {
-			Send(username.text.ToString());
+			Send(username);
 			connected = true;
 			receiveThread = new Thread(Receive);
 			receiveThread.Start();

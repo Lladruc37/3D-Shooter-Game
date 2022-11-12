@@ -39,11 +39,12 @@ public class LobbyScripts : MonoBehaviour
         inputServer.text = s;
         if(server)
 		{
-            server.ServerUsername = s;
+            server.serverName = s;
 		}
         else
 		{
             client.newServerIP = true;
+            client.serverIP = s;
 		}
         Debug.Log("ReadStringInputServer(): New name: " + inputServer.text);
     }
@@ -51,6 +52,14 @@ public class LobbyScripts : MonoBehaviour
     public void ReadStringInputUser(string s)
     {
         inputUserName.text = s;
+        if (server)
+        {
+            server.hostUsername = s;
+        }
+        else
+        {
+            client.username = s;
+        }
         Debug.Log("ReadStringInputUser(): Username: " + inputUserName.text);
     }
 

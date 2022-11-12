@@ -26,6 +26,10 @@ public class MovementDebug : MonoBehaviour
         {
             sendRecieve.moving = false;
         }
-		controller.Move(direction * Time.deltaTime * velocity);
-	}
+
+        if (controller.enabled)
+        {
+            controller.Move(direction * Time.deltaTime * velocity);
+        }
+    }
 }
