@@ -22,7 +22,7 @@ public class LobbyScripts : MonoBehaviour
     public Server server;
     public Client client;
     public GameObject gameplayScene;
-    public List<string> usernameList;
+    public Dictionary<uint,string> usersList = new Dictionary<uint, string>();
 	//public string serverName = "";
 
 	private void Start()

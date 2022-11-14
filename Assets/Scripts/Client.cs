@@ -21,7 +21,8 @@ public class Client : MonoBehaviour
 	Thread connectThread = null;
 	Thread receiveThread = null;
 	Thread RecievePlayerListThread = null;
-	
+
+	public uint uuid;
 	public string username;
 	public string serverIP;
 	public byte[] data;
@@ -62,7 +63,7 @@ public class Client : MonoBehaviour
 				chatCanvas.GetComponent<Canvas>().enabled = true;
 				Debug.Log("Update(): Changed server title to: "+ clientTitle.text);
 			}
-			if(startGame && lobby.usernameList.Count != 0)
+			if(startGame && lobby.usersList.Count != 0)
 			{
 				startGame = false;
 				manager.UserName = username;
@@ -73,7 +74,7 @@ public class Client : MonoBehaviour
 			{
 				if (chatManager.input.text != "")
 				{
-					string msg = "\n" + "/>username" + username + "</" + chatManager.input.text;
+					string msg = "\n" + "/>uuid" + uuid + "</" + chatManager.input.text;
 					chatManager.input.text = "";
 					Send(msg);
 				}
@@ -160,7 +161,7 @@ public class Client : MonoBehaviour
 								startGame = true;
 							}
 							//TODO: This if shouldn't exist
-							if (!stringData.Contains("/>username"))
+							if (!stringData.Contains("/>uuid"))
 							{
 								messageRecieved = true;
 							}
@@ -225,9 +226,12 @@ public class Client : MonoBehaviour
 		for (int i = 0; i < count; i++)
 		{
 			string tmp = reader.ReadString();
-			lobby.usernameList.Add(tmp);
-			int tmpi = reader.ReadInt32();
-			Debug.Log(tmpi);
+			uint uid = reader.ReadUInt32();
+			if(tmp == username)
+			{
+				uuid = uid;
+			}
+			lobby.usersList.Add(uid,tmp);
 		}
 
 		//TODO: Temporary solution

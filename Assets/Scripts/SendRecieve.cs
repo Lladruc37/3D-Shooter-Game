@@ -15,14 +15,15 @@ public class SendRecieve : MonoBehaviour
 
     public bool updatePosition;
     //double x = 0.0f, y = 0.0f, z = 0.0f;
-    Vector3 lastp;
-    bool lerp = false;
+    //Vector3 lastp;
+    //bool lerp = false;
     float myTimer = 0.0f;
-    float lerpTime = 0.0f;
+    //float lerpTime = 0.0f;
     float interpolationTimer = 0.1f;
 
     public Vector3 position;
     public string username;
+    public uint uid;
 
     // Update is called once per frame
     void Update()
@@ -37,7 +38,7 @@ public class SendRecieve : MonoBehaviour
         {
             if(moving)
             {
-                lastp = position;
+                //lastp = position;
                 position = this.transform.localPosition;
                 if (myTimer >= interpolationTimer)
                 {

@@ -22,6 +22,8 @@ public class Server : MonoBehaviour
 
 	public string hostUsername = "";
 	public string serverName = "Server";
+	public uint maxUid = 0;
+	public uint uid = 0;
 
 	public bool start = false;
 	bool update = false;
@@ -40,13 +42,17 @@ public class Server : MonoBehaviour
 	{
 		if(start)
 		{
-			lobby.usernameList.Add(hostUsername);
+			start = false;
+			update = true;
+			uid = maxUid;
+			Debug.Log("Server(): Starting server...");
 			newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 			newSocket.Bind(ipep);
 			connectClientsThread = new Thread(ConnectClients);
 			connectClientsThread.Start();
-			start = false;
-			update = true;
+			
+			AddPlayer(hostUsername);
+			Debug.Log("Server(): Server started successfully!");
 		}
 		if (update)
 		{
@@ -63,7 +69,7 @@ public class Server : MonoBehaviour
 			{
 				if (chatManager.input.text != "")
 				{
-					string msg = "\n" + "/>username" + hostUsername + "</" + chatManager.input.text;
+					string msg = "\n" + "/>uuid" + uid + "</" + chatManager.input.text;
 					chatManager.input.text = "";
 					BroadcastServerMessage(ManageMessage(msg));
 				}
@@ -77,14 +83,14 @@ public class Server : MonoBehaviour
 
 		//Header
 		writer.Write("/>list</");
-		writer.Write(lobby.usernameList.Count);
+		writer.Write(lobby.usersList.Count);
 
 		//List
 		int i = 0;
-		foreach (string user in lobby.usernameList)
+		foreach (KeyValuePair<uint, string> user in lobby.usersList)
 		{
-			writer.Write(user);
-			writer.Write(i);
+			writer.Write(user.Value);
+			writer.Write(user.Key);
 			i++;
 		}
 
@@ -118,12 +124,14 @@ public class Server : MonoBehaviour
 			else
 			{
 				//TODO: check username
-				lobby.usernameList.Add(stringData);
+				AddPlayer(stringData);
 				stringData = "User '" + stringData + "' joined the lobby!";
 				string tmp = stringData;
 				Debug.Log("ConnectClients(): " + stringData);
 				Thread.Sleep(100);
 				BroadcastServerMessage(ManageMessage("/>servername " + serverName, true, true));
+				Thread.Sleep(100);
+				SendPlayerList();
 				Thread.Sleep(100);
 				BroadcastServerMessage(ManageMessage(tmp, true));
 				recieveDataThread = new Thread(RecieveData);
@@ -134,6 +142,12 @@ public class Server : MonoBehaviour
         {
 			Debug.LogError("ConnectClients(): Error receiving: " + e);
 		}
+	}
+
+	void AddPlayer(string name)
+	{
+		lobby.usersList.Add(maxUid, name);
+		maxUid++;
 	}
 
 	void AddClientUDP(IPEndPoint newClient)
@@ -165,12 +179,23 @@ public class Server : MonoBehaviour
 		}
 		else
 		{
-			if (m.Contains("/>username"))
+			if (m.Contains("/>uuid"))
 			{
-				string tmp = m.Remove(0, 11);
+				string tmp = m.Remove(0, 7);
 				splitName = tmp.Split("</");
 				m = splitName[1];
-				result = "\n[" + splitName[0] + "]>>" + m;
+				uint uid = uint.Parse(splitName[0]);
+				string username = "";
+				if(lobby.usersList.ContainsKey(uid))
+				{
+					username = lobby.usersList[uid];
+					result = "\n[" + username + "]>>" + m;
+				}
+				else
+				{
+					Debug.LogError("ManageMessage(): No username with UID: " + uid);
+					result = "";
+				}
 			}
 			else
 			{

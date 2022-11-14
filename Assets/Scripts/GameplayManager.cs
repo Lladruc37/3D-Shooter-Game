@@ -6,7 +6,9 @@ using UnityEngine;
 
 public class GameplayManager : MonoBehaviour
 {
+    public uint UserUid;
     public string UserName;
+
     public bool start, update = false;
     public LobbyScripts comunicationDevice;
     public GameObject p1, p2, p3, p4;
@@ -28,18 +30,20 @@ public class GameplayManager : MonoBehaviour
     {
         if (start)
 		{
-            int c = comunicationDevice.usernameList.Count;
+            int c = comunicationDevice.usersList.Count;
             Debug.Log("Start(): Player count: " + c);
 
             if (c != 0)
             {
+                //TODO: INSTANTIATE PLAYERS & ADD RANDOM UID
                 playerList = new GameObject[] { p1, p2, p3, p4 };
                 Debug.Log("Start(): Player Models: " + playerList.Length);
 
                 int i = 0;
-                foreach (string userName in comunicationDevice.usernameList)
+                foreach (KeyValuePair<uint,string> u in comunicationDevice.usersList)
                 {
-                    playerList[i].name = userName;
+                    //TODO: The error is probably here
+                    playerList[i].name = u.Value;
                     pScripts.Add(playerList[i].GetComponent<SendRecieve>());
                     playerList[i].GetComponent<SendRecieve>().assigned = true;
                     ++i;
@@ -100,13 +104,13 @@ public class GameplayManager : MonoBehaviour
 
         //Header
         writer.Write("/>PlayerInfo:");
-        writer.Write(0);
-
+        writer.Write(UserUid);
         writer.Write(UserName);
+
         //Position
         foreach(SendRecieve p in pScripts)
 		{
-            if(p.username == UserName)
+            if(p.uid == UserUid)
 			{
                 writer.Write((double)p.position.x);
                 writer.Write((double)p.position.y);
@@ -140,20 +144,22 @@ public class GameplayManager : MonoBehaviour
         //Header
         string header = reader.ReadString();
         Debug.Log("RecieveGameState(): Header is " + header);
-        int dump = reader.ReadInt32();
 
-        string n = reader.ReadString();
-        Debug.Log(n + " - " + UserName);
+        uint uid = reader.ReadUInt32();
+        string dump = reader.ReadString();
+        Debug.Log(dump + " - " + UserName);
+
         foreach(SendRecieve p in pScripts)
 		{
-            if (p.username == n)
+            //TODO: Is going through here twice or something idk
+            if (p.uid == uid)
             {
                 //Position
                 p.position.x = (float)reader.ReadDouble();
                 p.position.y = (float)reader.ReadDouble();
                 p.position.z = (float)reader.ReadDouble();
 
-                Debug.Log("RecieveGameState(): New position: " + p.position);
+                Debug.Log("RecieveGameState(): New position: " + p.position + "with uid: " + p.uid);
                 p.updatePosition = true;
             }
         }
