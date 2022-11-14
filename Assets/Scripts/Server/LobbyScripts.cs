@@ -12,18 +12,19 @@ using System.Linq;
 public class LobbyScripts : MonoBehaviour
 {
     //UI
-    public Text title;
-    public Text inputUserName;
-    public InputField inputNameObject;
-    public Text inputServer;
-    public InputField inputServerObject;
     public Canvas lobbyCanvas;
+    public Text title;
+
     public Canvas inputCanvas;
+    public InputField inputUserName;
+    public InputField inputServer;
+
     public Canvas chatCanvas;
-    public InputField inputChatObject;
-    public Text inputChatObject2;
+    public Text chatText;
+    public InputField inputChat;
+
     public GameObject startGameButton;
-    public GameObject endServerButton;
+
     public Server server;
     public Client client;
     public GameObject gameplayScene;
@@ -78,8 +79,7 @@ public class LobbyScripts : MonoBehaviour
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
         startGameButton.SetActive(true);
-        endServerButton.SetActive(true);
-        inputChatObject2.text = "This is the beginning of the chat!";
+        chatText.text = "This is the beginning of the chat!";
         server.start = true;
     }
 
@@ -88,7 +88,7 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("JoinServer(): Joined server: " + inputServer.text);
         title.text = "No server found...";
         inputCanvas.GetComponent<Canvas>().enabled = false;
-        inputChatObject2.text = "This is the beginning of the chat!";
+        chatText.text = "This is the beginning of the chat!";
         client.start = true;
     }
 
@@ -100,12 +100,10 @@ public class LobbyScripts : MonoBehaviour
         inputCanvas.GetComponent<Canvas>().enabled = true;
         chatCanvas.GetComponent<Canvas>().enabled = false;
         startGameButton.SetActive(false);
-        endServerButton.SetActive(false);
         inputUserName.text = "";
-        inputNameObject.text = "";
         inputServer.text = "";
-        inputServerObject.text = "";
-        inputChatObject.text = "";
+        inputChat.text = "";
+        server.Close();
         title.text = "Host a server!";
     }
 
@@ -114,9 +112,13 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("LeaveServer(): Leaving server.");
         title.text = "No server found...";
         inputCanvas.GetComponent<Canvas>().enabled = true;
+        chatCanvas.GetComponent<Canvas>().enabled = false;
         inputUserName.text = "";
         inputServer.text = "";
-        title.text = "Host a server!";
+        inputChat.text = "";
+        client.Send("User " + client.username + " has left the server!");
+        client.Leave();
+        title.text = "Join a server!";
     }
 
     public void StartGame()

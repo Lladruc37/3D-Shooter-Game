@@ -153,8 +153,7 @@ public class GameplayManager : MonoBehaviour
 
         foreach(SendRecieve p in pScripts)
 		{
-            //TODO: Is going through here twice or something idk
-            if (p.uid == uid)
+            if (p.uid == uid && uid != UserUid)
             {
                 //Position
                 p.position.x = (float)reader.ReadDouble();
