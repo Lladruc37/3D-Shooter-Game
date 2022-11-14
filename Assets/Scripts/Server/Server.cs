@@ -11,32 +11,27 @@ using System.IO;
 
 public class Server : MonoBehaviour
 {
-	public bool isTCP = true;
-
 	public Socket newSocket;
 	public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
-
-	public string ServerUsername = "Server";
-	//public Socket client;
-	//public EndPoint clientRemote;
 	public IPEndPoint clientep;
-
-	//UDP
 	public List<IPEndPoint> clientListUDP = new List<IPEndPoint>();
-
-	//TCP
-	public List<Socket> clientList = new List<Socket>();
-	public List<Socket> clientsAccepted = new List<Socket>();
-	List<string> usernames = new List<string>();
-
+	
 	Thread connectClientsThread = null;
-	Thread helloThread = null;
 	Thread recieveDataThread = null;
 	string stringData = null;
+
+	public string hostUsername = "";
+	public string serverName = "Server";
+	public uint maxUid = 0;
+	public uint uid = 0;
+
 	public bool start = false;
 	bool update = false;
 	public Chat chatManager;
 	public bool newMessage = false;
+	public GameObject gameplayScene;
+	public LobbyScripts lobby;
+	public GameplayManager manager;
 
 	// Start is called before the first frame update
 	void Start()
@@ -45,164 +40,115 @@ public class Server : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		if (isTCP)
+		if(start)
 		{
-			if (start)
-			{
-				clientList = new List<Socket>(8);
-				newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-				newSocket.Bind(ipep);
-				connectClientsThread = new Thread(ConnectClients);
-				connectClientsThread.Start();
-				start = false;
-				update = true;
-			}
-			if (update)
-			{
-				if (newMessage)
-				{
-					newMessage = false;
-					chatManager.SendMsg(stringData);
-				}
-				if (Input.GetKeyDown(KeyCode.Return))
-				{
-					if (chatManager.input.text != "")
-					{
-						string msg = "\n" + "/>username" + ServerUsername + "</" + chatManager.input.text;
-						chatManager.input.text = "";
-						BroadcastServerMessage(ManageMessage(msg));
-					}
-				}
-			}
+			start = false;
+			update = true;
+			uid = maxUid;
+			Debug.Log("Server(): Starting server...");
+			newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+			newSocket.Bind(ipep);
+			connectClientsThread = new Thread(ConnectClients);
+			connectClientsThread.Start();
+			
+			AddPlayer(hostUsername);
+			Debug.Log("Server(): Server started successfully!");
 		}
-		else
-        {
-			if(start)
+		if (update)
+		{
+			if (newMessage)
 			{
-				newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-				newSocket.Bind(ipep);
-				connectClientsThread = new Thread(ConnectClients);
-				connectClientsThread.Start();
-				start = false;
-				update = true;
+				newMessage = false;
+				chatManager.SendMsg(stringData);
 			}
-			if (update)
+			if (Input.GetKeyDown(KeyCode.Tab)) //START BUTTON
 			{
-				if (newMessage)
+				lobby.StartGame();
+			}
+			if (Input.GetKeyDown(KeyCode.Return))
+			{
+				if (chatManager.input.text != "")
 				{
-					newMessage = false;
-					chatManager.SendMsg(stringData);
-				}
-				if (Input.GetKeyDown(KeyCode.Return))
-				{
-					if (chatManager.input.text != "")
-					{
-						string msg = "\n" + "/>username" + ServerUsername + "</" + chatManager.input.text;
-						chatManager.input.text = "";
-						BroadcastServerMessage(ManageMessage(msg));
-					}
+					string msg = "\n" + "/>uuid" + uid + "</" + chatManager.input.text;
+					chatManager.input.text = "";
+					BroadcastServerMessage(ManageMessage(msg));
 				}
 			}
 		}
 	}
+	public void SendPlayerList()
+	{
+		MemoryStream stream = new MemoryStream();
+		BinaryWriter writer = new BinaryWriter(stream);
 
-	public void ToggleTCP(bool boolean)
-    {
-		isTCP = boolean;
-    }
+		//Header
+		writer.Write("/>list</");
+		writer.Write(lobby.usersList.Count);
+
+		//List
+		int i = 0;
+		foreach (KeyValuePair<uint, string> user in lobby.usersList)
+		{
+			Debug.Log("SendList(): Values: " + user.Key + " - " + user.Value);
+			writer.Write(user.Value);
+			writer.Write(user.Key);
+			i++;
+		}
+
+		Debug.Log("SendList(): Sending list...");
+		BroadcastServerInfo(stream);
+
+		//TODO: Temporary solution
+		Thread.Sleep(100);
+	}
 
 	void ConnectClients()
 	{
 		Debug.Log("ConnectClients(): Looking for clients...");
-		if (isTCP)
-		{
-			try
-			{
-				while (true)
-				{
-					newSocket.Listen(10);
-					Debug.Log("ConnectClients(): Waiting for client...");
-					Socket client = newSocket.Accept();
-					clientep = (IPEndPoint)client.RemoteEndPoint;
-					if (clientList.Count.Equals(0))
-					{
-						AddClientTCP(client);
-					}
-					else
-					{
-						foreach (Socket c in clientList)
-						{
-							if (clientep != (IPEndPoint)c.RemoteEndPoint)
-							{
-								AddClientTCP(client);
-							}
-							else
-							{
-								Debug.Log("ConnectClients(): No clients connected. Waiting to accept...");
-							}
-						}
-					}
+		IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
+		EndPoint remote = (EndPoint)(sender);
 
-				}
-			}
-			catch (Exception e)
+		try
+        {
+			int recv;
+			byte[] dataTMP = new byte[1024];
+			recv = newSocket.ReceiveFrom(dataTMP, ref remote);
+			sender = (IPEndPoint)remote;
+			AddClientUDP(sender);
+
+			stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+			Debug.Log("ConnectClients(): Message was: " + stringData);
+			if (stringData.Equals(""))
 			{
-				Debug.Log("ConnectClients(): Error receiving: " + e);
+				Debug.LogError("ConnectClients(): Data was empty :c");
+			}
+			else
+			{
+				//TODO: check username
+				AddPlayer(stringData);
+				stringData = "User '" + stringData + "' joined the lobby!";
+				string tmp = stringData;
+				Debug.Log("ConnectClients(): " + stringData);
+				Thread.Sleep(100);
+				BroadcastServerMessage(ManageMessage("/>servername " + serverName, true, true));
+				Thread.Sleep(100);
+				SendPlayerList();
+				Thread.Sleep(100);
+				BroadcastServerMessage(ManageMessage(tmp, true));
+				recieveDataThread = new Thread(RecieveData);
+				recieveDataThread.Start();
 			}
 		}
-		else
+		catch (Exception e)
         {
-			IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
-			EndPoint remote = (EndPoint)(sender);
-
-			try
-            {
-				int recv;
-				byte[] dataTMP = new byte[1024];
-				recv = newSocket.ReceiveFrom(dataTMP, ref remote);
-				sender = (IPEndPoint)remote;
-				AddClientUDP(sender);
-
-				stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-				Debug.Log("ConnectClients(): Message was: " + stringData);
-				if (stringData.Equals(""))
-				{
-					Debug.Log("ConnectClients(): Data was empty :c");
-				}
-				else
-				{
-					//TODO: check username
-					stringData = "User '" + stringData + "' joined the lobby!";
-					string tmp = stringData;
-					Debug.Log(stringData);
-					Thread.Sleep(100);
-					BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true, true));
-					Thread.Sleep(100);
-					BroadcastServerMessage(ManageMessage(tmp, true));
-					recieveDataThread = new Thread(RecieveData);
-					recieveDataThread.Start();
-				}
-			}
-			catch (Exception e)
-            {
-				Debug.Log("ConnectClients(): Error receiving: " + e);
-			}
+			Debug.LogError("ConnectClients(): Error receiving: " + e);
 		}
 	}
 
-	void AddClientTCP(Socket newClient)
+	void AddPlayer(string name)
 	{
-		if (clientep.ToString() != "")
-		{
-			clientList.Add(newClient);
-			Debug.Log("AddClientTCP(): Connected to: " + clientep.ToString());
-			helloThread = new Thread(Ping);
-			helloThread.Start();
-		}
-		else
-		{
-			Debug.Log("AddClientTCP(): No clients connected. Waiting to accept...");
-		}
+		lobby.usersList.Add(maxUid, name);
+		maxUid++;
 	}
 
 	void AddClientUDP(IPEndPoint newClient)
@@ -214,75 +160,47 @@ public class Server : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("AddClientUDP(): No clients connected. Waiting to accept...");
+			Debug.LogError("AddClientUDP(): No clients connected. Waiting to accept...");
 		}
 	}
 
-
-	void Ping()
-	{
-		try
-		{
-			bool done = false;
-			while (!done)
-			{
-				Socket.Select(clientList, null, null, -1);
-				foreach (Socket c in clientList)
-				{
-					int recv;
-					byte[] dataTMP = new byte[1024];
-					recv = c.Receive(dataTMP);
-					stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-					Debug.Log("Ping(): Message was: " + stringData);
-					if (stringData.Equals(""))
-					{
-						Debug.Log("Data was empty :c");
-					}
-					else
-					{
-						//TODO: check username
-						stringData = "User '" + stringData + "' joined the lobby!";
-						string tmp = stringData;
-						Debug.Log(stringData);
-						clientsAccepted.Add(c);
-						Thread.Sleep(100);
-						BroadcastServerMessage(ManageMessage("/servername " + ServerUsername, true,true));
-						Thread.Sleep(100);
-						BroadcastServerMessage(ManageMessage(tmp, true));
-						recieveDataThread = new Thread(RecieveData);
-						recieveDataThread.Start();
-						done = true;
-					}
-					Thread.Sleep(100);
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			Debug.Log("Error receiving: " + e);
-		}
-	}
-
-	string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
+	public string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
 	{
 		string result = "";
+		string[] splitName;
 		if (isServer)
 		{
+			if (m.Contains("/>startgame"))
+			{
+				string tmp = m;
+				splitName = tmp.Split("</");
+				m = splitName[1];
+			}
 			result = "\n" + m;
 		}
 		else
 		{
-			string[] name;
-			if (m.Contains("/>username"))
+			if (m.Contains("/>uuid"))
 			{
-				string tmp = m.Remove(0, 11);
-				name = tmp.Split("</");
-				m = name[1];
-				result = "\n[" + name[0] + "]>>" + m;
+				string tmp = m.Remove(0, 7);
+				splitName = tmp.Split("</");
+				m = splitName[1];
+				uint uid = uint.Parse(splitName[0]);
+				string username = "";
+				if(lobby.usersList.ContainsKey(uid))
+				{
+					username = lobby.usersList[uid];
+					result = "\n[" + username + "]>>" + m;
+				}
+				else
+				{
+					Debug.LogError("ManageMessage(): No username with UID: " + uid);
+					result = "";
+				}
 			}
 			else
 			{
-				Debug.Log("ManageMessage(): Error: No username detected");
+				Debug.LogError("ManageMessage(): Error: No username detected");
 			}
 		}
 		Debug.Log("ManageMessage(): Sending message: " + result);
@@ -294,31 +212,18 @@ public class Server : MonoBehaviour
 		return result;
 	}
 
-	void BroadcastServerMessage(string m)
+	public void BroadcastServerMessage(string m)
 	{
 		Debug.Log("BroadcastServerMessage(): Broadcasting message: " + m);
 
-		if (isTCP)
-        {
-			foreach (Socket c in clientsAccepted)
-			{
-				byte[] dataTMP = new byte[1024];
-				dataTMP = Encoding.ASCII.GetBytes(m);
-				c.Send(dataTMP, dataTMP.Length, SocketFlags.None);
-				Debug.Log("BroadcastServerMessage(): Sent TCP Style");
-			}
-		}
-		else
-        {
-			byte[] dataTMP = new byte[1024];
-			dataTMP = Encoding.ASCII.GetBytes(m);
+		byte[] dataTMP = new byte[1024];
+		dataTMP = Encoding.ASCII.GetBytes(m);
 
-			foreach (IPEndPoint ip in clientListUDP)
-            {
-				EndPoint remote = (EndPoint)ip;
-				newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-				Debug.Log("BroadcastServerMessage(): Sent UDP Style");
-			}
+		foreach (IPEndPoint ip in clientListUDP)
+        {
+			EndPoint remote = (EndPoint)ip;
+			newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+			Debug.Log("BroadcastServerMessage(): Message sent successfully");
 		}
 	}
 
@@ -335,85 +240,67 @@ public class Server : MonoBehaviour
 		{
 			EndPoint remote = (EndPoint)ip;
 			newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-			Debug.Log("BroadcastServerInfo(): Sent UDP Style");
+			Debug.Log("BroadcastServerInfo(): Message sent successfully");
+		}
+	}
+
+	public void BroadcastPlayerInfo(byte[] data)
+	{
+		Debug.Log("BroadcastPlayerInfo(): Sending gameplay state from player...");
+
+		foreach (IPEndPoint ip in clientListUDP)
+		{
+			EndPoint remote = (EndPoint)ip;
+			newSocket.SendTo(data, data.Length, SocketFlags.None, remote);
+			Debug.Log("BroadcastPlayerInfo(): Message sent successfully");
 		}
 	}
 
 	void RecieveData()
 	{
-		if (isTCP)
-        {
-			try
+		try
+		{
+			while (true)
 			{
-				while (true)
+				foreach (IPEndPoint ip in clientListUDP)
 				{
-					foreach (Socket c in clientsAccepted)
+					int recv;
+					byte[] dataTMP = new byte[1024];
+					EndPoint remote = (EndPoint)ip;
+					recv = newSocket.ReceiveFrom(dataTMP, ref remote);
+
+					Debug.Log("RecieveData(): Count for stringData: " + recv);
+					Debug.Log("RecieveData(): Length of Data: " + dataTMP.Length);
+
+					stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+					Debug.Log("RecieveData(): Message was: " + stringData);
+
+					newSocket.SendTo(dataTMP, recv, SocketFlags.None, remote);
+					if (stringData.Equals(""))
 					{
-						if (c.Poll(10, SelectMode.SelectRead))
-						{
-							int recv;
-							byte[] dataTMP = new byte[1024];
-							recv = c.Receive(dataTMP);
-							stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-							Debug.Log("RecieveData(): Message was: " + stringData);
-							if (stringData.Equals(""))
-							{
-								Debug.Log("RecieveData(): Data was empty :c");
-							}
-							else
-							{
-								Debug.Log("RecieveData(): Client data recieved: " + stringData);
-								//TODO: chat message from user & send it the all players
-								BroadcastServerMessage(ManageMessage(stringData));
-							}
-						}
-						Thread.Sleep(100);
+						Debug.LogError("RecieveData(): Data was empty :c");
 					}
+					else if (stringData.Contains("/>PlayerInfo:"))
+					{
+						Debug.Log("RecieveData(): New game state detected");
+						manager.data = dataTMP;
+						manager.recieveThread = new Thread(manager.RecieveGameState);
+						manager.recieveThread.Start();
+						BroadcastPlayerInfo(dataTMP);
+					}
+					else
+					{
+						Debug.Log("RecieveData(): Client data recieved: " + stringData);
+						//TODO: chat message from user & send it the all players
+						BroadcastServerMessage(ManageMessage(stringData));
+					}
+					Thread.Sleep(100);
 				}
-			}
-			catch (Exception e)
-			{
-				Debug.Log("RecieveData(): Error receiving: " + e);
 			}
 		}
-		else
-        {
-			try
-			{
-				while (true)
-				{
-					foreach (IPEndPoint ip in clientListUDP)
-					{
-						int recv;
-						byte[] dataTmp = new byte[1024];
-						EndPoint remote = (EndPoint)ip;
-						recv = newSocket.ReceiveFrom(dataTmp, ref remote);
-
-						Debug.Log("RecieveData(): Count for stringData: " + recv);
-						Debug.Log("RecieveData(): Length of Data: " + dataTmp.Length);
-
-						stringData = Encoding.ASCII.GetString(dataTmp, 0, recv);
-						Debug.Log("RecieveData(): Message was: " + stringData);
-
-						newSocket.SendTo(dataTmp, recv, SocketFlags.None, remote);
-						if (stringData.Equals(""))
-						{
-							Debug.Log("RecieveData(): Data was empty :c");
-						}
-						else
-						{
-							Debug.Log("RecieveData(): Client data recieved: " + stringData);
-							//TODO: chat message from user & send it the all players
-							BroadcastServerMessage(ManageMessage(stringData));
-						}
-						Thread.Sleep(100);
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				Debug.Log("RecieveData(): Error receiving: " + e);
-			}
+		catch (Exception e)
+		{
+			Debug.LogError("RecieveData(): Error receiving: " + e);
 		}
 	}
 
