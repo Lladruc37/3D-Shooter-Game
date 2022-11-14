@@ -29,6 +29,7 @@ public class Client : MonoBehaviour
 
 	public bool start = false;
 	bool startGame = false;
+	bool endGame = false;
 	public bool update = false;
 	public Chat chatManager;
 	public bool messageRecieved = false;
@@ -68,6 +69,11 @@ public class Client : MonoBehaviour
 				startGame = false;
 				manager.UserName = username;
 				lobby.StartGame();
+			}
+			else if(endGame)
+			{
+				endGame = false;
+				lobby.LeaveServer();
 			}
 
 			if (Input.GetKeyDown(KeyCode.Return))
@@ -159,6 +165,10 @@ public class Client : MonoBehaviour
 							if(stringData == "\nStarting game...")
 							{
 								startGame = true;
+							}
+							else if (stringData == "\nEnding session...")
+							{
+								endGame = true;
 							}
 							//TODO: This if shouldn't exist
 							if (!stringData.Contains("/>uuid"))

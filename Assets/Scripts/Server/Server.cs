@@ -176,6 +176,12 @@ public class Server : MonoBehaviour
 				splitName = tmp.Split("</");
 				m = splitName[1];
 			}
+			else if(m.Contains("/>endsession"))
+			{
+				string tmp = m;
+				splitName = tmp.Split("</");
+				m = splitName[1];
+			}
 			result = "\n" + m;
 		}
 		else

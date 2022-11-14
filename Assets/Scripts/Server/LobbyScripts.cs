@@ -14,11 +14,16 @@ public class LobbyScripts : MonoBehaviour
     //UI
     public Text title;
     public Text inputUserName;
+    public InputField inputNameObject;
     public Text inputServer;
+    public InputField inputServerObject;
     public Canvas lobbyCanvas;
     public Canvas inputCanvas;
     public Canvas chatCanvas;
+    public InputField inputChatObject;
+    public Text inputChatObject2;
     public GameObject startGameButton;
+    public GameObject endServerButton;
     public Server server;
     public Client client;
     public GameObject gameplayScene;
@@ -73,15 +78,45 @@ public class LobbyScripts : MonoBehaviour
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
         startGameButton.SetActive(true);
+        endServerButton.SetActive(true);
+        inputChatObject2.text = "This is the beginning of the chat!";
         server.start = true;
     }
 
     public void JoinServer()
     {
         Debug.Log("JoinServer(): Joined server: " + inputServer.text);
-        title.text = "No server found..." /*IP:  + inputServer.text*/;
+        title.text = "No server found...";
         inputCanvas.GetComponent<Canvas>().enabled = false;
+        inputChatObject2.text = "This is the beginning of the chat!";
         client.start = true;
+    }
+
+    public void EndServer()
+    {
+        Debug.Log("EndServer(): Ending server.");
+        string msg = "/>endsession</Ending session...";
+        server.BroadcastServerMessage(server.ManageMessage(msg, true, true));
+        inputCanvas.GetComponent<Canvas>().enabled = true;
+        chatCanvas.GetComponent<Canvas>().enabled = false;
+        startGameButton.SetActive(false);
+        endServerButton.SetActive(false);
+        inputUserName.text = "";
+        inputNameObject.text = "";
+        inputServer.text = "";
+        inputServerObject.text = "";
+        inputChatObject.text = "";
+        title.text = "Host a server!";
+    }
+
+    public void LeaveServer()
+    {
+        Debug.Log("LeaveServer(): Leaving server.");
+        title.text = "No server found...";
+        inputCanvas.GetComponent<Canvas>().enabled = true;
+        inputUserName.text = "";
+        inputServer.text = "";
+        title.text = "Host a server!";
     }
 
     public void StartGame()
