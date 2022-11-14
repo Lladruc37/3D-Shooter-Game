@@ -63,7 +63,7 @@ public class Client : MonoBehaviour
 				chatCanvas.GetComponent<Canvas>().enabled = true;
 				Debug.Log("Update(): Changed server title to: "+ clientTitle.text);
 			}
-			if(startGame && lobby.usersList.Count != 0)
+			if(startGame /*&& lobby.usersList.Count != 0*/)
 			{
 				startGame = false;
 				manager.UserName = username;
@@ -223,6 +223,7 @@ public class Client : MonoBehaviour
 
 		//List
 		int count = reader.ReadInt32();
+		Debug.Log("RecieveList(): Count: " + count);
 		for (int i = 0; i < count; i++)
 		{
 			string tmp = reader.ReadString();
@@ -231,7 +232,17 @@ public class Client : MonoBehaviour
 			{
 				uuid = uid;
 			}
-			lobby.usersList.Add(uid,tmp);
+			Debug.Log("RecieveList(): Recieved data: " + uid + " - " + tmp);
+			if (lobby.usersList.ContainsKey(uid))
+			{
+				Debug.Log("RecieveList(): Updating data");
+				lobby.usersList[uid] = tmp;
+			}
+			else
+			{
+				Debug.Log("RecieveList(): Adding data");
+				lobby.usersList.Add(uid, tmp);
+			}
 		}
 
 		//TODO: Temporary solution

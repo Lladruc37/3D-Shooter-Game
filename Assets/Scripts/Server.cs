@@ -89,6 +89,7 @@ public class Server : MonoBehaviour
 		int i = 0;
 		foreach (KeyValuePair<uint, string> user in lobby.usersList)
 		{
+			Debug.Log("SendList(): Values: " + user.Key + " - " + user.Value);
 			writer.Write(user.Value);
 			writer.Write(user.Key);
 			i++;

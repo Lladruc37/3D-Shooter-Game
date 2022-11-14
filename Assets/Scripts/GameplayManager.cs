@@ -42,10 +42,11 @@ public class GameplayManager : MonoBehaviour
                 int i = 0;
                 foreach (KeyValuePair<uint,string> u in comunicationDevice.usersList)
                 {
-                    //TODO: The error is probably here
+                    Debug.Log("Start(): Adding pScripts, values: " + u.Key + " - " + u.Value);
                     playerList[i].name = u.Value;
                     pScripts.Add(playerList[i].GetComponent<SendRecieve>());
                     playerList[i].GetComponent<SendRecieve>().assigned = true;
+                    playerList[i].GetComponent<SendRecieve>().uid = u.Key;
                     ++i;
                 }
 
@@ -64,6 +65,7 @@ public class GameplayManager : MonoBehaviour
                             player.GetComponent<CharacterController>().enabled = true;
                             player.GetComponent<MovementDebug>().enabled = true;
                             player.GetComponent<SendRecieve>().isControlling = true;
+                            UserUid = player.GetComponent<SendRecieve>().uid;
                         }
                     }
                     else
@@ -136,14 +138,14 @@ public class GameplayManager : MonoBehaviour
 
     public void RecieveGameState() //GATHER OTHERS INFO
     {
-        Debug.Log("RecieveGameState(): Recieved info");
+        Debug.Log("RecieveGameState(" + UserUid + "): Recieved info");
         MemoryStream stream = new MemoryStream(data);
         BinaryReader reader = new BinaryReader(stream);
         stream.Seek(0, SeekOrigin.Begin);
 
         //Header
         string header = reader.ReadString();
-        Debug.Log("RecieveGameState(): Header is " + header);
+        Debug.Log("RecieveGameState(" + UserUid + "): Header is " + header);
 
         uint uid = reader.ReadUInt32();
         string dump = reader.ReadString();
@@ -159,7 +161,7 @@ public class GameplayManager : MonoBehaviour
                 p.position.y = (float)reader.ReadDouble();
                 p.position.z = (float)reader.ReadDouble();
 
-                Debug.Log("RecieveGameState(): New position: " + p.position + "with uid: " + p.uid);
+                Debug.Log("RecieveGameState(" + UserUid + "): New position: " + p.position + "with uid: " + p.uid);
                 p.updatePosition = true;
             }
         }
