@@ -19,7 +19,7 @@ public class SendRecieve : MonoBehaviour
     //bool lerp = false;
     float myTimer = 0.0f;
     //float lerpTime = 0.0f;
-    float interpolationTimer = 0.1f;
+    float interpolationTimer = 0.15f;
 
     public Vector3 position;
     public string username;
