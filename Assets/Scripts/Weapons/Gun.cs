@@ -10,6 +10,12 @@ public class Gun : MonoBehaviour
     public Camera fpsCam;
     public ParticleSystem muzzeFlash;
 
+    public float fireRate = 0.2f;
+    public Transform laserOrigin;
+    public LineRenderer laserLine;
+    public float laserDuration = 0.05f;
+    float fireTimer;
+
     //Recoil settings
     public Vector3 upRecoil;
     Vector3 originalRotation;
@@ -22,9 +28,9 @@ public class Gun : MonoBehaviour
     void Update()
     {
         //Shoot with the left click button
-
-        if (Input.GetButtonDown("Fire1"))
-        {
+        fireTimer += Time.deltaTime;
+        if (Input.GetButtonDown("Fire1") && fireTimer > fireRate)
+        {            
             Shoot();
         }
     }
@@ -32,30 +38,31 @@ public class Gun : MonoBehaviour
     void Shoot()
     {
         //Shooting doing raycast
-
+        fireTimer = 0;
         muzzeFlash.Play();
-
+        laserLine.SetPosition(0, laserOrigin.position);
+        Vector3 rayOrigin = fpsCam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
         if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
         {
-            Debug.Log(hit.transform.name);
-
             Target target = hit.transform.GetComponent<Target>();
             if (target != null)
             {
+                laserLine.SetPosition(1, hit.point);
                 target.takeDamage(damage);
             }
         }
+        else
+        {
+            laserLine.SetPosition(1, rayOrigin + (fpsCam.transform.forward * range));
+        }
+        StartCoroutine(ShootLaser());
     }
 
-    //Add recoil animation to the weapon
-    void AddRecoil()
+    IEnumerator ShootLaser()
     {
-        transform.localEulerAngles += upRecoil;
-    }
-
-    void StopRecoil()
-    {
-        transform.localEulerAngles = originalRotation;
+        laserLine.enabled = true;
+        yield return new WaitForSeconds(laserDuration);
+        laserLine.enabled = false;
     }
 }
