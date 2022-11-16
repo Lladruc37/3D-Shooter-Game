@@ -7,16 +7,16 @@ public class PlayerMovement : MonoBehaviour
     public CharacterController cc;
     public float speed = 12;
 
-    public float gravity = -19.62f;
+    public float height = 15.0f;
+    public float gravity = -12.0f;
     public Vector3 velocity;
 
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask floorMask;
-    bool isGrounded;
+    public bool isGrounded;
     public bool GodMode = false;
     public bool WeaponMode = true;
-    public Rigidbody playerBody;
 
     Vector3 direction = new Vector3();
 
@@ -54,23 +54,22 @@ public class PlayerMovement : MonoBehaviour
         if (WeaponMode)
         {
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
-            Vector3 kickback = new Vector3();
-            float strength = 100f;
+            float strength = -10f;
             
             //Shooting depending on the camera rotaion
-            if (Input.GetButtonDown("Fire1") && isGrounded)
+            if (Input.GetButtonDown("Fire1"))
             {
-                velocity.y = Mathf.Sqrt(3 * -2 * gravity);
+                velocity.y += Mathf.Sqrt(height * -2 * gravity);
                 direction = transform.forward;
             }
 
-            kickback -= direction * strength;
-            transform.localPosition += kickback * Time.deltaTime;
+            Vector3 move = direction * strength;
+            cc.Move(move * speed * Time.deltaTime);
 
             //Gravity
             if (isGrounded && velocity.y < 0)
             {
-                velocity.y = -2f;
+                velocity.y = -8f;
                 direction = Vector3.zero;
             }
         }
