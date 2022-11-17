@@ -58,33 +58,13 @@ public class GameplayManager : MonoBehaviour
                 {
                     if (player.GetComponent<SendRecieve>().assigned)
                     {
-                        if (player.name != UserName)
+                        if (player.name == UserName)
                         {
-                            player.GetComponent<CharacterController>().enabled = false;
-                            player.GetComponent<PlayerMovement>().enabled = false;
-                            player.GetComponent<SendRecieve>().isControlling = false;
-                            player.GetComponentInChildren<MouseLook>().enabled = false;
-                            player.GetComponentInChildren<Gun>().isControllingGun = false;
-                            Camera[] cameras = player.GetComponentsInChildren<Camera>();
-                            foreach(Camera camera in cameras)
-                            {
-                                camera.enabled = false;
-                            }
+                            SetupPlayer(player);
                         }
                         else
                         {
-                            player.GetComponent<CharacterController>().enabled = true;
-                            player.GetComponent<PlayerMovement>().enabled = true;
-                            player.GetComponent<SendRecieve>().isControlling = true;
-                            player.GetComponentInChildren<MouseLook>().enabled = true;
-                            player.GetComponentInChildren<MouseLook>().start = true;
-                            player.GetComponentInChildren<Gun>().isControllingGun = true;
-                            Camera[] cameras = player.GetComponentsInChildren<Camera>();
-                            foreach (Camera camera in cameras)
-                            {
-                                camera.enabled = true;
-                            }
-                            UserUid = player.GetComponent<SendRecieve>().uid;
+                            SetupOtherPlayer(player);
                         }
                     }
                     else
@@ -93,36 +73,7 @@ public class GameplayManager : MonoBehaviour
 					}
                 }
 
-                switch (c)
-                {
-                    //TODO: Bug Start Position
-                    case 1:
-                        {
-                            p1.transform.localPosition = new Vector3(1.0f, 1.234f, -1.0f);
-                            break;
-                        }
-                    case 2:
-                        {
-                            p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
-                            p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
-                            break;
-                        }
-                    case 3:
-                        {
-                            p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
-                            p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
-                            p3.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
-                            break;
-                        }
-                    case 4:
-                        {
-                            p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
-                            p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
-                            p3.transform.localPosition = new Vector3(0.0f, 1.234f, -6.0f);
-                            p4.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
-                            break;
-                        }
-                }
+                InitializePosition(c);
             }
 
             start = false;
@@ -136,6 +87,71 @@ public class GameplayManager : MonoBehaviour
                 playerText.text = kills.ToString();
             }
         }
+    }
+
+    void SetupOtherPlayer(GameObject player)
+	{
+        player.GetComponent<CharacterController>().enabled = false;
+        player.GetComponent<PlayerMovement>().enabled = false;
+        player.GetComponent<SendRecieve>().isControlling = false;
+        player.GetComponentInChildren<MouseLook>().enabled = false;
+        player.GetComponentInChildren<Gun>().isControllingGun = false;
+        Camera[] cameras = player.GetComponentsInChildren<Camera>();
+        foreach (Camera camera in cameras)
+        {
+            camera.enabled = false;
+        }
+    }
+
+    void SetupPlayer(GameObject player)
+	{
+        player.GetComponent<CharacterController>().enabled = true;
+        player.GetComponent<PlayerMovement>().enabled = true;
+        player.GetComponent<SendRecieve>().isControlling = true;
+        player.GetComponentInChildren<MouseLook>().enabled = true;
+        player.GetComponentInChildren<MouseLook>().start = true;
+        player.GetComponentInChildren<Gun>().isControllingGun = true;
+        Camera[] cameras = player.GetComponentsInChildren<Camera>();
+        foreach (Camera camera in cameras)
+        {
+            camera.enabled = true;
+        }
+        UserUid = player.GetComponent<SendRecieve>().uid;
+    }
+
+    void InitializePosition(int c)
+	{
+        switch (c)
+        {
+            //TODO: Bug Start Position
+            case 1:
+                {
+                    p1.transform.localPosition = new Vector3(1.0f, 1.234f, -1.0f);
+                    break;
+                }
+            case 2:
+                {
+                    p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
+                    p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
+                    break;
+                }
+            case 3:
+                {
+                    p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
+                    p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
+                    p3.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
+                    break;
+                }
+            case 4:
+                {
+                    p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
+                    p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
+                    p3.transform.localPosition = new Vector3(0.0f, 1.234f, -6.0f);
+                    p4.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
+                    break;
+                }
+        }
+
     }
 
     public void SendGameState() //YOU SEND INFO
