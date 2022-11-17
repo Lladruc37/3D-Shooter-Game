@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Target : MonoBehaviour
 {
+    public MeshRenderer mesh;
+    public CharacterController controller;
+
     public float health = 50.0f;
     public float maxHealth = 50.0f;
     public float respawnTime = 5.0f;
@@ -19,8 +22,8 @@ public class Target : MonoBehaviour
 			{
                 deathTimer = 0;
                 health = maxHealth;
-                GetComponent<MeshRenderer>().enabled = true;
-                GetComponent<CapsuleCollider>().enabled = true;
+                mesh.enabled = true;
+                controller.enabled = true;
                 transform.position = new Vector3(Random.Range(-20.0f, 20.0f), 0.0f, Random.Range(-10.0f, 10.0f));
             }
         }
@@ -39,8 +42,8 @@ public class Target : MonoBehaviour
 
     void Die()
     {
-        GetComponent<MeshRenderer>().enabled = false;
-        GetComponent<CapsuleCollider>().enabled = false;
+        mesh.enabled = false;
+        controller.enabled = false;
         //Destroy(gameObject);
     }
 }

@@ -56,7 +56,8 @@ public class Gun : MonoBehaviour
                 Target target = hit.transform.GetComponent<Target>();
                 if (target != null)
                 {
-                    if(target.takeDamage(damage)) //returns true if this killed
+                    Debug.Log("ShootLaser(): Hit!");
+                    if (target.takeDamage(damage)) //returns true if this killed
 					{
                         playerInfo.kills++;
 					}

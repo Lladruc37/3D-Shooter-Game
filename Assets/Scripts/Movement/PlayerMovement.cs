@@ -10,7 +10,8 @@ public class PlayerMovement : MonoBehaviour
 
     public float height = 15.0f;
     public float gravity = -12.0f;
-    public float strength = 200.0f;
+    public float maxStrength = 20.0f;
+    public int maxBounces = 5;
     public Vector3 velocity;
 
     public Transform groundCheck;
@@ -21,6 +22,9 @@ public class PlayerMovement : MonoBehaviour
     public bool WeaponMode = true;
 
     Vector3 direction = new Vector3();
+    bool shot = false;
+    int currentBounceCount = 0;
+    float currentStrength = 0.0f;
 
     void Update()
     {
@@ -51,12 +55,22 @@ public class PlayerMovement : MonoBehaviour
             //Shooting depending on the camera rotaion
             if (Input.GetButtonDown("Fire1"))
             {
-                //velocity = Vector3.zero;
-                //velocity.y += Mathf.Sqrt(height * -2 * gravity);
+                velocity = Vector3.zero;
+                if (isGrounded) velocity.y += Mathf.Sqrt(height * -0.1f * gravity);
                 direction = cam.transform.forward;
+                currentBounceCount = maxBounces;
+                currentStrength = maxStrength;
             }
 
-            Vector3 impact = direction.normalized * -strength;
+            Vector3 impact = Vector3.zero;
+            if (currentBounceCount == maxBounces)
+            {
+                impact += direction.normalized * -currentStrength;
+            }
+            else
+            {
+                impact = direction.normalized * -currentStrength;
+            }
             cc.Move(impact * speed * Time.deltaTime);
 
         }
@@ -64,8 +78,16 @@ public class PlayerMovement : MonoBehaviour
 		if (isGrounded && velocity.y < 0)
 		{
 			velocity = Vector3.zero;
-            direction = Vector3.zero;
-		}
+            if (currentBounceCount >= 0)
+            {
+                currentBounceCount--;
+                currentStrength -= (currentStrength * 1.5f / maxBounces);
+            }
+            else
+            {
+                direction = Vector3.zero;
+            }
+        }
 
         velocity.y += gravity * Time.deltaTime;
         cc.Move(velocity * Time.deltaTime);
