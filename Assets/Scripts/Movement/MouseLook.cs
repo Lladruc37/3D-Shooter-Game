@@ -7,40 +7,46 @@ public class MouseLook : MonoBehaviour
     public Camera lobbyCamera;
     public Camera playerCam;
     public Camera camBack;
+    public bool start = false;
 
     public float sensibility = 100;
     public Transform playerBody;
     public float xRotacion;
     private void Start()
-    {
-        lobbyCamera.enabled = false;
-        playerCam.enabled = true;
-        camBack.enabled = false;
-        Cursor.lockState = CursorLockMode.Locked;
-    }
+    {}
     void Update()
     {
-
-        if (Input.GetButton("Fire2"))
+        if (start)
         {
-            playerCam.enabled = false;
-            camBack.enabled = true;
+            start = false;
+            lobbyCamera.enabled = false;
+            playerCam.enabled = true;
+            camBack.enabled = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
         else
         {
-            playerCam.enabled = true;
-            camBack.enabled = false;
+            if (Input.GetButton("Fire2"))
+            {
+                playerCam.enabled = false;
+                camBack.enabled = true;
+            }
+            else
+            {
+                playerCam.enabled = true;
+                camBack.enabled = false;
+            }
+
+            float mouseX = Input.GetAxis("Mouse X") * sensibility * Time.deltaTime;
+            float mouseY = Input.GetAxis("Mouse Y") * sensibility * Time.deltaTime;
+
+            xRotacion -= mouseY;
+            xRotacion = Mathf.Clamp(xRotacion, -90, 90);
+
+            transform.localRotation = Quaternion.Euler(xRotacion, 0, 0);
+
+            playerBody.Rotate(Vector3.up * mouseX);
+            camBack.transform.LookAt(playerBody);
         }
-
-        float mouseX = Input.GetAxis("Mouse X") * sensibility * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * sensibility * Time.deltaTime;
-
-        xRotacion -= mouseY;
-        xRotacion = Mathf.Clamp(xRotacion, -90, 90);
-
-        transform.localRotation = Quaternion.Euler(xRotacion, 0, 0);
-
-        playerBody.Rotate(Vector3.up * mouseX);
-        camBack.transform.LookAt(playerBody);
     }
 }

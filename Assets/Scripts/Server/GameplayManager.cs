@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameplayManager : MonoBehaviour
 {
     public uint UserUid;
     public string UserName;
+    public int kills = 0;
+
+    public Text playerText;
 
     public bool start, update = false;
     public LobbyScripts comunicationDevice;
@@ -57,14 +61,29 @@ public class GameplayManager : MonoBehaviour
                         if (player.name != UserName)
                         {
                             player.GetComponent<CharacterController>().enabled = false;
-                            player.GetComponent<MovementDebug>().enabled = false;
+                            player.GetComponent<PlayerMovement>().enabled = false;
                             player.GetComponent<SendRecieve>().isControlling = false;
+                            player.GetComponentInChildren<MouseLook>().enabled = false;
+                            player.GetComponentInChildren<Gun>().isControllingGun = false;
+                            Camera[] cameras = player.GetComponentsInChildren<Camera>();
+                            foreach(Camera camera in cameras)
+                            {
+                                camera.enabled = false;
+                            }
                         }
                         else
                         {
                             player.GetComponent<CharacterController>().enabled = true;
-                            player.GetComponent<MovementDebug>().enabled = true;
+                            player.GetComponent<PlayerMovement>().enabled = true;
                             player.GetComponent<SendRecieve>().isControlling = true;
+                            player.GetComponentInChildren<MouseLook>().enabled = true;
+                            player.GetComponentInChildren<MouseLook>().start = true;
+                            player.GetComponentInChildren<Gun>().isControllingGun = true;
+                            Camera[] cameras = player.GetComponentsInChildren<Camera>();
+                            foreach (Camera camera in cameras)
+                            {
+                                camera.enabled = true;
+                            }
                             UserUid = player.GetComponent<SendRecieve>().uid;
                         }
                     }
@@ -88,14 +107,34 @@ public class GameplayManager : MonoBehaviour
                             p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
                             break;
                         }
+                    case 3:
+                        {
+                            p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
+                            p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
+                            p3.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
+                            break;
+                        }
+                    case 4:
+                        {
+                            p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
+                            p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
+                            p3.transform.localPosition = new Vector3(0.0f, 1.234f, -6.0f);
+                            p4.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
+                            break;
+                        }
                 }
             }
 
             start = false;
             update = true;
 		}
+
         if(update)
 		{
+            if (playerText)
+            {
+                playerText.text = kills.ToString();
+            }
         }
     }
 
