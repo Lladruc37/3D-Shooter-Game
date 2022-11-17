@@ -14,14 +14,13 @@ public class SendRecieve : MonoBehaviour
     public float timer;
 
     public bool updatePosition;
-    //double x = 0.0f, y = 0.0f, z = 0.0f;
-    //Vector3 lastp;
-    //bool lerp = false;
     float myTimer = 0.0f;
-    //float lerpTime = 0.0f;
     float interpolationTimer = 0.15f;
+    //bool lerp = false;
+    //float lerpTime = 0.0f;
 
     public Vector3 position;
+    public Vector3 rotation;
     public string username;
     public uint uid;
 
@@ -46,6 +45,7 @@ public class SendRecieve : MonoBehaviour
                     lastp = position;
                     myTimer = 0;
                     Debug.Log("Update(): Current position: " + position);
+                    rotation = this.transform.rotation.eulerAngles;
 
                     gm.sendThread = new Thread(gm.SendGameState);
                     gm.sendThread.Start();
@@ -62,6 +62,7 @@ public class SendRecieve : MonoBehaviour
                 //lastp = currentp;
 
                 this.transform.localPosition = position;
+                this.transform.rotation = Quaternion.Euler(rotation);
             }
                 //TODO: LERP
                 //    if (lerp)

@@ -9,7 +9,7 @@ public class Gun : MonoBehaviour
 
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
-    public PlayerHandler playerInfo;
+    public GameplayManager playerInfo;
 
     public float fireRate = 0.2f;
     public LineRenderer laserLine;

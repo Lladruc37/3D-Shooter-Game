@@ -73,7 +73,7 @@ public class Server : MonoBehaviour
             {
                 if (chatManager.input.text != "")
                 {
-                    string msg = "\n" + "/>uuid" + uid + "</" + chatManager.input.text;
+                    string msg = "\n" + "/>client/>uuid" + uid + "</" + chatManager.input.text;
                     chatManager.input.text = "";
                     BroadcastServerMessage(ManageMessage(msg));
                 }

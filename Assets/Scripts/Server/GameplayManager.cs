@@ -169,9 +169,15 @@ public class GameplayManager : MonoBehaviour
 		{
             if(p.uid == UserUid)
 			{
+                //Position
                 writer.Write((double)p.position.x);
                 writer.Write((double)p.position.y);
                 writer.Write((double)p.position.z);
+
+                //Rotation
+                writer.Write((double)p.rotation.x);
+                writer.Write((double)p.rotation.y);
+                writer.Write((double)p.rotation.z);
                 break;
             }
         }
@@ -214,6 +220,11 @@ public class GameplayManager : MonoBehaviour
                 p.position.x = (float)reader.ReadDouble();
                 p.position.y = (float)reader.ReadDouble();
                 p.position.z = (float)reader.ReadDouble();
+
+                //Rotation
+                p.rotation.x = (float)reader.ReadDouble();
+                p.rotation.y = (float)reader.ReadDouble();
+                p.rotation.z = (float)reader.ReadDouble();
 
                 Debug.Log("RecieveGameState(" + UserUid + "): New position: " + p.position + "with uid: " + p.uid);
                 p.updatePosition = true;
