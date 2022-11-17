@@ -28,7 +28,7 @@ public class Gun : MonoBehaviour
     {
         laserLine.SetPosition(0, transform.position);
         //Shoot with the left click button
-        if (isControllingGun)
+        if (isControllingGun && Cursor.lockState == CursorLockMode.Locked)
         {
             fireTimer += Time.deltaTime;
 

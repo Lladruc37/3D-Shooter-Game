@@ -22,7 +22,6 @@ public class PlayerMovement : MonoBehaviour
     public bool WeaponMode = true;
 
     Vector3 direction = new Vector3();
-    bool shot = false;
     int currentBounceCount = 0;
     float currentStrength = 0.0f;
 
@@ -53,7 +52,7 @@ public class PlayerMovement : MonoBehaviour
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
             
             //Shooting depending on the camera rotaion
-            if (Input.GetButtonDown("Fire1"))
+            if (Input.GetButtonDown("Fire1") && Cursor.lockState == CursorLockMode.Locked)
             {
                 velocity = Vector3.zero;
                 if (isGrounded) velocity.y += Mathf.Sqrt(height * -0.1f * gravity);

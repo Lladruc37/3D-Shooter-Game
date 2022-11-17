@@ -12,6 +12,7 @@ using System.Linq;
 public class LobbyScripts : MonoBehaviour
 {
     //UI
+    public Camera lobbyCamera;
     public Canvas lobbyCanvas;
     public Text title;
 
@@ -105,6 +106,14 @@ public class LobbyScripts : MonoBehaviour
         inputChat.text = "";
         server.Close();
         title.text = "Host a server!";
+
+        GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+        gameplayScene.SetActive(false);
+        manager.start = false;
+        lobbyCamera.enabled = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        lobbyCanvas.GetComponent<Canvas>().enabled = true;
     }
 
     public void LeaveServer()
@@ -119,6 +128,14 @@ public class LobbyScripts : MonoBehaviour
         client.Send("User " + client.username + " has left the server!");
         client.Leave();
         title.text = "Join a server!";
+
+        GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+        gameplayScene.SetActive(false);
+        manager.start = false;
+        lobbyCamera.enabled = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        lobbyCanvas.GetComponent<Canvas>().enabled = true;
     }
 
     public void StartGame()

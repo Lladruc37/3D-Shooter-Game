@@ -25,6 +25,8 @@ public class SendRecieve : MonoBehaviour
     public string username;
     public uint uid;
 
+    Vector3 lastp = Vector3.one;
+
     // Update is called once per frame
     void Update()
     {
@@ -36,12 +38,12 @@ public class SendRecieve : MonoBehaviour
         myTimer += Time.deltaTime;
         if(isControlling)
         {
-            if(moving)
+            if (myTimer >= interpolationTimer)
             {
-                //lastp = position;
                 position = this.transform.localPosition;
-                if (myTimer >= interpolationTimer)
+                if (Vector3.Distance(lastp,position) > 0.0f)
                 {
+                    lastp = position;
                     myTimer = 0;
                     Debug.Log("Update(): Current position: " + position);
 

@@ -26,6 +26,22 @@ public class MouseLook : MonoBehaviour
         }
         else
         {
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                switch(Cursor.lockState)
+                {
+                    case CursorLockMode.Locked:
+                        {
+                            Cursor.lockState = CursorLockMode.None;
+                            break;
+                        }
+                    case CursorLockMode.None:
+                        {
+                            Cursor.lockState = CursorLockMode.Locked;
+                            break;
+                        }
+                }
+            }
             if (Input.GetButton("Fire2"))
             {
                 playerCam.enabled = false;
@@ -37,16 +53,19 @@ public class MouseLook : MonoBehaviour
                 camBack.enabled = false;
             }
 
-            float mouseX = Input.GetAxis("Mouse X") * sensibility * Time.deltaTime;
-            float mouseY = Input.GetAxis("Mouse Y") * sensibility * Time.deltaTime;
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                float mouseX = Input.GetAxis("Mouse X") * sensibility * Time.deltaTime;
+                float mouseY = Input.GetAxis("Mouse Y") * sensibility * Time.deltaTime;
 
-            xRotacion -= mouseY;
-            xRotacion = Mathf.Clamp(xRotacion, -90, 90);
+                xRotacion -= mouseY;
+                xRotacion = Mathf.Clamp(xRotacion, -90, 90);
 
-            transform.localRotation = Quaternion.Euler(xRotacion, 0, 0);
+                transform.localRotation = Quaternion.Euler(xRotacion, 0, 0);
 
-            playerBody.Rotate(Vector3.up * mouseX);
-            camBack.transform.LookAt(playerBody);
+                playerBody.Rotate(Vector3.up * mouseX);
+                camBack.transform.LookAt(playerBody);
+            }
         }
     }
 }
