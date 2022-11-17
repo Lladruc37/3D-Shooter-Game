@@ -5,10 +5,12 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public CharacterController cc;
+    public Camera cam;
     public float speed = 12;
 
     public float height = 15.0f;
     public float gravity = -12.0f;
+    public float strength = 200.0f;
     public Vector3 velocity;
 
     public Transform groundCheck;
@@ -28,11 +30,6 @@ public class PlayerMovement : MonoBehaviour
             //Gravity
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
 
-            if (isGrounded && velocity.y < 0)
-            {
-                velocity.y = -2f;
-            }
-
             //Jump
             if (Input.GetButtonDown("Jump") && isGrounded)
             {
@@ -46,33 +43,31 @@ public class PlayerMovement : MonoBehaviour
             Vector3 move = transform.right * x + transform.forward * z;
             cc.Move(move * speed * Time.deltaTime);
         }
-
-        velocity.y += gravity * Time.deltaTime;
-        cc.Move(velocity * Time.deltaTime);
-
-        //Move with the recoil of the weapons
-        if (WeaponMode)
+		else if (WeaponMode) //Move with the recoil of the weapons
         {
+            //Gravity
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
-            float strength = -10f;
             
             //Shooting depending on the camera rotaion
             if (Input.GetButtonDown("Fire1"))
             {
-                velocity.y += Mathf.Sqrt(height * -2 * gravity);
-                direction = transform.forward;
+                //velocity = Vector3.zero;
+                //velocity.y += Mathf.Sqrt(height * -2 * gravity);
+                direction = cam.transform.forward;
             }
 
-            Vector3 move = direction * strength;
-            cc.Move(move * speed * Time.deltaTime);
+            Vector3 impact = direction.normalized * -strength;
+            cc.Move(impact * speed * Time.deltaTime);
 
-            //Gravity
-            if (isGrounded && velocity.y < 0)
-            {
-                velocity.y = -8f;
-                direction = Vector3.zero;
-            }
         }
 
+		if (isGrounded && velocity.y < 0)
+		{
+			velocity = Vector3.zero;
+            direction = Vector3.zero;
+		}
+
+        velocity.y += gravity * Time.deltaTime;
+        cc.Move(velocity * Time.deltaTime);
     }
 }
