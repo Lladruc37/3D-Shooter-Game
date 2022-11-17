@@ -9,60 +9,65 @@ public class Gun : MonoBehaviour
 
     public Camera fpsCam;
     public ParticleSystem muzzeFlash;
+    public PlayerHandler playerInfo;
 
     public float fireRate = 0.2f;
-    public Transform laserOrigin;
     public LineRenderer laserLine;
     public float laserDuration = 0.05f;
     float fireTimer;
 
-    //Recoil settings
-    public Vector3 upRecoil;
-    Vector3 originalRotation;
+    bool fire = false;
 
     void Start()
     {
-        originalRotation = transform.localEulerAngles;
+        laserLine.enabled = false;
     }
 
     void Update()
     {
+        laserLine.SetPosition(0, transform.position);
         //Shoot with the left click button
         fireTimer += Time.deltaTime;
         if (Input.GetButtonDown("Fire1") && fireTimer > fireRate)
-        {            
-            Shoot();
-        }
-    }
-
-    void Shoot()
-    {
-        //Shooting doing raycast
-        fireTimer = 0;
-        muzzeFlash.Play();
-        laserLine.SetPosition(0, laserOrigin.position);
-        Vector3 rayOrigin = fpsCam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
-        if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
         {
-            Target target = hit.transform.GetComponent<Target>();
-            if (target != null)
-            {
-                laserLine.SetPosition(1, hit.point);
-                target.takeDamage(damage);
-            }
+            fire = true;
+            StartCoroutine(ShootLaser());
         }
-        else
-        {
-            laserLine.SetPosition(1, rayOrigin + (fpsCam.transform.forward * range));
+        else if(Input.GetButtonUp("Fire1") && fireTimer <= fireRate)
+		{
+            fire = false;
+            StopCoroutine(ShootLaser());
         }
-        StartCoroutine(ShootLaser());
     }
 
     IEnumerator ShootLaser()
     {
+        fireTimer = 0;
+        muzzeFlash.Play();
         laserLine.enabled = true;
-        yield return new WaitForSeconds(laserDuration);
+        while(fire)
+		{
+            Ray ray = new Ray(transform.position, fpsCam.transform.forward);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, range))
+            {
+                laserLine.SetPosition(1, hit.point);
+
+                Target target = hit.transform.GetComponent<Target>();
+                if (target != null)
+                {
+                    if(target.takeDamage(damage)) //returns true if this killed
+					{
+                        playerInfo.kills++;
+					}
+                }
+            }
+            else
+            {
+                laserLine.SetPosition(1, ray.GetPoint(range));
+            }
+            yield return new WaitForSeconds(laserDuration);
+        }
         laserLine.enabled = false;
     }
 }

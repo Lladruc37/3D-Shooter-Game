@@ -4,19 +4,43 @@ using UnityEngine;
 
 public class Target : MonoBehaviour
 {
-    public float health = 50f;
+    public float health = 50.0f;
+    public float maxHealth = 50.0f;
+    public float respawnTime = 5.0f;
+    float deathTimer = 0;
 
-    public void takeDamage (float amount)
+	void Update()
+	{
+		if(health <= 0)
+		{
+            deathTimer += Time.deltaTime;
+            Debug.Log(deathTimer);
+            if(deathTimer >= respawnTime)
+			{
+                deathTimer = 0;
+                health = maxHealth;
+                GetComponent<MeshRenderer>().enabled = true;
+                GetComponent<CapsuleCollider>().enabled = true;
+                transform.position = new Vector3(Random.Range(-20.0f, 20.0f), 0.0f, Random.Range(-10.0f, 10.0f));
+            }
+        }
+	}
+
+	public bool takeDamage (float amount)
     {
         health -= amount;
         if (health <= 0)
         {
             Die();
+            return true;
         }
+        return false;
     }
 
     void Die()
     {
-        Destroy(gameObject);
+        GetComponent<MeshRenderer>().enabled = false;
+        GetComponent<CapsuleCollider>().enabled = false;
+        //Destroy(gameObject);
     }
 }
