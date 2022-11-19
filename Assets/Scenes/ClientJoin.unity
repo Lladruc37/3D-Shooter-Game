@@ -263,8 +263,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UserUid: 0
   UserName: 
-  kills: 0
   playerText: {fileID: 163329122}
+  hpText: {fileID: 163329126}
   start: 0
   update: 0
   comunicationDevice: {fileID: 146827589}
@@ -277,6 +277,11 @@ MonoBehaviour:
   server: {fileID: 0}
   client: {fileID: 146827588}
   pScripts: []
+  firstPlayerText: {fileID: 163329125}
+  winnerText: {fileID: 163329124}
+  firstPlayer: 0
+  firstPlayerUsername: 
+  winnerTime: 5
 --- !u!1 &135020956
 GameObject:
   m_ObjectHideFlags: 0
@@ -636,6 +641,39 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1470478321082430927, guid: 296145e72f6b032489c0805504f1a235, type: 3}
   m_PrefabInstance: {fileID: 163329121}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &163329124 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1470478319718020041, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+  m_PrefabInstance: {fileID: 163329121}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &163329125 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1470478319546671853, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+  m_PrefabInstance: {fileID: 163329121}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &163329126 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8164925122628563650, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+  m_PrefabInstance: {fileID: 163329121}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &208309706
 GameObject:
   m_ObjectHideFlags: 0
@@ -1480,10 +1518,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 45302125}
     m_Modifications:
-    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
-      propertyPath: playerInfo
-      value: 
-      objectReference: {fileID: 45302126}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P4
@@ -2199,10 +2233,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 45302125}
     m_Modifications:
-    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
-      propertyPath: playerInfo
-      value: 
-      objectReference: {fileID: 45302126}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P1
@@ -3177,7 +3207,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -787073.1}
+  m_AnchoredPosition: {x: -0.40000916, y: -814062.1}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1604552425
@@ -3243,10 +3273,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 45302125}
     m_Modifications:
-    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
-      propertyPath: playerInfo
-      value: 
-      objectReference: {fileID: 45302126}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P2
@@ -3390,10 +3416,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 45302125}
     m_Modifications:
-    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
-      propertyPath: playerInfo
-      value: 
-      objectReference: {fileID: 45302126}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P3

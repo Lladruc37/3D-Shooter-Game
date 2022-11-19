@@ -9,9 +9,10 @@ public class GameplayManager : MonoBehaviour
 {
     public uint UserUid;
     public string UserName;
-    public int kills = 0;
 
+    Target playerHp;
     public Text playerText;
+    public Text hpText;
 
     public bool start, update = false;
     public LobbyScripts comunicationDevice;
@@ -24,6 +25,13 @@ public class GameplayManager : MonoBehaviour
     public Server server;
     public Client client;
     public List<SendRecieve> pScripts;
+
+    public Text firstPlayerText;
+    public Text winnerText;
+    public int firstPlayer = 0;
+    public string firstPlayerUsername = "";
+    float winnerTimer = 0.0f;
+    public float winnerTime = 5.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -82,16 +90,43 @@ public class GameplayManager : MonoBehaviour
 
         if(update)
 		{
-            if (playerText)
+            hpText.text = "HP: " + playerHp.health.ToString();
+            foreach (SendRecieve p in pScripts)
             {
-                playerText.text = kills.ToString();
+                if (p.kills > firstPlayer)
+                {
+                    firstPlayer = p.kills;
+                    firstPlayerUsername = p.username;
+                }
+                if (playerText && p.uid == UserUid)
+                {
+                    playerText.text = p.kills.ToString();
+                }
+            }
+            firstPlayerText.text = firstPlayer.ToString();
+            if (firstPlayer >= 25)
+            {
+                GameEnd();
+            }
+            if (winnerText.text != "")
+            {
+                winnerTimer += Time.deltaTime;
+                if (winnerTimer >= winnerTime)
+                {
+                    winnerText.text = "";
+                    winnerTimer = 0.0f;
+                }
             }
         }
     }
-
+    void GameEnd() //TODO: Return to lobby + X player wins
+    {
+        winnerText.text = firstPlayerUsername + " wins the game!";
+    }
     void SetupOtherPlayer(GameObject player)
 	{
         player.GetComponent<CharacterController>().enabled = false;
+        player.GetComponent<CapsuleCollider>().enabled = true;
         player.GetComponent<PlayerMovement>().enabled = false;
         player.GetComponent<SendRecieve>().isControlling = false;
         player.GetComponentInChildren<MouseLook>().enabled = false;
@@ -106,11 +141,13 @@ public class GameplayManager : MonoBehaviour
     void SetupPlayer(GameObject player)
 	{
         player.GetComponent<CharacterController>().enabled = true;
+        player.GetComponent<CapsuleCollider>().enabled = false;
         player.GetComponent<PlayerMovement>().enabled = true;
         player.GetComponent<SendRecieve>().isControlling = true;
         player.GetComponentInChildren<MouseLook>().enabled = true;
         player.GetComponentInChildren<MouseLook>().start = true;
         player.GetComponentInChildren<Gun>().isControllingGun = true;
+        playerHp = player.GetComponent<Target>();
         Camera[] cameras = player.GetComponentsInChildren<Camera>();
         foreach (Camera camera in cameras)
         {
@@ -165,10 +202,13 @@ public class GameplayManager : MonoBehaviour
         writer.Write(UserName);
 
         //Position
-        foreach(SendRecieve p in pScripts)
-		{
-            if(p.uid == UserUid)
-			{
+        foreach (SendRecieve p in pScripts)
+        {
+            if (p.uid == UserUid)
+            {
+                //Health
+                writer.Write(p.target.health);
+
                 //Position
                 writer.Write((double)p.position.x);
                 writer.Write((double)p.position.y);
@@ -178,10 +218,13 @@ public class GameplayManager : MonoBehaviour
                 writer.Write((double)p.rotation.x);
                 writer.Write((double)p.rotation.y);
                 writer.Write((double)p.rotation.z);
+
+                //Weapon Action
+                writer.Write(p.gun.fire);
+                writer.Write((double)p.gunDirection.xRotacion);
                 break;
             }
         }
-        //WeaponAction
 
         Debug.Log("SendGameState(): Sending serialized data...");
         if (server)
@@ -216,6 +259,9 @@ public class GameplayManager : MonoBehaviour
 		{
             if (p.uid == uid && uid != UserUid)
             {
+                //Health
+                p.target.health = reader.ReadInt32();
+
                 //Position
                 p.position.x = (float)reader.ReadDouble();
                 p.position.y = (float)reader.ReadDouble();
@@ -226,8 +272,12 @@ public class GameplayManager : MonoBehaviour
                 p.rotation.y = (float)reader.ReadDouble();
                 p.rotation.z = (float)reader.ReadDouble();
 
+                //Weapon Action
+                p.gun.fire = reader.ReadBoolean();
+                p.gunDirection.xRotacion = (float)reader.ReadDouble();
+
                 Debug.Log("RecieveGameState(" + UserUid + "): New position: " + p.position + "with uid: " + p.uid);
-                p.updatePosition = true;
+                p.updateCharacter = true;
             }
         }
 

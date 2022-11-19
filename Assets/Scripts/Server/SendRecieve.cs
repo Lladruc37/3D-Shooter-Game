@@ -9,11 +9,16 @@ public class SendRecieve : MonoBehaviour
     public bool isControlling = false;
     public bool assigned = false;
     public GameplayManager gm;
+    public Gun gun;
+    public MouseLook gunDirection;
+    public Target target;
+
+    public int kills = 0;
 
     public bool moving;
     public float timer;
 
-    public bool updatePosition;
+    public bool updateCharacter;
     float myTimer = 0.0f;
     float interpolationTimer = 0.15f;
     //bool lerp = false;
@@ -24,28 +29,35 @@ public class SendRecieve : MonoBehaviour
     public string username;
     public uint uid;
 
+    int lastHP = -1;
     Vector3 lastp = Vector3.one;
+    Vector3 lastr = Vector3.one;
 
     // Update is called once per frame
     void Update()
     {
         username = name;
-        if (!updatePosition)
+        if (!updateCharacter)
         {
             position = transform.localPosition;
+            rotation = transform.rotation.eulerAngles;
         }
         myTimer += Time.deltaTime;
         if(isControlling)
         {
             if (myTimer >= interpolationTimer)
             {
-                position = this.transform.localPosition;
-                if (Vector3.Distance(lastp,position) > 0.0f)
+                position = transform.localPosition;
+                rotation = transform.rotation.eulerAngles;
+                rotation.x = gunDirection.xRotacion;
+                if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
                 {
+                    lastHP = target.health;
                     lastp = position;
+                    lastr = rotation;
+                    rotation.x = 0.0f;
                     myTimer = 0;
                     Debug.Log("Update(): Current position: " + position);
-                    rotation = this.transform.rotation.eulerAngles;
 
                     gm.sendThread = new Thread(gm.SendGameState);
                     gm.sendThread.Start();
@@ -54,28 +66,29 @@ public class SendRecieve : MonoBehaviour
         }
         else
         {
-            if (updatePosition)
+            if (updateCharacter)
             {
                 Debug.Log("Update(): New Position of " + username + ": " + position);
-                updatePosition = false;
+                updateCharacter = false;
                 //lerp = true;
                 //lastp = currentp;
 
                 this.transform.localPosition = position;
                 this.transform.rotation = Quaternion.Euler(rotation);
+                gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
             }
-                //TODO: LERP
-                //    if (lerp)
-                //    {
-                //        Debug.Log("LERP: " + lastp + ";" + currentp);
-                //        transform.localPosition = Vector3.Lerp(lastp, currentp, lerpTime / interpolationTimer);
-                //        lerpTime += Time.deltaTime;
-                //        if (lerpTime >= 1)
-                //        {
-                //            lerp = false;
-                //            lerpTime = 0;
-                //        }
-                //    }
+            //TODO: LERP
+            //    if (lerp)
+            //    {
+            //        Debug.Log("LERP: " + lastp + ";" + currentp);
+            //        transform.localPosition = Vector3.Lerp(lastp, currentp, lerpTime / interpolationTimer);
+            //        lerpTime += Time.deltaTime;
+            //        if (lerpTime >= 1)
+            //        {
+            //            lerp = false;
+            //            lerpTime = 0;
+            //        }
+            //    }
         }
     }
 }

@@ -117,11 +117,12 @@ MonoBehaviour:
   range: 350
   fpsCam: {fileID: 7056015063285081831}
   muzzleFlash: {fileID: 7056015063186161624}
-  playerInfo: {fileID: 0}
+  playerInfo: {fileID: 7056015063186161627}
   fireRate: 0.2
   laserLine: {fileID: 7056015062042124900}
   laserDuration: 0.05
   isControllingGun: 0
+  fire: 0
 --- !u!120 &7056015062042124900
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -5324,6 +5325,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7056015063186161626}
   - component: {fileID: 7056015063186161629}
+  - component: {fileID: 5801553125977564559}
   - component: {fileID: 7056015063186161628}
   - component: {fileID: 7056015063186161625}
   - component: {fileID: 7056015063186161627}
@@ -5368,6 +5370,20 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!136 &5801553125977564559
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7056015063186161605}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7056015063186161628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5408,10 +5424,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57a3132eeb37c684c961f663df4c6885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mesh: {fileID: 7056015063558104420}
+  bodyMesh: {fileID: 0}
+  gunMesh: {fileID: 7056015062042124923}
+  gunBod: {fileID: 7056015062844333005}
+  gun: {fileID: 7056015062042124901}
   controller: {fileID: 7056015063186161629}
-  health: 50
-  maxHealth: 50
+  body: {fileID: 5801553125977564559}
+  isControlling: 0
+  health: 3
+  maxHealth: 3
   respawnTime: 5
 --- !u!114 &7056015063186161627
 MonoBehaviour:
@@ -5428,9 +5449,13 @@ MonoBehaviour:
   isControlling: 1
   assigned: 0
   gm: {fileID: 0}
+  gun: {fileID: 7056015062042124901}
+  gunDirection: {fileID: 7056015063285081828}
+  target: {fileID: 7056015063186161625}
+  kills: 0
   moving: 0
   timer: 0
-  updatePosition: 0
+  updateCharacter: 0
   position: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   username: 

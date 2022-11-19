@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
-    public float damage = 10f;
+    public int damage = 1;
     public float range = 100f;
 
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
-    public GameplayManager playerInfo;
+    public SendRecieve playerInfo;
 
     public float fireRate = 0.2f;
     public LineRenderer laserLine;
@@ -17,7 +17,7 @@ public class Gun : MonoBehaviour
     float fireTimer;
 
     public bool isControllingGun;
-    bool fire = false;
+    public bool fire = false;
 
     void Start()
     {
@@ -41,6 +41,22 @@ public class Gun : MonoBehaviour
             {
                 fire = false;
                 StopCoroutine(ShootLaser());
+            }
+        }
+        else
+        {
+            fireTimer += Time.deltaTime;
+
+            if (fire)
+            {
+                if (fireTimer > fireRate)
+                {
+                    StartCoroutine(ShootLaser());
+                }
+                else if (fireTimer <= fireRate)
+                {
+                    StopCoroutine(ShootLaser());
+                }
             }
         }
     }

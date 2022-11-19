@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class Target : MonoBehaviour
 {
-    public MeshRenderer mesh;
-    public CharacterController controller;
+    public MeshRenderer bodyMesh;
+    public MeshRenderer gunMesh;
+    public MeshRenderer gunBod;
 
-    public float health = 50.0f;
-    public float maxHealth = 50.0f;
+    public Gun gun;
+    public CharacterController controller;
+    public CapsuleCollider body;
+    public bool isControlling;
+
+    public int health = 3;
+    public int maxHealth = 3;
     public float respawnTime = 5.0f;
     float deathTimer = 0;
 
@@ -20,16 +26,20 @@ public class Target : MonoBehaviour
             Debug.Log(deathTimer);
             if(deathTimer >= respawnTime)
 			{
-                deathTimer = 0;
+                deathTimer = 0.0f;
                 health = maxHealth;
-                mesh.enabled = true;
-                controller.enabled = true;
-                transform.position = new Vector3(Random.Range(-20.0f, 20.0f), 0.0f, Random.Range(-10.0f, 10.0f));
+                bodyMesh.enabled = true;
+                gunMesh.enabled = true;
+                gunBod.enabled = true;
+                gun.enabled = true;
+                if (isControlling) controller.enabled = true;
+                else body.enabled = true;
+                transform.localPosition = new Vector3(Random.Range(-20.0f, 20.0f), 0.0f, Random.Range(-10.0f, 10.0f));
             }
         }
 	}
 
-	public bool takeDamage (float amount)
+	public bool takeDamage (int amount)
     {
         health -= amount;
         if (health <= 0)
@@ -42,8 +52,11 @@ public class Target : MonoBehaviour
 
     void Die()
     {
-        mesh.enabled = false;
+        bodyMesh.enabled = false;
+        gunMesh.enabled = false;
+        gunBod.enabled = false;
+        gun.enabled = false;
         controller.enabled = false;
-        //Destroy(gameObject);
+        body.enabled = false;
     }
 }
