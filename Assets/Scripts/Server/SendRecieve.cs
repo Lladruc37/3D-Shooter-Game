@@ -37,7 +37,7 @@ public class SendRecieve : MonoBehaviour
     void Update()
     {
         username = name;
-        if (!updateCharacter)
+        if (!updateCharacter && target.health > 0)
         {
             position = transform.localPosition;
             rotation = transform.rotation.eulerAngles;
@@ -45,37 +45,53 @@ public class SendRecieve : MonoBehaviour
         myTimer += Time.deltaTime;
         if(isControlling)
         {
-            if (myTimer >= interpolationTimer)
+            if (target.health > 0)
             {
-                position = transform.localPosition;
-                rotation = transform.rotation.eulerAngles;
-                rotation.x = gunDirection.xRotacion;
-                if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
+                if (myTimer >= interpolationTimer)
                 {
-                    lastHP = target.health;
-                    lastp = position;
-                    lastr = rotation;
-                    rotation.x = 0.0f;
-                    myTimer = 0;
-                    Debug.Log("Update(): Current position: " + position);
+                    position = transform.localPosition;
+                    rotation = transform.rotation.eulerAngles;
+                    rotation.x = gunDirection.xRotacion;
+                    if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
+                    {
+                        lastHP = target.health;
+                        lastp = position;
+                        lastr = rotation;
+                        rotation.x = 0.0f;
+                        myTimer = 0;
+                        //Debug.Log("Update(): Current position: " + position);
 
-                    gm.sendThread = new Thread(gm.SendGameState);
-                    gm.sendThread.Start();
+                        gm.sendThread = new Thread(gm.SendGameState);
+                        gm.sendThread.Start();
+                    }
                 }
+            }
+            else
+            {
+                target.health = target.maxHealth;
+                position = new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f));
             }
         }
         else
         {
             if (updateCharacter)
             {
-                Debug.Log("Update(): New Position of " + username + ": " + position);
                 updateCharacter = false;
                 //lerp = true;
                 //lastp = currentp;
 
+                if (target.health > 0)
+                {
+                    //Debug.Log("Update(): New Position of " + username + ": " + position);
+                    this.transform.rotation = Quaternion.Euler(rotation);
+                    gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
+                }
+                else
+                {
+                    target.health = target.maxHealth;
+                    position = new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f));
+                }
                 this.transform.localPosition = position;
-                this.transform.rotation = Quaternion.Euler(rotation);
-                gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
             }
             //TODO: LERP
             //    if (lerp)

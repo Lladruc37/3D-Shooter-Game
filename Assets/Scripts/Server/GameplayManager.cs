@@ -32,6 +32,8 @@ public class GameplayManager : MonoBehaviour
     public string firstPlayerUsername = "";
     float winnerTimer = 0.0f;
     public float winnerTime = 5.0f;
+    //bool kill = false;
+    //int lastKills = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -100,6 +102,12 @@ public class GameplayManager : MonoBehaviour
                 }
                 if (playerText && p.uid == UserUid)
                 {
+                    //if (p.kills != lastKills)
+                    //{
+                    //    kill = true;
+                    //    lastKills = p.kills;
+                    //    Debug.Log("KILL COUNTER UP");
+                    //}
                     playerText.text = p.kills.ToString();
                 }
             }
@@ -119,10 +127,12 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
+
     void GameEnd() //TODO: Return to lobby + X player wins
     {
         winnerText.text = firstPlayerUsername + " wins the game!";
     }
+
     void SetupOtherPlayer(GameObject player)
 	{
         player.GetComponent<CharacterController>().enabled = false;
@@ -206,8 +216,29 @@ public class GameplayManager : MonoBehaviour
         {
             if (p.uid == UserUid)
             {
+                //writer.Write(kill);
+                //if (kill)
+                //{
+                //    uint killcount = 0;
+                //    List<uint> kills = new List<uint>();
+                //    foreach (SendRecieve k in pScripts)
+                //    {
+                //        if (k.target.health <= 0)
+                //        {
+                //            kills.Add(k.uid);
+                //            killcount++;
+                //        }
+                //    }
+                //    writer.Write(killcount);
+                //    foreach (uint k in kills)
+                //    {
+                //        writer.Write(k);
+                //    }
+                //    kill = false;
+                //}
                 //Health
                 writer.Write(p.target.health);
+                writer.Write(p.kills);
 
                 //Position
                 writer.Write((double)p.position.x);
@@ -222,6 +253,7 @@ public class GameplayManager : MonoBehaviour
                 //Weapon Action
                 writer.Write(p.gun.fire);
                 writer.Write((double)p.gunDirection.xRotacion);
+
                 break;
             }
         }
@@ -259,8 +291,30 @@ public class GameplayManager : MonoBehaviour
 		{
             if (p.uid == uid && uid != UserUid)
             {
+                //bool kill = reader.ReadBoolean();
+                //if (kill)
+                //{
+                //    uint count = reader.ReadUInt32();
+                //    List<uint> kills = new List<uint>();
+                //    for (int i = 0; i > count; ++i)
+                //    {
+                //        uint k = reader.ReadUInt32();
+                //        kills.Add(k);
+                //    }
+                //    foreach (SendRecieve k in pScripts)
+                //    {
+                //        if (kills.Contains(k.uid))
+                //        {
+                //            k.target.health = 0;
+                //        }
+                //    }
+                //}
                 //Health
                 p.target.health = reader.ReadInt32();
+                Debug.Log("RecieveGameState(" + UserUid + "): HP: " + p.target.health + "with uid: " + p.uid);
+
+                p.kills = reader.ReadInt32();
+                Debug.Log("RecieveGameState(" + UserUid + "): kills: " + p.kills + "with uid: " + p.uid);
 
                 //Position
                 p.position.x = (float)reader.ReadDouble();

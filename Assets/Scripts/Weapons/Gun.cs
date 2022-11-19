@@ -73,14 +73,14 @@ public class Gun : MonoBehaviour
             {
                 ray = new Ray(transform.position, fpsCam.transform.forward);
             }
-
+            Debug.Log("ShootLaser(): Shoot!");
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, range))
             {
+                Debug.Log("ShootLaser(): target??");
                 laserLine.SetPosition(1, hit.point);
-
                 Target target = hit.transform.GetComponent<Target>();
-                if (target != null)
+                if (target != null && playerInfo.isControlling)
                 {
                     Debug.Log("ShootLaser(): Hit!");
                     if (target.takeDamage(damage)) //returns true if this killed

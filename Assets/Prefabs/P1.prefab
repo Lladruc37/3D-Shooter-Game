@@ -5424,15 +5424,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57a3132eeb37c684c961f663df4c6885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bodyMesh: {fileID: 0}
+  bodyMesh: {fileID: 7056015063558104420}
   gunMesh: {fileID: 7056015062042124923}
   gunBod: {fileID: 7056015062844333005}
   gun: {fileID: 7056015062042124901}
   controller: {fileID: 7056015063186161629}
   body: {fileID: 5801553125977564559}
-  isControlling: 0
-  health: 3
-  maxHealth: 3
+  sr: {fileID: 7056015063186161627}
+  deathText: {fileID: 0}
+  health: 5
+  maxHealth: 5
   respawnTime: 5
 --- !u!114 &7056015063186161627
 MonoBehaviour:

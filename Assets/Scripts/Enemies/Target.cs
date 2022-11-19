@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Target : MonoBehaviour
 {
@@ -11,7 +12,8 @@ public class Target : MonoBehaviour
     public Gun gun;
     public CharacterController controller;
     public CapsuleCollider body;
-    public bool isControlling;
+    public SendRecieve sr;
+    public Text deathText;
 
     public int health = 3;
     public int maxHealth = 3;
@@ -22,19 +24,28 @@ public class Target : MonoBehaviour
 	{
 		if(health <= 0)
 		{
+            if (sr.isControlling) deathText.text = "You are dead!";
             deathTimer += Time.deltaTime;
-            Debug.Log(deathTimer);
+            //Debug.Log(deathTimer);
             if(deathTimer >= respawnTime)
 			{
+                deathText.text = "";
                 deathTimer = 0.0f;
-                health = maxHealth;
                 bodyMesh.enabled = true;
                 gunMesh.enabled = true;
                 gunBod.enabled = true;
                 gun.enabled = true;
-                if (isControlling) controller.enabled = true;
-                else body.enabled = true;
-                transform.localPosition = new Vector3(Random.Range(-20.0f, 20.0f), 0.0f, Random.Range(-10.0f, 10.0f));
+                Debug.Log("RESPAWN");
+                if (sr.isControlling)
+                {
+                    Debug.Log("YOU RESPAWN");
+                    controller.enabled = true;
+                }
+                else
+                {
+                    body.enabled = true;
+                }
+                sr.updateCharacter = true;
             }
         }
 	}
@@ -44,6 +55,8 @@ public class Target : MonoBehaviour
         health -= amount;
         if (health <= 0)
         {
+            Debug.Log("DEAD: " + sr.uid + "-" + sr.isControlling);
+            if (sr.isControlling) Debug.Log("YOU ARE DEAD!");
             Die();
             return true;
         }
