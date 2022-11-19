@@ -118,9 +118,8 @@ MonoBehaviour:
   fpsCam: {fileID: 7056015063285081831}
   muzzleFlash: {fileID: 7056015063186161624}
   playerInfo: {fileID: 7056015063186161627}
-  fireRate: 0.2
   laserLine: {fileID: 7056015062042124900}
-  laserDuration: 0.05
+  laserDuration: 0.15
   isControllingGun: 0
   fire: 0
 --- !u!120 &7056015062042124900
@@ -5454,6 +5453,8 @@ MonoBehaviour:
   gunDirection: {fileID: 7056015063285081828}
   target: {fileID: 7056015063186161625}
   kills: 0
+  uidHit: -1
+  uidRecieved: -1
   moving: 0
   timer: 0
   updateCharacter: 0
@@ -5546,7 +5547,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7056015063285081825}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!114 &7056015063285081828
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -15,6 +15,7 @@ public class GameplayManager : MonoBehaviour
     public Text hpText;
 
     public bool start, update = false;
+    public float groundLevel = 1.234f;
     public LobbyScripts comunicationDevice;
     public GameObject p1, p2, p3, p4;
     public GameObject[] playerList;
@@ -173,28 +174,28 @@ public class GameplayManager : MonoBehaviour
             //TODO: Bug Start Position
             case 1:
                 {
-                    p1.transform.localPosition = new Vector3(1.0f, 1.234f, -1.0f);
+                    p1.transform.localPosition = new Vector3(1.0f, groundLevel, -1.0f);
                     break;
                 }
             case 2:
                 {
-                    p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
-                    p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
+                    p1.transform.localPosition = new Vector3(20.0f, groundLevel, -20.0f);
+                    p2.transform.localPosition = new Vector3(-20.0f, groundLevel, 20.0f);
                     break;
                 }
             case 3:
                 {
-                    p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
-                    p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
-                    p3.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
+                    p1.transform.localPosition = new Vector3(20.0f, groundLevel, -20.0f);
+                    p2.transform.localPosition = new Vector3(-20.0f, groundLevel, 20.0f);
+                    p3.transform.localPosition = new Vector3(20.0f, groundLevel, 20.0f);
                     break;
                 }
             case 4:
                 {
-                    p1.transform.localPosition = new Vector3(0.0f, 1.234f, -8.0f);
-                    p2.transform.localPosition = new Vector3(0.0f, 1.234f, 6.0f);
-                    p3.transform.localPosition = new Vector3(0.0f, 1.234f, -6.0f);
-                    p4.transform.localPosition = new Vector3(8.0f, 1.234f, 0.0f);
+                    p1.transform.localPosition = new Vector3(20.0f, groundLevel, -20.0f);
+                    p2.transform.localPosition = new Vector3(-20.0f, groundLevel, -20.0f);
+                    p3.transform.localPosition = new Vector3(20.0f, groundLevel, 20.0f);
+                    p4.transform.localPosition = new Vector3(-20.0f, groundLevel, 20.0f);
                     break;
                 }
         }
@@ -236,6 +237,7 @@ public class GameplayManager : MonoBehaviour
                 //    }
                 //    kill = false;
                 //}
+
                 //Health
                 writer.Write(p.target.health);
                 writer.Write(p.kills);
@@ -253,6 +255,8 @@ public class GameplayManager : MonoBehaviour
                 //Weapon Action
                 writer.Write(p.gun.fire);
                 writer.Write((double)p.gunDirection.xRotacion);
+                writer.Write(p.uidHit);
+                p.uidHit = -1;
 
                 break;
             }
@@ -287,51 +291,68 @@ public class GameplayManager : MonoBehaviour
         string dump = reader.ReadString();
         Debug.Log(dump + " - " + UserName);
 
-        foreach(SendRecieve p in pScripts)
-		{
+        SendRecieve pSender = null;
+        foreach (SendRecieve p in pScripts)
+        {
             if (p.uid == uid && uid != UserUid)
             {
-                //bool kill = reader.ReadBoolean();
-                //if (kill)
-                //{
-                //    uint count = reader.ReadUInt32();
-                //    List<uint> kills = new List<uint>();
-                //    for (int i = 0; i > count; ++i)
-                //    {
-                //        uint k = reader.ReadUInt32();
-                //        kills.Add(k);
-                //    }
-                //    foreach (SendRecieve k in pScripts)
-                //    {
-                //        if (kills.Contains(k.uid))
-                //        {
-                //            k.target.health = 0;
-                //        }
-                //    }
-                //}
-                //Health
-                p.target.health = reader.ReadInt32();
-                Debug.Log("RecieveGameState(" + UserUid + "): HP: " + p.target.health + "with uid: " + p.uid);
+                pSender = p;
+                break;
+            }
+        }
+        //bool kill = reader.ReadBoolean();
+        //if (kill)
+        //{
+        //    uint count = reader.ReadUInt32();
+        //    List<uint> kills = new List<uint>();
+        //    for (int i = 0; i > count; ++i)
+        //    {
+        //        uint k = reader.ReadUInt32();
+        //        kills.Add(k);
+        //    }
+        //    foreach (SendRecieve k in pScripts)
+        //    {
+        //        if (kills.Contains(k.uid))
+        //        {
+        //            k.target.health = 0;
+        //        }
+        //    }
+        //}
 
-                p.kills = reader.ReadInt32();
-                Debug.Log("RecieveGameState(" + UserUid + "): kills: " + p.kills + "with uid: " + p.uid);
+        if (pSender != null)
+        {
+            //Health
+            pSender.target.health = reader.ReadInt32();
+            pSender.kills = reader.ReadInt32();
 
-                //Position
-                p.position.x = (float)reader.ReadDouble();
-                p.position.y = (float)reader.ReadDouble();
-                p.position.z = (float)reader.ReadDouble();
+            //Position
+            pSender.position.x = (float)reader.ReadDouble();
+            pSender.position.y = (float)reader.ReadDouble();
+            pSender.position.z = (float)reader.ReadDouble();
 
-                //Rotation
-                p.rotation.x = (float)reader.ReadDouble();
-                p.rotation.y = (float)reader.ReadDouble();
-                p.rotation.z = (float)reader.ReadDouble();
+            //Rotation
+            pSender.rotation.x = (float)reader.ReadDouble();
+            pSender.rotation.y = (float)reader.ReadDouble();
+            pSender.rotation.z = (float)reader.ReadDouble();
 
-                //Weapon Action
-                p.gun.fire = reader.ReadBoolean();
-                p.gunDirection.xRotacion = (float)reader.ReadDouble();
+            //Weapon Action
+            pSender.gun.fire = reader.ReadBoolean();
+            pSender.gunDirection.xRotacion = (float)reader.ReadDouble();
 
-                Debug.Log("RecieveGameState(" + UserUid + "): New position: " + p.position + "with uid: " + p.uid);
-                p.updateCharacter = true;
+            //Debug.Log("RecieveGameState(" + UserUid + "): New position: " + p.position + "with uid: " + p.uid);
+            pSender.updateCharacter = true;
+
+            int _uidHit = reader.ReadInt32();
+            if (UserUid == _uidHit)
+            {
+                foreach (SendRecieve p in pScripts)
+                {
+                    if (p.uid == UserUid)
+                    {
+                        p.target.takeDamage(1);
+                        break;
+                    }
+                }
             }
         }
 

@@ -181,7 +181,7 @@ public class Server : MonoBehaviour
 
     public void BroadcastServerMessage(string m)
     {
-        Debug.Log("BroadcastServerMessage(): Broadcasting message: " + m);
+        //Debug.Log("BroadcastServerMessage(): Broadcasting message: " + m);
 
         byte[] dataTMP = new byte[1024];
         dataTMP = Encoding.ASCII.GetBytes(m);
@@ -190,24 +190,24 @@ public class Server : MonoBehaviour
         {
             EndPoint remote = (EndPoint)ip;
             newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-            Debug.Log("BroadcastServerMessage(): Message sent successfully");
+            //Debug.Log("BroadcastServerMessage(): Message sent successfully");
         }
     }
 
     public void BroadcastServerInfo(MemoryStream stream)
     {
-        Debug.Log("BroadcastServerInfo(): Sending gameplay state...");
+        //Debug.Log("BroadcastServerInfo(): Sending gameplay state...");
 
         byte[] dataTMP = new byte[1024];
         dataTMP = stream.GetBuffer();
 
-        Debug.Log("BroadcastServerInfo(): Data Length is: " + stream.Length);
+        //Debug.Log("BroadcastServerInfo(): Data Length is: " + stream.Length);
 
         foreach (IPEndPoint ip in clientListUDP)
         {
             EndPoint remote = (EndPoint)ip;
             newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-            Debug.Log("BroadcastServerInfo(): Message sent successfully");
+            //Debug.Log("BroadcastServerInfo(): Message sent successfully");
         }
     }
 

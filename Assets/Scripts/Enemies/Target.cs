@@ -15,8 +15,8 @@ public class Target : MonoBehaviour
     public SendRecieve sr;
     public Text deathText;
 
-    public int health = 3;
-    public int maxHealth = 3;
+    public int health = 5;
+    public int maxHealth = 5;
     public float respawnTime = 5.0f;
     float deathTimer = 0;
 
@@ -24,6 +24,7 @@ public class Target : MonoBehaviour
 	{
 		if(health <= 0)
 		{
+            Die();
             if (sr.isControlling) deathText.text = "You are dead!";
             deathTimer += Time.deltaTime;
             //Debug.Log(deathTimer);
@@ -40,12 +41,15 @@ public class Target : MonoBehaviour
                 {
                     Debug.Log("YOU RESPAWN");
                     controller.enabled = true;
+                    controller.Move(new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f)));
                 }
                 else
                 {
                     body.enabled = true;
+                    sr.position = new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f));
+                    sr.updateCharacter = true;
                 }
-                sr.updateCharacter = true;
+                health = maxHealth;
             }
         }
 	}
@@ -56,8 +60,6 @@ public class Target : MonoBehaviour
         if (health <= 0)
         {
             Debug.Log("DEAD: " + sr.uid + "-" + sr.isControlling);
-            if (sr.isControlling) Debug.Log("YOU ARE DEAD!");
-            Die();
             return true;
         }
         return false;

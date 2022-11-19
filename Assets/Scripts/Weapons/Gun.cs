@@ -11,10 +11,10 @@ public class Gun : MonoBehaviour
     public ParticleSystem muzzleFlash;
     public SendRecieve playerInfo;
 
-    public float fireRate = 0.2f;
+    //public float fireRate = 0.2f;
     public LineRenderer laserLine;
     public float laserDuration = 0.05f;
-    float fireTimer;
+    //float fireTimer;
 
     public bool isControllingGun;
     public bool fire = false;
@@ -30,44 +30,44 @@ public class Gun : MonoBehaviour
         //Shoot with the left click button
         if (isControllingGun && Cursor.lockState == CursorLockMode.Locked)
         {
-            fireTimer += Time.deltaTime;
+            //fireTimer += Time.deltaTime;
 
-            if (Input.GetButtonDown("Fire1") && fireTimer > fireRate)
+            if (Input.GetButtonDown("Fire1"))
             {
                 fire = true;
                 StartCoroutine(ShootLaser());
             }
-            else if (Input.GetButtonUp("Fire1") && fireTimer <= fireRate)
+            else
             {
-                fire = false;
                 StopCoroutine(ShootLaser());
+                fire = false;
+                laserLine.enabled = false;
             }
         }
         else
         {
-            fireTimer += Time.deltaTime;
+            //fireTimer += Time.deltaTime;
 
             if (fire)
             {
-                if (fireTimer > fireRate)
-                {
-                    StartCoroutine(ShootLaser());
-                }
-                else if (fireTimer <= fireRate)
-                {
-                    StopCoroutine(ShootLaser());
-                }
+                StartCoroutine(ShootLaser());
+            }
+            else
+            {
+                StopCoroutine(ShootLaser());
+                fire = false;
+                laserLine.enabled = false;
             }
         }
     }
 
     IEnumerator ShootLaser()
     {
-        fireTimer = 0;
         muzzleFlash.Play();
         laserLine.enabled = true;
-        while(fire)
-		{
+
+        while (fire)
+        {
             Ray ray = new Ray(transform.position, transform.forward);
             if (fpsCam)
             {
@@ -77,16 +77,24 @@ public class Gun : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, range))
             {
-                Debug.Log("ShootLaser(): target??");
                 laserLine.SetPosition(1, hit.point);
-                Target target = hit.transform.GetComponent<Target>();
-                if (target != null && playerInfo.isControlling)
+                if (playerInfo.isControlling)
                 {
-                    Debug.Log("ShootLaser(): Hit!");
-                    if (target.takeDamage(damage)) //returns true if this killed
-					{
-                        playerInfo.kills++;
-					}
+                    Target target = hit.collider.GetComponent<Target>();
+                    if (target != null)
+                    {
+                        uint uid = hit.collider.GetComponent<SendRecieve>().uid;
+                        Debug.Log("ShootLaser(): Hit! UID: " + uid);
+                        playerInfo.uidHit = (int)uid;
+                        if (target.takeDamage(1))
+                        {
+                            playerInfo.kills++;
+                        }
+                    }
+                    else
+                    {
+                        playerInfo.uidHit = -1;
+                    }
                 }
             }
             else
@@ -94,7 +102,7 @@ public class Gun : MonoBehaviour
                 laserLine.SetPosition(1, ray.GetPoint(range));
             }
             yield return new WaitForSeconds(laserDuration);
+            fire = false;
         }
-        laserLine.enabled = false;
     }
 }

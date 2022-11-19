@@ -14,6 +14,8 @@ public class SendRecieve : MonoBehaviour
     public Target target;
 
     public int kills = 0;
+    public int uidHit = -1;
+    public int uidRecieved = -1;
 
     public bool moving;
     public float timer;
@@ -37,7 +39,7 @@ public class SendRecieve : MonoBehaviour
     void Update()
     {
         username = name;
-        if (!updateCharacter && target.health > 0)
+        if (!updateCharacter)
         {
             position = transform.localPosition;
             rotation = transform.rotation.eulerAngles;
@@ -66,11 +68,6 @@ public class SendRecieve : MonoBehaviour
                     }
                 }
             }
-            else
-            {
-                target.health = target.maxHealth;
-                position = new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f));
-            }
         }
         else
         {
@@ -79,17 +76,13 @@ public class SendRecieve : MonoBehaviour
                 updateCharacter = false;
                 //lerp = true;
                 //lastp = currentp;
+                Debug.Log("Uid: " + uid + ", Hp: " + target.health);
 
                 if (target.health > 0)
                 {
                     //Debug.Log("Update(): New Position of " + username + ": " + position);
                     this.transform.rotation = Quaternion.Euler(rotation);
                     gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
-                }
-                else
-                {
-                    target.health = target.maxHealth;
-                    position = new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f));
                 }
                 this.transform.localPosition = position;
             }
