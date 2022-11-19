@@ -174,7 +174,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0.001953125
-        value: 0.023721315
+        value: 0.13401183
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -186,8 +186,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.0047169924, b: 0.0047169924, a: 1}
-      key1: {r: 1, g: 0.0047169924, b: 0.0047169924, a: 1}
+      key0: {r: 0.03194175, g: 0.4056604, b: 0, a: 1}
+      key1: {r: 0, g: 0.5660378, b: 0.26741943, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -5248,7 +5248,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2495f8b5d457f664ba9b9ce45bf0982f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5738,7 +5738,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b1317aa70b2fb314cafdd8e76a754c16, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
