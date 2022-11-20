@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Gun : MonoBehaviour
 {
     public int damage = 1;
     public float range = 100f;
 
+    public Image hitMark;
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
     public SendRecieve playerInfo;
@@ -83,6 +85,7 @@ public class Gun : MonoBehaviour
                     Target target = hit.collider.GetComponent<Target>();
                     if (target != null)
                     {
+                        hitMark.enabled = true;
                         uint uid = hit.collider.GetComponent<SendRecieve>().uid;
                         Debug.Log("ShootLaser(): Hit! UID: " + uid);
                         playerInfo.uidHit = (int)uid;
@@ -93,6 +96,7 @@ public class Gun : MonoBehaviour
                     }
                     else
                     {
+                        hitMark.enabled = false;
                         playerInfo.uidHit = -1;
                     }
                 }
@@ -102,6 +106,7 @@ public class Gun : MonoBehaviour
                 laserLine.SetPosition(1, ray.GetPoint(range));
             }
             yield return new WaitForSeconds(laserDuration);
+            if (playerInfo.isControlling) hitMark.enabled = false;
             fire = false;
         }
     }

@@ -28,6 +28,7 @@ public class GameplayManager : MonoBehaviour
     public List<SendRecieve> pScripts;
 
     public Text firstPlayerText;
+    public GameObject winnerBox;
     public Text winnerText;
     public int firstPlayer = 0;
     public string firstPlayerUsername = "";
@@ -131,6 +132,7 @@ public class GameplayManager : MonoBehaviour
 
     void GameEnd() //TODO: Return to lobby + X player wins
     {
+        winnerBox.SetActive(true);
         winnerText.text = firstPlayerUsername + " wins the game!";
     }
 

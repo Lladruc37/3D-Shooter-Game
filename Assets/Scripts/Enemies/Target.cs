@@ -13,6 +13,7 @@ public class Target : MonoBehaviour
     public CharacterController controller;
     public CapsuleCollider body;
     public SendRecieve sr;
+    public GameObject deathBox;
     public Text deathText;
 
     public int health = 5;
@@ -24,12 +25,21 @@ public class Target : MonoBehaviour
 	{
 		if(health <= 0)
 		{
-            Die();
-            if (sr.isControlling) deathText.text = "You are dead!";
+            if (deathTimer <= 0.0f)
+            {
+                Die();
+                if (sr.isControlling)
+                {
+                    deathBox.SetActive(true);
+                    deathText.text = "You are dead!";
+                }
+            }
+            
             deathTimer += Time.deltaTime;
             //Debug.Log(deathTimer);
             if(deathTimer >= respawnTime)
 			{
+                deathBox.SetActive(false);
                 deathText.text = "";
                 deathTimer = 0.0f;
                 bodyMesh.enabled = true;

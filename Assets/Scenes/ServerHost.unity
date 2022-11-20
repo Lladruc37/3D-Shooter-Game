@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.43707743, g: 0.48478645, b: 0.56505084, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -457,6 +457,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2947052487368726174, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6835023617256491723, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 296145e72f6b032489c0805504f1a235, type: 3}
 --- !u!114 &163329122 stripped
@@ -656,6 +664,7 @@ MonoBehaviour:
   client: {fileID: 0}
   pScripts: []
   firstPlayerText: {fileID: 163329125}
+  winnerBox: {fileID: 2037149935}
   winnerText: {fileID: 163329124}
   firstPlayer: 0
   firstPlayerUsername: 
@@ -1351,10 +1360,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 360293318}
     m_Modifications:
+    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: hitMark
+      value: 
+      objectReference: {fileID: 1202533444}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P4
       objectReference: {fileID: 0}
+    - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: deathBox
+      value: 
+      objectReference: {fileID: 2037149935}
     - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: deathText
       value: 
@@ -1677,6 +1694,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7056015063186161626, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
   m_PrefabInstance: {fileID: 7056015062130066698}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1202533444 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6418328679194345866, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+  m_PrefabInstance: {fileID: 163329121}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1270274379
 GameObject:
   m_ObjectHideFlags: 0
@@ -1763,7 +1791,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1270274379}
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalRotation: {x: 0.68203515, y: -0.03495887, z: -0.036817968, w: 0.729555}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2606,7 +2634,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -2459422.8}
+  m_AnchoredPosition: {x: -0.40000916, y: -2943613.8}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1471888350
@@ -2897,7 +2925,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1547650378
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3295,10 +3323,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 360293318}
     m_Modifications:
+    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: hitMark
+      value: 
+      objectReference: {fileID: 1202533444}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P3
       objectReference: {fileID: 0}
+    - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: deathBox
+      value: 
+      objectReference: {fileID: 2037149935}
     - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: deathText
       value: 
@@ -3454,10 +3490,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 360293318}
     m_Modifications:
+    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: hitMark
+      value: 
+      objectReference: {fileID: 1202533444}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P2
       objectReference: {fileID: 0}
+    - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: deathBox
+      value: 
+      objectReference: {fileID: 2037149935}
     - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: deathText
       value: 
@@ -3740,6 +3784,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2016796453}
   m_CullTransparentMesh: 0
+--- !u!1 &2037149935 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2947052487368726174, guid: 296145e72f6b032489c0805504f1a235, type: 3}
+  m_PrefabInstance: {fileID: 163329121}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6850533749662816658
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3804,10 +3853,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 360293318}
     m_Modifications:
+    - target: {fileID: 7056015062042124901, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: hitMark
+      value: 
+      objectReference: {fileID: 1202533444}
     - target: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: m_Name
       value: P1
       objectReference: {fileID: 0}
+    - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+      propertyPath: deathBox
+      value: 
+      objectReference: {fileID: 2037149935}
     - target: {fileID: 7056015063186161625, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
       propertyPath: deathText
       value: 
