@@ -1,7 +1,7 @@
 # **Backfired!:** A 3D Shooter Game
 We are developing a 3D shooter game for the Networks and Online Games subject of the Videogame Development & Design bachelor's degree.
 
-[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=sharing) (UPC Login is required)
+[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=sharing) and [link to see the Exercise 3: Serialization](https://drive.google.com/file/d/1XV1GGckFLW_pufWyLg1vFNzTEJiZs8Uc/view?usp=share_link) (UPC Login is required)
 
 ### About the game
 _Backfired!_ is a FPS where the end goal is to get 10 points. The twist is that, when you shoot, you are also move backwards, which can be used to jump and move in a fun and unique way. The intended goal is to have 4 different players in the game.
