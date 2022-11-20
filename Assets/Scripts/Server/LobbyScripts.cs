@@ -45,6 +45,10 @@ public class LobbyScripts : MonoBehaviour
     {
         SceneManager.LoadScene(2);
     }
+    public void Go2Choose()
+    {
+        SceneManager.LoadScene(0);
+    }
     public void ReadStringInputServer(string s)
     {
         inputServer.text = s;
