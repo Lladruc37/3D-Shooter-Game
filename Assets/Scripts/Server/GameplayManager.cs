@@ -131,6 +131,7 @@ public class GameplayManager : MonoBehaviour
                     update = false;
                     winnerBox.SetActive(false);
                     comunicationDevice.gameplayScene.SetActive(false);
+                    comunicationDevice.exitGameButton.SetActive(true);
                     comunicationDevice.lobbyCanvas.GetComponent<Canvas>().enabled = true;
                 }
             }

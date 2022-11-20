@@ -153,6 +153,7 @@ public class LobbyScripts : MonoBehaviour
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
         lobbyCanvas.GetComponent<Canvas>().enabled = false;
         gameplayScene.SetActive(true);
+        exitGameButton.SetActive(false);
         manager.start = true;
 
         if (server)

@@ -13,7 +13,6 @@ public class Client : MonoBehaviour
     public Socket client;
     public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
     public IPEndPoint clientep;
-    public IPAddress adress = IPAddress.Any;
     public EndPoint clientRemote;
 
     public string stringData, input;
@@ -331,6 +330,8 @@ public class Client : MonoBehaviour
         connected = false;
         newServerName = false;
         newServerIP = false;
+        messageRecieved = false;
+        server = null;
         ipep = new IPEndPoint(IPAddress.Any, 9050);
 
         if (server != null)
