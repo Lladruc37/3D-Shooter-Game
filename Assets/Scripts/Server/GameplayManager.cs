@@ -114,7 +114,7 @@ public class GameplayManager : MonoBehaviour
                 }
             }
             firstPlayerText.text = firstPlayer.ToString();
-            if (firstPlayer >= 25)
+            if (firstPlayer >= 2)
             {
                 GameEnd();
             }
@@ -125,6 +125,8 @@ public class GameplayManager : MonoBehaviour
                 {
                     winnerText.text = "";
                     winnerTimer = 0.0f;
+                    comunicationDevice.gameplayScene.SetActive(false);
+                    comunicationDevice.lobbyCanvas.GetComponent<Canvas>().enabled = true;
                 }
             }
         }
@@ -132,8 +134,27 @@ public class GameplayManager : MonoBehaviour
 
     void GameEnd() //TODO: Return to lobby + X player wins
     {
+        firstPlayer = 0;
         winnerBox.SetActive(true);
         winnerText.text = firstPlayerUsername + " wins the game!";
+        foreach(SendRecieve p in pScripts)
+		{
+            p.target.health = p.target.maxHealth;
+            p.kills = 0;
+            Camera[] cameras = p.GetComponentsInChildren<Camera>();
+            foreach (Camera camera in cameras)
+            {
+                camera.enabled = false;
+            }
+            p.GetComponent<CharacterController>().enabled = false;
+            p.GetComponent<CapsuleCollider>().enabled = false;
+            p.GetComponent<PlayerMovement>().enabled = false;
+            p.GetComponent<SendRecieve>().isControlling = false;
+            p.GetComponentInChildren<MouseLook>().enabled = false;
+            p.GetComponentInChildren<Gun>().isControllingGun = false;
+            p.GetComponentInChildren<Gun>().hitMark.enabled = false;
+        }
+        comunicationDevice.lobbyCamera.enabled = true;
     }
 
     void SetupOtherPlayer(GameObject player)
@@ -171,40 +192,36 @@ public class GameplayManager : MonoBehaviour
 
     void InitializePosition(int c)
 	{
-        switch (c)
+        //switch (c)
+        //{
+        //Do not erase the logs. They're solving the Schrödinger's bug in here. If they weren't there, it'd bug the positions sometimes. We don't know either, it doesn't make sense.
+        if (c == 1)
         {
-            //Do not erase the logs. They're solving the Schrödinger's bug in here. If they weren't there, it'd bug the positions sometimes. We don't know either, it doesn't make sense.
-            case 1:
-                {
-                    Debug.Log("InitializePosition(): Spawn 1");
-                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
-                    break;
-                }
-            case 2:
-                {
-                    Debug.Log("InitializePosition(): Spawn 2");
-                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
-                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
-                    break;
-                }
-            case 3:
-                {
-                    Debug.Log("InitializePosition(): Spawn 3");
-                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
-                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
-                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
-                    break;
-                }
-            case 4:
-                {
-                    Debug.Log("InitializePosition(): Spawn 4");
-                    p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
-                    p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
-                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
-                    p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
-                    break;
-                }
+            Debug.Log("InitializePosition(): Spawn 1");
+            p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
         }
+        else if (c == 2)
+        {
+            Debug.Log("InitializePosition(): Spawn 2");
+            p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
+            p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
+        }
+        else if (c == 3)
+        {
+            Debug.Log("InitializePosition(): Spawn 3");
+            p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
+            p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
+            p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
+        }
+        else if (c == 4)
+        {
+            Debug.Log("InitializePosition(): Spawn 4");
+            p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
+            p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
+            p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
+            p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
+        }
+        //}
 
     }
 

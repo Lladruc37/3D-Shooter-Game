@@ -35,7 +35,7 @@ public class Gun : MonoBehaviour
         {
             //fireTimer += Time.deltaTime;
 
-            if (Input.GetButton("Fire1"))
+            if (Input.GetButtonDown("Fire1"))
             {
                 fire = true;
                 StartCoroutine(ShootLaser());
