@@ -11,6 +11,7 @@ using System.IO;
 
 public class Server : MonoBehaviour
 {
+    //Sockets for the server
     public Socket newSocket;
     public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
     public IPEndPoint clientep;
@@ -32,14 +33,9 @@ public class Server : MonoBehaviour
     public LobbyScripts lobby;
     public GameplayManager manager;
 
-    // Start is called before the first frame update
-    void Start()
-    { }
-
-    // Update is called once per frame
     void Update()
     {
-        if (start)
+        if (start) //
         {
             start = false;
             update = true;
@@ -62,7 +58,7 @@ public class Server : MonoBehaviour
             Debug.Log("Server(): Server started successfully!");
         }
 
-        if (update)
+        if (update) //
         {
             if (newMessage)
             {
@@ -80,6 +76,8 @@ public class Server : MonoBehaviour
             }
         }
     }
+
+    //
     public void SendPlayerList()
     {
         MemoryStream stream = new MemoryStream();
@@ -106,12 +104,14 @@ public class Server : MonoBehaviour
         Thread.Sleep(100);
     }
 
+    //Add a player to the list
     void AddPlayer(string name)
     {
         lobby.usersList.Add(maxUid, name);
         maxUid++;
     }
 
+    //Add a client by UDP method
     void AddClientUDP(IPEndPoint newClient)
     {
         if (newClient.ToString() != "")
@@ -125,6 +125,7 @@ public class Server : MonoBehaviour
         }
     }
 
+    //
     public string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
     {
         string result = "";
@@ -179,10 +180,9 @@ public class Server : MonoBehaviour
         return result;
     }
 
+    //
     public void BroadcastServerMessage(string m)
     {
-        //Debug.Log("BroadcastServerMessage(): Broadcasting message: " + m);
-
         byte[] dataTMP = new byte[1024];
         dataTMP = Encoding.ASCII.GetBytes(m);
 
@@ -190,27 +190,23 @@ public class Server : MonoBehaviour
         {
             EndPoint remote = (EndPoint)ip;
             newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-            //Debug.Log("BroadcastServerMessage(): Message sent successfully");
         }
     }
 
+    //
     public void BroadcastServerInfo(MemoryStream stream)
     {
-        //Debug.Log("BroadcastServerInfo(): Sending gameplay state...");
-
         byte[] dataTMP = new byte[1024];
         dataTMP = stream.GetBuffer();
-
-        //Debug.Log("BroadcastServerInfo(): Data Length is: " + stream.Length);
 
         foreach (IPEndPoint ip in clientListUDP)
         {
             EndPoint remote = (EndPoint)ip;
             newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
-            //Debug.Log("BroadcastServerInfo(): Message sent successfully");
         }
     }
 
+    //
     public void BroadcastPlayerInfo(byte[] data)
     {
         Debug.Log("BroadcastPlayerInfo(): Sending gameplay state from player...");
@@ -223,6 +219,7 @@ public class Server : MonoBehaviour
         }
     }
 
+    //
     void RecieveData()
     {
         try
@@ -303,6 +300,8 @@ public class Server : MonoBehaviour
             Debug.LogError("RecieveData(): Error receiving: " + e);
         }
     }
+
+    //
     public void Close()
     {
         start = false;

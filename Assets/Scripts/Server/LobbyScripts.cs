@@ -20,6 +20,7 @@ public class LobbyScripts : MonoBehaviour
     public InputField inputUserName;
     public InputField inputServer;
 
+    //Chat
     public Canvas chatCanvas;
     public Text chatText;
     public InputField inputChat;
@@ -31,24 +32,31 @@ public class LobbyScripts : MonoBehaviour
     public Client client;
     public GameObject gameplayScene;
     public Dictionary<uint,string> usersList = new Dictionary<uint, string>();
-	//public string serverName = "";
 
 	private void Start()
 	{
         Application.targetFrameRate = 60;
 	}
+
+    //Create server
 	public void Go2Create()
     {
         SceneManager.LoadScene(1);
     }
+
+    //Join server
     public void Go2Join()
     {
         SceneManager.LoadScene(2);
     }
+
+    //Scene where the user chooses if it hosts or joins a server
     public void Go2Choose()
     {
         SceneManager.LoadScene(0);
     }
+
+    //Write the name of the server
     public void ReadStringInputServer(string s)
     {
         inputServer.text = s;
@@ -64,6 +72,7 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("ReadStringInputServer(): New name: " + inputServer.text);
     }
 
+    //Write the name of the user
     public void ReadStringInputUser(string s)
     {
         inputUserName.text = s;
@@ -78,6 +87,7 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("ReadStringInputUser(): Username: " + inputUserName.text);
     }
 
+    //Create the server
     public void StartServer()
     {
         Debug.Log("StartServer(): Created server: " + inputServer.text);
@@ -90,6 +100,7 @@ public class LobbyScripts : MonoBehaviour
         server.start = true;
     }
 
+    //Join a server created
     public void JoinServer()
     {
         Debug.Log("JoinServer(): Joined server: " + inputServer.text);
@@ -101,6 +112,7 @@ public class LobbyScripts : MonoBehaviour
         client.start = true;
     }
 
+    //Close a server created
     public void EndServer()
     {
         Debug.Log("EndServer(): Ending server.");
@@ -125,6 +137,7 @@ public class LobbyScripts : MonoBehaviour
         lobbyCanvas.GetComponent<Canvas>().enabled = true;
     }
 
+    //Leave the server where the player is
     public void LeaveServer()
     {
         Debug.Log("LeaveServer(): Leaving server.");
@@ -148,6 +161,7 @@ public class LobbyScripts : MonoBehaviour
         lobbyCanvas.GetComponent<Canvas>().enabled = true;
     }
 
+    //Button that starts the game
     public void StartGame()
     {
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
@@ -167,6 +181,7 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("LobbyScripts(): Game scene enabled...");
     }
 
+    //Show the IP of the player that creates the server
     public string GetLocalIPv4()
     {
         return Dns.GetHostEntry(Dns.GetHostName())

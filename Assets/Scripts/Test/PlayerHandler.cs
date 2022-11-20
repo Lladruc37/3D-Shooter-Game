@@ -9,13 +9,7 @@ public class PlayerHandler : MonoBehaviour
     public uint uid = 0;
     public int kills = 0;
     public Text playerText;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
     void Update()
     {
         if (playerText)

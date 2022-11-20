@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class SendRecieve : MonoBehaviour
 {
+    //Variables for the different states of the players
     public bool isControlling = false;
     public bool assigned = false;
     public GameplayManager gm;
@@ -23,8 +24,6 @@ public class SendRecieve : MonoBehaviour
     public bool updateCharacter;
     float myTimer = 0.0f;
     float interpolationTimer = 0.15f;
-    //bool lerp = false;
-    //float lerpTime = 0.0f;
 
     public Vector3 position;
     public Vector3 rotation;
@@ -35,11 +34,10 @@ public class SendRecieve : MonoBehaviour
     Vector3 lastp = Vector3.one;
     Vector3 lastr = Vector3.one;
 
-    // Update is called once per frame
     void Update()
     {
         username = name;
-        if (!updateCharacter)
+        if (!updateCharacter) //Update the position and rotation of the players
         {
             position = transform.localPosition;
             rotation = transform.rotation.eulerAngles;
@@ -49,7 +47,7 @@ public class SendRecieve : MonoBehaviour
         {
             if (target.health > 0)
             {
-                if (myTimer >= interpolationTimer)
+                if (myTimer >= interpolationTimer) //Send information in a short period of time
                 {
                     position = transform.localPosition;
                     rotation = transform.rotation.eulerAngles;
@@ -61,7 +59,6 @@ public class SendRecieve : MonoBehaviour
                         lastr = rotation;
                         rotation.x = 0.0f;
                         myTimer = 0;
-                        //Debug.Log("Update(): Current position: " + position);
 
                         gm.sendThread = new Thread(gm.SendGameState);
                         gm.sendThread.Start();
@@ -71,16 +68,13 @@ public class SendRecieve : MonoBehaviour
         }
         else
         {
-            if (updateCharacter)
+            if (updateCharacter) //Updates character's health
             {
                 updateCharacter = false;
-                //lerp = true;
-                //lastp = currentp;
                 Debug.Log("Uid: " + uid + ", Hp: " + target.health);
 
                 if (target.health > 0)
                 {
-                    //Debug.Log("Update(): New Position of " + username + ": " + position);
                     this.transform.rotation = Quaternion.Euler(rotation);
                     gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
                     target.bodyMesh.enabled = true;
@@ -91,17 +85,6 @@ public class SendRecieve : MonoBehaviour
                 this.transform.localPosition = position;
             }
             //TODO: LERP
-            //    if (lerp)
-            //    {
-            //        Debug.Log("LERP: " + lastp + ";" + currentp);
-            //        transform.localPosition = Vector3.Lerp(lastp, currentp, lerpTime / interpolationTimer);
-            //        lerpTime += Time.deltaTime;
-            //        if (lerpTime >= 1)
-            //        {
-            //            lerp = false;
-            //            lerpTime = 0;
-            //        }
-            //    }
         }
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Gun : MonoBehaviour
 {
+    //Weapon stats
     public int damage = 1;
     public float range = 100f;
 
@@ -13,12 +14,11 @@ public class Gun : MonoBehaviour
     public ParticleSystem muzzleFlash;
     public SendRecieve playerInfo;
 
-    //public float fireRate = 0.2f;
     public float offset = 0.5f;
     public LineRenderer laserLine;
     public float laserDuration = 0.05f;
-    //float fireTimer;
 
+    //Checks if the player controls the gun and if it shoots
     public bool isControllingGun;
     public bool fire = false;
 
@@ -29,12 +29,10 @@ public class Gun : MonoBehaviour
 
     void Update()
     {
+        //Shoot lasers with the left click button
         laserLine.SetPosition(0, transform.position);
-        //Shoot with the left click button
         if (isControllingGun && Cursor.lockState == CursorLockMode.Locked)
         {
-            //fireTimer += Time.deltaTime;
-
             if (Input.GetButtonDown("Fire1"))
             {
                 fire = true;
@@ -49,8 +47,6 @@ public class Gun : MonoBehaviour
         }
         else
         {
-            //fireTimer += Time.deltaTime;
-
             if (fire)
             {
                 StartCoroutine(ShootLaser());
@@ -64,6 +60,7 @@ public class Gun : MonoBehaviour
         }
     }
 
+    //Coroutine for shooting lasers
     IEnumerator ShootLaser()
     {
         muzzleFlash.Play();
