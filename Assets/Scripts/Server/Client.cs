@@ -255,6 +255,7 @@ public class Client : MonoBehaviour
         Debug.Log("RecieveList(): Header is " + header);
 
         //List
+        lobby.usersList.Clear();
         int count = reader.ReadInt32();
         Debug.Log("RecieveList(): Count: " + count);
         for (int i = 0; i < count; i++)
@@ -328,6 +329,9 @@ public class Client : MonoBehaviour
         start = false;
         update = false;
         connected = false;
+        newServerName = false;
+        newServerIP = false;
+        ipep = new IPEndPoint(IPAddress.Any, 9050);
 
         if (server != null)
         {

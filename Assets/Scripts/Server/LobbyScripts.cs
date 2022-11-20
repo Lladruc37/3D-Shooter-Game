@@ -135,7 +135,7 @@ public class LobbyScripts : MonoBehaviour
         inputUserName.text = "";
         inputServer.text = "";
         inputChat.text = "";
-        client.Send("User " + client.username + " has left the server!");
+        client.Send("/>goodbye</"+ client.uuid);
         client.Leave();
         title.text = "Join a server!";
 

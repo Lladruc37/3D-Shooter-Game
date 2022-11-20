@@ -46,15 +46,18 @@ public class GameplayManager : MonoBehaviour
     {
         if (start)
 		{
+            Application.targetFrameRate = 60;
             int c = comunicationDevice.usersList.Count;
             Debug.Log("Start(): Player count: " + c);
 
             if (c != 0)
             {
                 //TODO: INSTANTIATE PLAYERS & ADD RANDOM UID
+                playerList = null;
                 playerList = new GameObject[] { p1, p2, p3, p4 };
                 Debug.Log("Start(): Player Models: " + playerList.Length);
 
+                pScripts.Clear();
                 int i = 0;
                 foreach (KeyValuePair<uint,string> u in comunicationDevice.usersList)
                 {
@@ -125,6 +128,8 @@ public class GameplayManager : MonoBehaviour
                 {
                     winnerText.text = "";
                     winnerTimer = 0.0f;
+                    update = false;
+                    winnerBox.SetActive(false);
                     comunicationDevice.gameplayScene.SetActive(false);
                     comunicationDevice.lobbyCanvas.GetComponent<Canvas>().enabled = true;
                 }
@@ -132,13 +137,15 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    void GameEnd() //TODO: Return to lobby + X player wins
+    void GameEnd()
     {
-        firstPlayer = 0;
         winnerBox.SetActive(true);
         winnerText.text = firstPlayerUsername + " wins the game!";
-        foreach(SendRecieve p in pScripts)
+        Cursor.lockState = CursorLockMode.None;
+        winnerTimer = 0.0f;
+        foreach (SendRecieve p in pScripts)
 		{
+            if (firstPlayer == p.kills) SendGameState();
             p.target.health = p.target.maxHealth;
             p.kills = 0;
             Camera[] cameras = p.GetComponentsInChildren<Camera>();
@@ -154,6 +161,7 @@ public class GameplayManager : MonoBehaviour
             p.GetComponentInChildren<Gun>().isControllingGun = false;
             p.GetComponentInChildren<Gun>().hitMark.enabled = false;
         }
+        firstPlayer = 0;
         comunicationDevice.lobbyCamera.enabled = true;
     }
 

@@ -83,6 +83,10 @@ public class SendRecieve : MonoBehaviour
                     //Debug.Log("Update(): New Position of " + username + ": " + position);
                     this.transform.rotation = Quaternion.Euler(rotation);
                     gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
+                    target.bodyMesh.enabled = true;
+                    target.gunMesh.enabled = true;
+                    target.gunBod.enabled = true;
+                    gun.enabled = true;
                 }
                 this.transform.localPosition = position;
             }

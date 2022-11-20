@@ -270,6 +270,17 @@ public class Server : MonoBehaviour
                     Thread.Sleep(100);
                     BroadcastServerMessage(ManageMessage(tmp, true));
                 }
+                else if (stringData.Contains("/>goodbye</"))
+				{
+                    string[] tmpSplit = stringData.Split("</");
+                    uint tmpUid = uint.Parse(tmpSplit[1]);
+                    stringData = "User " + lobby.usersList[tmpUid] + " has left the server!";
+                    lobby.usersList.Remove(tmpUid);
+                    Thread.Sleep(100);
+                    BroadcastServerMessage(ManageMessage(stringData,true));
+                    Thread.Sleep(100);
+                    SendPlayerList();
+                }
                 else if (stringData.Contains("/>PlayerInfo:"))
                 {
                     Debug.Log("RecieveData(): New game state detected");
