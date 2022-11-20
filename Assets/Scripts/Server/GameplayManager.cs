@@ -7,41 +7,41 @@ using UnityEngine.UI;
 
 public class GameplayManager : MonoBehaviour
 {
-    public uint UserUid;
-    public string UserName;
-
-    Target playerHp;
-    public Text playerText;
-    public Text hpText;
-
-    public bool start, update = false;
-    public float groundLevel = 1.234f;
+    //Server/Client & other
     public LobbyScripts comunicationDevice;
-    public GameObject p1, p2, p3, p4;
-    public GameObject[] playerList;
-
-    public byte[] data;
-    public Thread sendThread = null;
-    public Thread recieveThread = null;
     public Server server;
     public Client client;
-    public List<SendRecieve> pScripts;
+    public byte[] data;
 
-    public Text firstPlayerText;
-    public GameObject winnerBox;
-    public Text winnerText;
+    //Threads
+    public Thread sendThread = null;
+    public Thread recieveThread = null;
+
+    //Point system
     public int firstPlayer = 0;
     public string firstPlayerUsername = "";
-    float winnerTimer = 0.0f;
     public float winnerTime = 5.0f;
-    //bool kill = false;
-    //int lastKills = 0;
+    float winnerTimer = 0.0f;
+    public Text firstPlayerText; //winning player
+    public Text playerText; //you
+    public Text winnerText; //"you win" text
+    public GameObject winnerBox;
 
-    // Start is called before the first frame update
-    void Start()
-    {}
+    //Other UI
+    Target playerHp;
+    public Text hpText;
 
-    // Update is called once per frame
+    //User data
+    public uint UserUid;
+    public string UserName;
+    public bool start, update = false;
+
+    //All users data
+    public GameObject p1, p2, p3, p4;
+    public GameObject[] playerList;
+    public List<SendRecieve> pScripts;
+    public float groundLevel = 1.234f;
+
     void Update()
     {
         if (start)
@@ -50,7 +50,7 @@ public class GameplayManager : MonoBehaviour
             int c = comunicationDevice.usersList.Count;
             Debug.Log("Start(): Player count: " + c);
 
-            if (c != 0)
+            if (c != 0) //Setup gameplay scene
             {
                 //TODO: INSTANTIATE PLAYERS & ADD RANDOM UID
                 playerList = null;
@@ -59,7 +59,7 @@ public class GameplayManager : MonoBehaviour
 
                 pScripts.Clear();
                 int i = 0;
-                foreach (KeyValuePair<uint,string> u in comunicationDevice.usersList)
+                foreach (KeyValuePair<uint,string> u in comunicationDevice.usersList) //Add players to the list
                 {
                     Debug.Log("Start(): Adding pScripts, values: " + u.Key + " - " + u.Value);
                     playerList[i].name = u.Value;
@@ -69,10 +69,15 @@ public class GameplayManager : MonoBehaviour
                     ++i;
                 }
 
-                foreach (GameObject player in playerList)
+                foreach (GameObject player in playerList) //Setup each individual player
                 {
                     if (player.GetComponent<SendRecieve>().assigned)
                     {
+                        Target t = player.GetComponent<Target>();
+                        t.bodyMesh.enabled = true;
+                        t.gunBarrelMesh.enabled = true;
+                        t.gun.enabled = true;
+
                         if (player.name == UserName)
                         {
                             SetupPlayer(player);
@@ -87,15 +92,13 @@ public class GameplayManager : MonoBehaviour
                         player.SetActive(false);
 					}
                 }
-
                 InitializePosition(c);
             }
-
             start = false;
             update = true;
 		}
 
-        if(update)
+        if(update) //Updates point system & HP UI
 		{
             hpText.text = "HP: " + playerHp.health.ToString();
             foreach (SendRecieve p in pScripts)
@@ -107,24 +110,18 @@ public class GameplayManager : MonoBehaviour
                 }
                 if (playerText && p.uid == UserUid)
                 {
-                    //if (p.kills != lastKills)
-                    //{
-                    //    kill = true;
-                    //    lastKills = p.kills;
-                    //    Debug.Log("KILL COUNTER UP");
-                    //}
                     playerText.text = p.kills.ToString();
                 }
             }
             firstPlayerText.text = firstPlayer.ToString();
-            if (firstPlayer >= 2)
+            if (firstPlayer >= 2) //If a player reaches the goal the game ends
             {
                 GameEnd();
             }
-            if (winnerText.text != "")
+            if (winnerText.text != "") //Timer for the winning screen
             {
                 winnerTimer += Time.deltaTime;
-                if (winnerTimer >= winnerTime)
+                if (winnerTimer >= winnerTime) //Return to lobby
                 {
                     winnerText.text = "";
                     winnerTimer = 0.0f;
@@ -138,6 +135,7 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    //End game setup
     void GameEnd()
     {
         winnerBox.SetActive(true);
@@ -201,9 +199,6 @@ public class GameplayManager : MonoBehaviour
 
     void InitializePosition(int c)
 	{
-        //switch (c)
-        //{
-        //Do not erase the logs. They're solving the Schrödinger's bug in here. If they weren't there, it'd bug the positions sometimes. We don't know either, it doesn't make sense.
         if (c == 1)
         {
             Debug.Log("InitializePosition(): Spawn 1");
@@ -230,11 +225,9 @@ public class GameplayManager : MonoBehaviour
             p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
             p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
         }
-        //}
-
     }
 
-    public void SendGameState() //YOU SEND INFO
+    public void SendGameState() //YOU SEND YOUR INFO
     {
         MemoryStream stream = new MemoryStream();
         BinaryWriter writer = new BinaryWriter(stream);
@@ -249,28 +242,7 @@ public class GameplayManager : MonoBehaviour
         {
             if (p.uid == UserUid)
             {
-                //writer.Write(kill);
-                //if (kill)
-                //{
-                //    uint killcount = 0;
-                //    List<uint> kills = new List<uint>();
-                //    foreach (SendRecieve k in pScripts)
-                //    {
-                //        if (k.target.health <= 0)
-                //        {
-                //            kills.Add(k.uid);
-                //            killcount++;
-                //        }
-                //    }
-                //    writer.Write(killcount);
-                //    foreach (uint k in kills)
-                //    {
-                //        writer.Write(k);
-                //    }
-                //    kill = false;
-                //}
-
-                //Health
+                //Health & Kills
                 writer.Write(p.target.health);
                 writer.Write(p.kills);
 
@@ -286,7 +258,7 @@ public class GameplayManager : MonoBehaviour
 
                 //Weapon Action
                 writer.Write(p.gun.fire);
-                writer.Write((double)p.gunDirection.xRotacion);
+                writer.Write((double)p.gunDirection.xRotation);
                 writer.Write(p.uidHit);
                 p.uidHit = -1;
 
@@ -303,8 +275,6 @@ public class GameplayManager : MonoBehaviour
         {
             client.SendInfo(stream);
         }
-
-        //TODO: Temporary solution
         Thread.Sleep(100);
     }
 
@@ -332,28 +302,10 @@ public class GameplayManager : MonoBehaviour
                 break;
             }
         }
-        //bool kill = reader.ReadBoolean();
-        //if (kill)
-        //{
-        //    uint count = reader.ReadUInt32();
-        //    List<uint> kills = new List<uint>();
-        //    for (int i = 0; i > count; ++i)
-        //    {
-        //        uint k = reader.ReadUInt32();
-        //        kills.Add(k);
-        //    }
-        //    foreach (SendRecieve k in pScripts)
-        //    {
-        //        if (kills.Contains(k.uid))
-        //        {
-        //            k.target.health = 0;
-        //        }
-        //    }
-        //}
 
         if (pSender != null)
         {
-            //Health
+            //Health & Kills
             pSender.target.health = reader.ReadInt32();
             pSender.kills = reader.ReadInt32();
 
@@ -369,11 +321,11 @@ public class GameplayManager : MonoBehaviour
 
             //Weapon Action
             pSender.gun.fire = reader.ReadBoolean();
-            pSender.gunDirection.xRotacion = (float)reader.ReadDouble();
+            pSender.gunDirection.xRotation = (float)reader.ReadDouble();
 
-            //Debug.Log("RecieveGameState(" + UserUid + "): New position: " + p.position + "with uid: " + p.uid);
             pSender.updateCharacter = true;
 
+            //User who got hit
             int _uidHit = reader.ReadInt32();
             if (UserUid == _uidHit)
             {
@@ -387,10 +339,7 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
-
         data = null;
-
-        //TODO: Temporary solution
         Thread.Sleep(100);
     }
 }

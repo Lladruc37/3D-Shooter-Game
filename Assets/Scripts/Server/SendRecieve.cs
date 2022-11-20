@@ -6,30 +6,30 @@ using UnityEngine;
 
 public class SendRecieve : MonoBehaviour
 {
-    //Variables for the different states of the players
+    //User info
+    public uint uid;
+    public string username;
     public bool isControlling = false;
     public bool assigned = false;
+    public bool updateCharacter;
     public GameplayManager gm;
+
+    //Gun
+    public int kills = 0;
+    public int uidHit = -1;
+    public int uidRecieved = -1;
     public Gun gun;
     public MouseLook gunDirection;
     public Target target;
 
-    public int kills = 0;
-    public int uidHit = -1;
-    public int uidRecieved = -1;
-
+    //Movement
     public bool moving;
-    public float timer;
-
-    public bool updateCharacter;
-    float myTimer = 0.0f;
-    float interpolationTimer = 0.15f;
-
     public Vector3 position;
     public Vector3 rotation;
-    public string username;
-    public uint uid;
 
+    //Send/Receive info
+    float myTimer = 0.0f;
+    float interpolationTimer = 0.15f;
     int lastHP = -1;
     Vector3 lastp = Vector3.one;
     Vector3 lastr = Vector3.one;
@@ -37,7 +37,7 @@ public class SendRecieve : MonoBehaviour
     void Update()
     {
         username = name;
-        if (!updateCharacter) //Update the position and rotation of the players
+        if (!updateCharacter) //Update the position & rotation of the players
         {
             position = transform.localPosition;
             rotation = transform.rotation.eulerAngles;
@@ -49,9 +49,12 @@ public class SendRecieve : MonoBehaviour
             {
                 if (myTimer >= interpolationTimer) //Send information in a short period of time
                 {
+                    target.bodyMesh.enabled = true;
+                    target.gunBarrelMesh.enabled = true;
+                    target.gunBodyMesh.enabled = true;
                     position = transform.localPosition;
                     rotation = transform.rotation.eulerAngles;
-                    rotation.x = gunDirection.xRotacion;
+                    rotation.x = gunDirection.xRotation;
                     if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
                     {
                         lastHP = target.health;
@@ -64,11 +67,17 @@ public class SendRecieve : MonoBehaviour
                         gm.sendThread.Start();
                     }
                 }
+                else
+                {
+                    target.bodyMesh.enabled = false;
+                    target.gunBarrelMesh.enabled = false;
+                    target.gunBodyMesh.enabled = false;
+                }
             }
         }
         else
         {
-            if (updateCharacter) //Updates character's health
+            if (updateCharacter) //Updates character's HP
             {
                 updateCharacter = false;
                 Debug.Log("Uid: " + uid + ", Hp: " + target.health);
@@ -76,10 +85,10 @@ public class SendRecieve : MonoBehaviour
                 if (target.health > 0)
                 {
                     this.transform.rotation = Quaternion.Euler(rotation);
-                    gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotacion, 0, 0);
+                    gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotation, 0, 0);
                     target.bodyMesh.enabled = true;
-                    target.gunMesh.enabled = true;
-                    target.gunBod.enabled = true;
+                    target.gunBarrelMesh.enabled = true;
+                    target.gunBodyMesh.enabled = true;
                     gun.enabled = true;
                 }
                 this.transform.localPosition = position;

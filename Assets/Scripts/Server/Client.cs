@@ -9,47 +9,49 @@ using UnityEngine.UI;
 
 public class Client : MonoBehaviour
 {
+    //Sockets & other
     public Socket server;
-    public Socket client;
     public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
     public IPEndPoint clientep;
     public EndPoint clientRemote;
 
-    public string stringData, input;
-    bool connected = false;
+    //Threads
     Thread connectThread = null;
     Thread receiveThread = null;
     Thread recievePlayerListThread = null;
 
+    //User info
     public uint uuid;
     public string username;
     public string serverIP;
     public byte[] data;
+    public string stringData, input;
 
+    //Client
     public bool start = false;
-    bool startGame = false;
-    bool endGame = false;
     public bool update = false;
-    public Chat chatManager;
+    bool connected = false;
     public bool messageRecieved = false;
     public bool newServerName = false;
     public bool newServerIP = false;
+    bool startGame = false;
+    bool endGame = false;
 
-    public Text clientTitle;
+    //Lobby
+    public LobbyScripts lobby;
+    public Chat chatManager;
     public Canvas chatCanvas;
+    public Text clientTitle;
+
+    //Gameplay
     public GameObject gameplayScene;
     public GameplayManager manager;
-    public LobbyScripts lobby;
-
-    // Start is called before the first frame update
-    void Start()
-    { }
 
     void Update()
     {
         if (start)
         {
-            if (newServerIP)
+            if (newServerIP) //Sets inputed IP
             {
                 ipep = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
             }
@@ -72,14 +74,14 @@ public class Client : MonoBehaviour
 
         if (update)
         {
-            if (messageRecieved)
+            if (messageRecieved) //Adds message to the chat
             {
                 messageRecieved = false;
                 Debug.Log("Update(): CurrentMessage: " + stringData);
                 chatManager.SendMsg(stringData);
                 stringData = "";
             }
-            if (newServerName)
+            if (newServerName) //Update the lobby title string
             {
                 newServerName = false;
                 string tmp = stringData.Remove(0, 14);
@@ -87,19 +89,19 @@ public class Client : MonoBehaviour
                 chatCanvas.GetComponent<Canvas>().enabled = true;
                 Debug.Log("Update(): Changed server title to: " + clientTitle.text);
             }
-            if (startGame)
+            if (startGame) //Called when start game message is recieved
             {
                 startGame = false;
                 manager.UserName = username;
                 lobby.StartGame();
             }
-            else if (endGame)
+            else if (endGame) //Called when end game message is recieved
             {
                 endGame = false;
                 lobby.LeaveServer();
             }
 
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return)) //Sends message to the server to be processed
             {
                 if (chatManager.input.text != "")
                 {
@@ -111,10 +113,12 @@ public class Client : MonoBehaviour
         }
     }
 
+    //Connect to the server
     void Connect()
     {
         try
         {
+            //Hello message & start receiving
             Send("/>client/>hello</" + username);
             connected = true;
             receiveThread = new Thread(Receive);
@@ -134,6 +138,7 @@ public class Client : MonoBehaviour
         }
     }
 
+    //Receive data from the server
     void Receive()
     {
         try
@@ -149,7 +154,7 @@ public class Client : MonoBehaviour
                     recv = server.ReceiveFrom(dataTMP, ref Remote);
                     Debug.Log("Recieve(): New message detected in client side!");
                     stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-                    if (!stringData.Contains("/>client"))
+                    if (!stringData.Contains("/>client")) //To avoid loopback
                     {
                         Debug.Log("Recieve(): Message was: " + stringData);
                         if (stringData.Equals(""))
@@ -158,12 +163,12 @@ public class Client : MonoBehaviour
                         }
                         else
                         {
-                            if (stringData.Contains("/>servername"))
+                            if (stringData.Contains("/>servername")) //Update server name
                             {
                                 newServerName = true;
                                 Debug.Log("Recieve(): New server name change detected");
                             }
-                            else if (stringData.Contains("/>PlayerInfo:"))
+                            else if (stringData.Contains("/>PlayerInfo:")) //Gameplay data
                             {
                                 Debug.Log("Recieve(): New game state detected");
                                 manager.data = dataTMP;
@@ -177,7 +182,7 @@ public class Client : MonoBehaviour
                                     Debug.LogError("Start(): Error starting thread: " + e);
                                 }
                             }
-                            else if (stringData.Contains("/>list</"))
+                            else if (stringData.Contains("/>list</")) //Player List to sync server & client to start game
                             {
                                 Debug.Log("Recieve(): New users list detected");
                                 data = dataTMP;
@@ -186,6 +191,7 @@ public class Client : MonoBehaviour
                             }
                             else
                             {
+                                //Start/End game
                                 if (stringData == "\nStarting game...")
                                 {
                                     startGame = true;
@@ -194,7 +200,7 @@ public class Client : MonoBehaviour
                                 {
                                     endGame = true;
                                 }
-
+                                //Add message to the chat
                                 messageRecieved = true;
                                 Debug.Log("Recieve(): No new server name changes detected");
                             }
@@ -209,6 +215,8 @@ public class Client : MonoBehaviour
             Debug.LogError("Recieve(): Error receiving: " + e);
         }
     }
+
+    //Send data to the server
     public void Send(string m)
     {
         Debug.Log("Send(): Sending message..." + m);
@@ -223,6 +231,7 @@ public class Client : MonoBehaviour
         }
     }
 
+    //Send gameplay data to the server
     public void SendInfo(MemoryStream stream)
     {
         Debug.Log("SendInfo(): Sending gameplay state...");
@@ -242,6 +251,7 @@ public class Client : MonoBehaviour
         }
     }
 
+    //Reads player list & setup to start game
     public void RecievePlayerList()
     {
         Debug.Log("RecieveList(): Recieved info");
@@ -277,11 +287,11 @@ public class Client : MonoBehaviour
                 lobby.usersList.Add(uid, tmp);
             }
         }
-
-        //TODO: Temporary solution
         data = null;
         Thread.Sleep(100);
     }
+
+    //Close all threads
     public void CloseThreads()
     {
         try
@@ -323,6 +333,8 @@ public class Client : MonoBehaviour
             Debug.LogError("CloseThreads(): Error leaving server: " + e);
         }
     }
+
+    //Close all connections
     public void Leave()
     {
         start = false;
@@ -342,7 +354,7 @@ public class Client : MonoBehaviour
 
         CloseThreads();
     }
-    // Update is called once per frame
+
     private void OnApplicationQuit()
     {
         if (server != null)

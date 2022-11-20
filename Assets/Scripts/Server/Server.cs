@@ -11,38 +11,46 @@ using System.IO;
 
 public class Server : MonoBehaviour
 {
-    //Sockets for the server
-    public Socket newSocket;
+    //Sockets & other
+    public Socket socket;
     public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
     public IPEndPoint clientep;
+    //To keep track of accepted users
     public List<IPEndPoint> clientListUDP = new List<IPEndPoint>();
 
+    //Threads
     Thread recieveDataThread = null;
+
+    //User info
+    public uint uid = 0;
+    public string hostUsername = "";
     string stringData = null;
 
-    public string hostUsername = "";
+    //Server
     public string serverName = "Server";
     public uint maxUid = 0;
-    public uint uid = 0;
-
     public bool start = false;
     bool update = false;
-    public Chat chatManager;
     public bool newMessage = false;
-    public GameObject gameplayScene;
+
+    //Lobby
     public LobbyScripts lobby;
+    public Chat chatManager;
+
+    //Gameplay
+    public GameObject gameplayScene;
     public GameplayManager manager;
 
     void Update()
     {
-        if (start) //
+        if (start) //Starts listening for client data
         {
             start = false;
             update = true;
             uid = maxUid;
             Debug.Log("Server(): Starting server...");
-            newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            newSocket.Bind(ipep);
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            socket.Bind(ipep);
 
             recieveDataThread = new Thread(RecieveData);
             try
@@ -54,18 +62,19 @@ public class Server : MonoBehaviour
                 Debug.LogError("Start(): Error starting thread: " + e);
             }
 
+            //Adds this user to the list of players
             AddPlayer(hostUsername);
             Debug.Log("Server(): Server started successfully!");
         }
 
-        if (update) //
+        if (update)
         {
-            if (newMessage)
+            if (newMessage) //Adds message to the chat
             {
                 newMessage = false;
                 chatManager.SendMsg(stringData);
             }
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return)) //Sends message to all the clients
             {
                 if (chatManager.input.text != "")
                 {
@@ -77,7 +86,7 @@ public class Server : MonoBehaviour
         }
     }
 
-    //
+    //Sends player list to all users
     public void SendPlayerList()
     {
         MemoryStream stream = new MemoryStream();
@@ -100,18 +109,17 @@ public class Server : MonoBehaviour
         Debug.Log("SendList(): Sending list...");
         BroadcastServerInfo(stream);
 
-        //TODO: Temporary solution
         Thread.Sleep(100);
     }
 
-    //Add a player to the list
+    //Adds a player to the list & binds them with a uid
     void AddPlayer(string name)
     {
         lobby.usersList.Add(maxUid, name);
         maxUid++;
     }
 
-    //Add a client by UDP method
+    //Adds a user to the list of listening users (to send messages)
     void AddClientUDP(IPEndPoint newClient)
     {
         if (newClient.ToString() != "")
@@ -125,12 +133,12 @@ public class Server : MonoBehaviour
         }
     }
 
-    //
+    //Process message
     public string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
     {
         string result = "";
         string[] splitName;
-        if (isServer)
+        if (isServer) //Will show as a server message/notification
         {
             if (m.Contains("/>startgame"))
             {
@@ -146,9 +154,9 @@ public class Server : MonoBehaviour
             }
             result = "\n" + m;
         }
-        else
+        else //Will show as a user message
         {
-            if (m.Contains("/>client/>uuid"))
+            if (m.Contains("/>client/>uuid")) //process user uid to get username
             {
                 string tmp = m.Remove(0, 15);
                 splitName = tmp.Split("</");
@@ -172,7 +180,7 @@ public class Server : MonoBehaviour
             }
         }
         Debug.Log("ManageMessage(): Sending message: " + result);
-        if (!isServernameMessage)
+        if (!isServernameMessage) //send it to this user also
         {
             stringData = result;
             newMessage = true;
@@ -180,7 +188,7 @@ public class Server : MonoBehaviour
         return result;
     }
 
-    //
+    //Sends the processed message to the list of listening users
     public void BroadcastServerMessage(string m)
     {
         byte[] dataTMP = new byte[1024];
@@ -189,11 +197,11 @@ public class Server : MonoBehaviour
         foreach (IPEndPoint ip in clientListUDP)
         {
             EndPoint remote = (EndPoint)ip;
-            newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
         }
     }
 
-    //
+    //Sends the player list to the list of listening users
     public void BroadcastServerInfo(MemoryStream stream)
     {
         byte[] dataTMP = new byte[1024];
@@ -202,11 +210,11 @@ public class Server : MonoBehaviour
         foreach (IPEndPoint ip in clientListUDP)
         {
             EndPoint remote = (EndPoint)ip;
-            newSocket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
         }
     }
 
-    //
+    //Sends the gameplay data to the list of listening users
     public void BroadcastPlayerInfo(byte[] data)
     {
         Debug.Log("BroadcastPlayerInfo(): Sending gameplay state from player...");
@@ -214,12 +222,12 @@ public class Server : MonoBehaviour
         foreach (IPEndPoint ip in clientListUDP)
         {
             EndPoint remote = (EndPoint)ip;
-            newSocket.SendTo(data, data.Length, SocketFlags.None, remote);
+            socket.SendTo(data, data.Length, SocketFlags.None, remote);
             Debug.Log("BroadcastPlayerInfo(): Message sent successfully");
         }
     }
 
-    //
+    //Receives data from users
     void RecieveData()
     {
         try
@@ -232,7 +240,7 @@ public class Server : MonoBehaviour
 
                 byte[] dataTMP = new byte[1024];
                 Debug.Log("RecieveData(): Begin to listen...");
-                recv = newSocket.ReceiveFrom(dataTMP, ref remote);
+                recv = socket.ReceiveFrom(dataTMP, ref remote);
                 Debug.Log("RecieveData(): New message!");
 
                 Debug.Log("RecieveData(): Count for stringData: " + recv);
@@ -241,12 +249,12 @@ public class Server : MonoBehaviour
                 stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
                 Debug.Log("RecieveData(): Message was: " + stringData);
 
-                newSocket.SendTo(dataTMP, recv, SocketFlags.None, remote);
+                socket.SendTo(dataTMP, recv, SocketFlags.None, remote);
                 if (stringData.Equals(""))
                 {
                     Debug.LogError("RecieveData(): Data was empty :c");
                 }
-                else if (stringData.Contains("/>hello</"))
+                else if (stringData.Contains("/>hello</")) //Hello message
                 {
                     Debug.Log("RecieveData(): New client detected!");
                     sender = (IPEndPoint)remote;
@@ -267,7 +275,7 @@ public class Server : MonoBehaviour
                     Thread.Sleep(100);
                     BroadcastServerMessage(ManageMessage(tmp, true));
                 }
-                else if (stringData.Contains("/>goodbye</"))
+                else if (stringData.Contains("/>goodbye</")) //Goodbye message
 				{
                     string[] tmpSplit = stringData.Split("</");
                     uint tmpUid = uint.Parse(tmpSplit[1]);
@@ -276,9 +284,11 @@ public class Server : MonoBehaviour
                     Thread.Sleep(100);
                     BroadcastServerMessage(ManageMessage(stringData,true));
                     Thread.Sleep(100);
+                    sender = (IPEndPoint)remote;
+                    clientListUDP.Remove(sender);
                     SendPlayerList();
                 }
-                else if (stringData.Contains("/>PlayerInfo:"))
+                else if (stringData.Contains("/>PlayerInfo:")) //Gameplay data
                 {
                     Debug.Log("RecieveData(): New game state detected");
                     manager.data = dataTMP;
@@ -286,10 +296,9 @@ public class Server : MonoBehaviour
                     manager.recieveThread.Start();
                     BroadcastPlayerInfo(dataTMP);
                 }
-                else
+                else //Process & broadcast message
                 {
                     Debug.Log("RecieveData(): Client data recieved: " + stringData);
-                    //TODO: chat message from user & send it the all players
                     BroadcastServerMessage(ManageMessage(stringData));
                 }
                 Thread.Sleep(100);
@@ -301,20 +310,22 @@ public class Server : MonoBehaviour
         }
     }
 
-    //
+    //Close all connections
     public void Close()
     {
         start = false;
         update = false;
 
-        if (newSocket != null)
+        if (socket != null)
         {
-            newSocket.Close();
-            newSocket = null;
+            socket.Close();
+            socket = null;
         }
 
         CloseThreads();
     }
+
+    //Close all threads
     private void CloseThreads()
     {
         try
@@ -330,14 +341,14 @@ public class Server : MonoBehaviour
             Debug.LogError("CloseThreads(): Error closing server: " + e);
         }
     }
+
     private void OnApplicationQuit()
     {
-        if (newSocket != null)
+        if (socket != null)
         {
-            newSocket.Close();
-            newSocket = null;
+            socket.Close();
+            socket = null;
         }
-
         CloseThreads();
     }
 }

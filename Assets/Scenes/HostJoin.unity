@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 21992046}
   - component: {fileID: 21992045}
   m_Layer: 5
-  m_Name: CreateButton
+  m_Name: HostButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -749,7 +749,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Host or user?
+  m_Text: Are you hosting or joining?
 --- !u!222 &1359701374
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -849,7 +849,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Create
+  m_Text: Host
 --- !u!222 &1510507967
 CanvasRenderer:
   m_ObjectHideFlags: 0

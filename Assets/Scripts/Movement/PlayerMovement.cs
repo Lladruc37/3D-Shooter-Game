@@ -6,14 +6,19 @@ public class PlayerMovement : MonoBehaviour
 {
     public CharacterController cc;
     public Camera cam;
-    public float speed = 12;
 
+    //movement
+    Vector3 direction = new Vector3();
+    public Vector3 velocity;
+    public float speed = 12.0f;
     public float height = 15.0f;
     public float gravity = -12.0f;
     public float maxStrength = 20.0f;
     public int maxBounces = 5;
-    public Vector3 velocity;
+    int currentBounceCount = 0;
+    float currentStrength = 0.0f;
 
+    //ground & gun
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask floorMask;
@@ -21,13 +26,9 @@ public class PlayerMovement : MonoBehaviour
     public bool GodMode = false;
     public bool WeaponMode = true;
 
-    Vector3 direction = new Vector3();
-    int currentBounceCount = 0;
-    float currentStrength = 0.0f;
-
     void Update()
     {
-        //Move with WASD in case the Weapon Mode is not working
+        //Move with WASD in god mode
         if (GodMode)
         {
             //Gravity
@@ -43,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
             float x = Input.GetAxis("Horizontal");
             float z = Input.GetAxis("Vertical");
 
+            //Movement calculations
             Vector3 move = transform.right * x + transform.forward * z;
             cc.Move(move * speed * Time.deltaTime);
         }
@@ -61,6 +63,7 @@ public class PlayerMovement : MonoBehaviour
                 currentStrength = maxStrength;
             }
 
+            //Handles bounces impact from the recoil
             Vector3 impact = Vector3.zero;
             if (currentBounceCount == maxBounces)
             {
@@ -71,10 +74,10 @@ public class PlayerMovement : MonoBehaviour
                 impact = direction.normalized * -currentStrength;
             }
             cc.Move(impact * speed * Time.deltaTime);
-
         }
 
-		if (isGrounded && velocity.y < 0)
+        //Handles bounces
+        if (isGrounded && velocity.y < 0)
 		{
 			velocity = Vector3.zero;
             if (currentBounceCount >= 0)
@@ -88,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        //Movement calculations
         velocity.y += gravity * Time.deltaTime;
         cc.Move(velocity * Time.deltaTime);
     }

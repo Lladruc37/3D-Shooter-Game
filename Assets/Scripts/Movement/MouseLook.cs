@@ -9,14 +9,13 @@ public class MouseLook : MonoBehaviour
     public Camera camBack;
     public bool start = false;
 
-    public float sensibility = 100;
+    public float sensibility = 100.0f;
     public Transform playerBody;
-    public float xRotacion;
-    private void Start()
-    {}
+    public float xRotation;
+
     void Update()
     {
-        if (start)
+        if (start) //game starts
         {
             start = false;
             lobbyCamera.enabled = false;
@@ -26,7 +25,7 @@ public class MouseLook : MonoBehaviour
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.F1))
+            if (Input.GetKeyDown(KeyCode.F1)) // lock/unlock mouse
             {
                 switch(Cursor.lockState)
                 {
@@ -42,7 +41,7 @@ public class MouseLook : MonoBehaviour
                         }
                 }
             }
-            if (Input.GetButton("Fire2"))
+            if (Input.GetButton("Fire2")) //back camera
             {
                 playerCam.enabled = false;
                 camBack.enabled = true;
@@ -53,15 +52,15 @@ public class MouseLook : MonoBehaviour
                 camBack.enabled = false;
             }
 
-            if (Cursor.lockState == CursorLockMode.Locked)
+            if (Cursor.lockState == CursorLockMode.Locked) //camera rotation using the mouse
             {
                 float mouseX = Input.GetAxis("Mouse X") * sensibility * Time.deltaTime;
                 float mouseY = Input.GetAxis("Mouse Y") * sensibility * Time.deltaTime;
 
-                xRotacion -= mouseY;
-                xRotacion = Mathf.Clamp(xRotacion, -90, 90);
+                xRotation -= mouseY;
+                xRotation = Mathf.Clamp(xRotation, -90, 90);
 
-                transform.localRotation = Quaternion.Euler(xRotacion, 0, 0);
+                transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
 
                 playerBody.Rotate(Vector3.up * mouseX);
                 camBack.transform.LookAt(playerBody);

@@ -9,23 +9,24 @@ public class Chat : MonoBehaviour
     public GameObject chatInput;
     public LobbyScripts lobby;
     public InputField input;
-    // Start is called before the first frame update
-    void Start()
-    {}
-    // Update is called once per frame
+
+    //Empties the message line if it's not empty
     void Update()
     {
         if (!chatInput) input.text = "";
     }
-    public void SendMsg(string msg/*,bool isServer = false*/)
+
+    //Adds the message to the chat
+    public void SendMsg(string msg)
     {
-        txt.text += /*"\n" +*/ msg;
+        txt.text += msg;
     }
+
+    //For toggling the chat on & off
     public void ToggleChat(bool toggle)
     {
         input.text = "";
         chatText.SetActive(toggle);
         chatInput.SetActive(toggle);
     }
-
 }

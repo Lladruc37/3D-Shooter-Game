@@ -12,27 +12,27 @@ using System.Linq;
 public class LobbyScripts : MonoBehaviour
 {
     //UI
+    public Text title;
     public Camera lobbyCamera;
     public Canvas lobbyCanvas;
-    public Text title;
-
     public Canvas inputCanvas;
     public InputField inputUserName;
     public InputField inputServer;
+    public GameObject startGameButton;
+    public GameObject exitGameButton;
 
     //Chat
     public Canvas chatCanvas;
     public Text chatText;
     public InputField inputChat;
 
-    public GameObject startGameButton;
-    public GameObject exitGameButton;
-
+    //Server/Client & other
     public Server server;
     public Client client;
     public GameObject gameplayScene;
     public Dictionary<uint,string> usersList = new Dictionary<uint, string>();
 
+    //Cap framerate
 	private void Start()
 	{
         Application.targetFrameRate = 60;
@@ -56,7 +56,8 @@ public class LobbyScripts : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
-    //Write the name of the server
+    //Server: Write the name of the server
+    //Client: Write the IP you want to connect
     public void ReadStringInputServer(string s)
     {
         inputServer.text = s;
@@ -72,7 +73,7 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("ReadStringInputServer(): New name: " + inputServer.text);
     }
 
-    //Write the name of the user
+    //Write the name of your username
     public void ReadStringInputUser(string s)
     {
         inputUserName.text = s;
@@ -137,7 +138,7 @@ public class LobbyScripts : MonoBehaviour
         lobbyCanvas.GetComponent<Canvas>().enabled = true;
     }
 
-    //Leave the server where the player is
+    //Leave the joined server
     public void LeaveServer()
     {
         Debug.Log("LeaveServer(): Leaving server.");
@@ -161,7 +162,7 @@ public class LobbyScripts : MonoBehaviour
         lobbyCanvas.GetComponent<Canvas>().enabled = true;
     }
 
-    //Button that starts the game
+    //Called when game starts
     public void StartGame()
     {
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();

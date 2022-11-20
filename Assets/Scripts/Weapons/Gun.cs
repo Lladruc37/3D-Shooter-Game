@@ -5,21 +5,20 @@ using UnityEngine.UI;
 
 public class Gun : MonoBehaviour
 {
-    //Weapon stats
+    //Weapon info
     public int damage = 1;
+    public float offset = 0.5f;
     public float range = 100f;
+    public float laserDuration = 0.05f;
 
     public Image hitMark;
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
     public SendRecieve playerInfo;
-
-    public float offset = 0.5f;
     public LineRenderer laserLine;
-    public float laserDuration = 0.05f;
 
-    //Checks if the player controls the gun and if it shoots
-    public bool isControllingGun;
+    //Gun bools
+    public bool isControllingGun = false;
     public bool fire = false;
 
     void Start()
@@ -82,7 +81,7 @@ public class Gun : MonoBehaviour
                 if (playerInfo.isControlling)
                 {
                     Target target = hit.collider.GetComponent<Target>();
-                    if (target != null)
+                    if (target != null) //If the target is a player
                     {
                         hitMark.enabled = true;
                         uint uid = hit.collider.GetComponent<SendRecieve>().uid;
