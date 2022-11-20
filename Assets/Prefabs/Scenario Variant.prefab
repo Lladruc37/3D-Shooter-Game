@@ -65,7 +65,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6659423056816359406, guid: 177f26878df162a45bb47c215a0ee823, type: 3}
       propertyPath: m_Name
-      value: Scenario
+      value: Scenario Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 6659423057170170117, guid: 177f26878df162a45bb47c215a0ee823, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.9548
+      objectReference: {fileID: 0}
+    - target: {fileID: 6659423057170170117, guid: 177f26878df162a45bb47c215a0ee823, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -13.9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 177f26878df162a45bb47c215a0ee823, type: 3}
