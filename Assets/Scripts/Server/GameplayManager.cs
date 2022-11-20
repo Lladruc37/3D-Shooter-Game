@@ -173,20 +173,23 @@ public class GameplayManager : MonoBehaviour
 	{
         switch (c)
         {
-            //TODO: Bug Start Position
+            //Do not erase the logs. They're solving the Schrödinger's bug in here. If they weren't there, it'd bug the positions sometimes. We don't know either, it doesn't make sense.
             case 1:
                 {
+                    Debug.Log("InitializePosition(): Spawn 1");
                     p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
                     break;
                 }
             case 2:
                 {
+                    Debug.Log("InitializePosition(): Spawn 2");
                     p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
                     p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
                     break;
                 }
             case 3:
                 {
+                    Debug.Log("InitializePosition(): Spawn 3");
                     p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
                     p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
                     p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
@@ -194,6 +197,7 @@ public class GameplayManager : MonoBehaviour
                 }
             case 4:
                 {
+                    Debug.Log("InitializePosition(): Spawn 4");
                     p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
                     p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
                     p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);

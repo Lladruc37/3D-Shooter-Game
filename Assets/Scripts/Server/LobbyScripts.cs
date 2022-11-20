@@ -25,6 +25,7 @@ public class LobbyScripts : MonoBehaviour
     public InputField inputChat;
 
     public GameObject startGameButton;
+    public GameObject exitGameButton;
 
     public Server server;
     public Client client;
@@ -80,6 +81,7 @@ public class LobbyScripts : MonoBehaviour
         inputCanvas.GetComponent<Canvas>().enabled = false;
         chatCanvas.GetComponent<Canvas>().enabled = true;
         startGameButton.SetActive(true);
+        exitGameButton.SetActive(true);
         chatText.text = "This is the beginning of the chat!";
         server.start = true;
     }
@@ -89,6 +91,8 @@ public class LobbyScripts : MonoBehaviour
         Debug.Log("JoinServer(): Joined server: " + inputServer.text);
         title.text = "No server found...";
         inputCanvas.GetComponent<Canvas>().enabled = false;
+        exitGameButton.SetActive(true);
+        
         chatText.text = "This is the beginning of the chat!";
         client.start = true;
     }
@@ -101,6 +105,7 @@ public class LobbyScripts : MonoBehaviour
         inputCanvas.GetComponent<Canvas>().enabled = true;
         chatCanvas.GetComponent<Canvas>().enabled = false;
         startGameButton.SetActive(false);
+        exitGameButton.SetActive(false);
         inputUserName.text = "";
         inputServer.text = "";
         inputChat.text = "";
@@ -122,6 +127,7 @@ public class LobbyScripts : MonoBehaviour
         title.text = "No server found...";
         inputCanvas.GetComponent<Canvas>().enabled = true;
         chatCanvas.GetComponent<Canvas>().enabled = false;
+        exitGameButton.SetActive(false);
         inputUserName.text = "";
         inputServer.text = "";
         inputChat.text = "";

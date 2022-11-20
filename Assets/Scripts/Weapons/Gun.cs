@@ -14,6 +14,7 @@ public class Gun : MonoBehaviour
     public SendRecieve playerInfo;
 
     //public float fireRate = 0.2f;
+    public float offset = 0.5f;
     public LineRenderer laserLine;
     public float laserDuration = 0.05f;
     //float fireTimer;
@@ -34,7 +35,7 @@ public class Gun : MonoBehaviour
         {
             //fireTimer += Time.deltaTime;
 
-            if (Input.GetButtonDown("Fire1"))
+            if (Input.GetButton("Fire1"))
             {
                 fire = true;
                 StartCoroutine(ShootLaser());
@@ -73,7 +74,8 @@ public class Gun : MonoBehaviour
             Ray ray = new Ray(transform.position, transform.forward);
             if (fpsCam)
             {
-                ray = new Ray(transform.position, fpsCam.transform.forward);
+                Vector3 origin = fpsCam.transform.position + (offset * fpsCam.transform.forward);
+                ray = new Ray(origin, fpsCam.transform.forward);
             }
             Debug.Log("ShootLaser(): Shoot!");
             RaycastHit hit;

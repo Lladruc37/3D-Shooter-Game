@@ -115,6 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   range: 350
+  hitMark: {fileID: 0}
   fpsCam: {fileID: 7056015063285081831}
   muzzleFlash: {fileID: 7056015063186161624}
   playerInfo: {fileID: 7056015063186161627}
@@ -5430,6 +5431,7 @@ MonoBehaviour:
   controller: {fileID: 7056015063186161629}
   body: {fileID: 5801553125977564559}
   sr: {fileID: 7056015063186161627}
+  deathBox: {fileID: 0}
   deathText: {fileID: 0}
   health: 5
   maxHealth: 5

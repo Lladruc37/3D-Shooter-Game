@@ -344,6 +344,7 @@ MonoBehaviour:
   chatText: {fileID: 1471888351}
   inputChat: {fileID: 1279512060}
   startGameButton: {fileID: 1531101804}
+  exitGameButton: {fileID: 2011787810}
   server: {fileID: 146827586}
   client: {fileID: 0}
   gameplayScene: {fileID: 360293317}
@@ -1168,7 +1169,6 @@ RectTransform:
   - {fileID: 1391376109}
   - {fileID: 1279512059}
   - {fileID: 712586337}
-  - {fileID: 2011787811}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1502,8 +1502,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1739341480}
   m_HandleRect: {fileID: 1739341478}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.15099029
+  m_Value: 1
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2529,6 +2529,7 @@ RectTransform:
   m_Children:
   - {fileID: 1304015235}
   - {fileID: 1531101808}
+  - {fileID: 2011787811}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2634,7 +2635,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -3093212.5}
+  m_AnchoredPosition: {x: -0.40000916, y: -230.98978}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1471888350
@@ -3588,7 +3589,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2011787811
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3602,8 +3603,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1335176982}
-  m_Father: {fileID: 738801770}
-  m_RootOrder: 3
+  m_Father: {fileID: 1441267845}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
