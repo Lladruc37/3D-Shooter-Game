@@ -7,10 +7,10 @@ We are developing a 3D shooter game for the Networks and Online Games subject of
 _Backfired!_ is a FPS where the end goal is to get 25 points. The twist is that, when you shoot, you are also move backwards, which can be used to jump and move in a fun and unique way. The intended goal is to have 4 different players in the game.
 
 ### Team Contributions:
-- [Sergi Colomer](https://github.com/Lladruc37): TCP & General Chat functionality
-- [Guillem Alava](https://github.com/WillyTrek19): UDP & UI/Scene Design
-- [Carles López](https://github.com/carlesli): Bug Fixing & QA
-- [Núria Lamonja](https://github.com/Needlesslord): UI Interconnectivity & Functions
+- [Sergi Colomer](https://github.com/Lladruc37): TCP & General Chat functionality, Serialization & Data Dispatch between Server and Client interchangeably
+- [Guillem Alava](https://github.com/WillyTrek19): UDP & UI/Scene Design, Serialization & Data Dispatch between Server and Client interchangeably
+- [Carles López](https://github.com/carlesli): Bug Fixing & QA, Gameplay
+- [Núria Lamonja](https://github.com/Needlesslord): UI Interconnectivity & Functions, Gameplay
 
 ### Instructions to start the game:
 
@@ -45,6 +45,7 @@ As of now, Backfired only works on LAN.
 ### Comments:
 - As it's presented, the settings of the project are set as if to be tested in two different computers. If it were to be tried using the same computer, a message error regarding the existance of two EventSystems at the same time would create an exception error and both UIs would appear overlayed one on top of the other. The first problem is solved by simply removing one of the EventSystems and the 2nd error has been solved in the previous lines.
 - Demo Video showcases things that aren't present in the final deliverable (such as UI sizes and Testing Assets). This is because the Unity package delivered only contains the necessary files to properly operate the Lab exercise with its intended purpose and it was done before some of the latest modifications/bug fixes.
+- There is lag spike when two players send a message in chat, it has to be improved
 
 ### Known bugs:
 - Sometimes, when ending to debug, unity logs will start spamming 2 messages simoultaneously, preceded by a socket error not being properly closed. This bug can be solved if starting and ending to debug again and is probably due to an incorrect cleanup of the project. As it is an error regarding the Unity Inspector, we haven't invested time in solving this issue.
