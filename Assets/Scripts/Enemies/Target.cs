@@ -51,18 +51,33 @@ public class Target : MonoBehaviour
                 {
                     Debug.Log("YOU RESPAWN");
                     controller.enabled = true;
-                    controller.Move(new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f)));
+                    controller.Move(RandomizeSpawn());
                 }
                 else
                 {
                     body.enabled = true;
-                    sr.position = new Vector3(Random.Range(-20.0f, 20.0f), 1.234f, Random.Range(-10.0f, 10.0f));
+                    sr.position = RandomizeSpawn();
                     sr.updateCharacter = true;
                 }
                 health = maxHealth;
             }
         }
 	}
+
+    Vector3 RandomizeSpawn()
+	{
+        Vector3 result = new Vector3(Random.Range(-115.0f, 65.0f), 1.234f, Random.Range(-105.0f, 75.0f));
+        return result;
+	}
+
+	private void OnCollisionEnter(Collision collision)
+	{
+        if(!collision.transform.GetComponent("Target"))
+		{
+            sr.position = RandomizeSpawn();
+		}
+	}
+
 
 	public bool takeDamage (int amount)
     {

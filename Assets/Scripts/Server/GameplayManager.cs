@@ -176,28 +176,28 @@ public class GameplayManager : MonoBehaviour
             //TODO: Bug Start Position
             case 1:
                 {
-                    p1.transform.localPosition = new Vector3(-15.0f, groundLevel, -1.0f);
+                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
                     break;
                 }
             case 2:
                 {
-                    p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
-                    p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
+                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
+                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
                     break;
                 }
             case 3:
                 {
-                    p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
-                    p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
-                    p3.transform.localPosition = new Vector3(-110.0f, groundLevel, -15.0f);
+                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
+                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
+                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
                     break;
                 }
             case 4:
                 {
                     p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
                     p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
-                    p3.transform.localPosition = new Vector3(-110.0f, groundLevel, -15.0f);
-                    p4.transform.localPosition = new Vector3(80.0f, groundLevel, -15.0f);
+                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
+                    p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
                     break;
                 }
         }
