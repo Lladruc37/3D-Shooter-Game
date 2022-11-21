@@ -69,9 +69,12 @@ public class SendRecieve : MonoBehaviour
                 }
                 else
                 {
-                    target.bodyMesh.enabled = false;
-                    target.gunBarrelMesh.enabled = false;
-                    target.gunBodyMesh.enabled = false;
+                    if (target.health <= 0)
+                    {
+                        target.bodyMesh.enabled = false;
+                        target.gunBarrelMesh.enabled = false;
+                        target.gunBodyMesh.enabled = false;
+                    }
                 }
             }
         }

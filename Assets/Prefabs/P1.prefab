@@ -114,17 +114,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 10
+  offset: 0.5
   range: 350
+  laserDuration: 0.15
   hitMark: {fileID: 0}
   fpsCam: {fileID: 7056015063285081831}
   muzzleFlash: {fileID: 7056015063186161624}
   playerInfo: {fileID: 7056015063186161627}
   laserLine: {fileID: 7056015062042124900}
-  laserDuration: 0.15
   isControllingGun: 0
   fire: 0
 --- !u!120 &7056015062042124900
 LineRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -218,10 +220,13 @@ LineRenderer:
     numCapVertices: 0
     alignment: 0
     textureMode: 0
+    textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
+  m_MaskInteraction: 0
   m_UseWorldSpace: 1
   m_Loop: 0
+  m_ApplyActiveColorSpace: 0
 --- !u!1 &7056015062632573481
 GameObject:
   m_ObjectHideFlags: 0
@@ -824,6 +829,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
+    gravitySource: 0
     maxNumParticles: 1000
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
@@ -4266,6 +4272,7 @@ ParticleSystem:
         m_RotationOrder: 4
     minVertexDistance: 0.2
     textureMode: 0
+    textureScale: {x: 1, y: 1}
     ribbonCount: 1
     shadowBias: 0.5
     worldSpace: 0
@@ -5398,12 +5405,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cc: {fileID: 7056015063186161629}
   cam: {fileID: 7056015063285081831}
+  velocity: {x: 0, y: 0, z: 0}
   speed: 2
   height: 7.5
   gravity: -15
   maxStrength: 8
   maxBounces: 8
-  velocity: {x: 0, y: 0, z: 0}
   groundCheck: {fileID: 7056015063080898629}
   groundDistance: 0.1
   floorMask:
@@ -5425,13 +5432,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyMesh: {fileID: 7056015063558104420}
-  gunMesh: {fileID: 7056015062042124923}
-  gunBod: {fileID: 7056015062844333005}
+  gunBarrelMesh: {fileID: 7056015062042124923}
+  gunBodyMesh: {fileID: 7056015062844333005}
   gun: {fileID: 7056015062042124901}
   controller: {fileID: 7056015063186161629}
-  body: {fileID: 5801553125977564559}
+  bodyCollider: {fileID: 5801553125977564559}
   sr: {fileID: 7056015063186161627}
-  deathBox: {fileID: 0}
+  deathBoxUI: {fileID: 0}
   deathText: {fileID: 0}
   health: 5
   maxHealth: 5
@@ -5448,22 +5455,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5577b76bce542d24995b1951a2d3ba1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uid: 0
+  username: 
   isControlling: 1
   assigned: 0
+  updateCharacter: 0
   gm: {fileID: 0}
-  gun: {fileID: 7056015062042124901}
-  gunDirection: {fileID: 7056015063285081828}
-  target: {fileID: 7056015063186161625}
   kills: 0
   uidHit: -1
   uidRecieved: -1
+  gun: {fileID: 7056015062042124901}
+  gunDirection: {fileID: 7056015063285081828}
+  target: {fileID: 7056015063186161625}
   moving: 0
-  timer: 0
-  updateCharacter: 0
   position: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
-  username: 
-  uid: 0
 --- !u!1 &7056015063285081825
 GameObject:
   m_ObjectHideFlags: 0
@@ -5568,7 +5574,7 @@ MonoBehaviour:
   start: 0
   sensibility: 500
   playerBody: {fileID: 7056015063186161626}
-  xRotacion: 0
+  xRotation: 0
 --- !u!1 &7056015063320586135
 GameObject:
   m_ObjectHideFlags: 0
