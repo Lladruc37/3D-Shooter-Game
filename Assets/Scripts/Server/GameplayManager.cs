@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -248,8 +249,16 @@ public class GameplayManager : MonoBehaviour
 
                 //Position
                 writer.Write((double)p.position.x);
-                writer.Write((double)p.position.y);
                 writer.Write((double)p.position.z);
+                if (p.position.y == groundLevel)
+                {
+                    writer.Write(true);
+                }
+                else
+                {
+                    writer.Write(false);
+                    writer.Write((double)p.position.y);
+                }
 
                 //Rotation
                 writer.Write((double)p.rotation.x);
@@ -311,8 +320,15 @@ public class GameplayManager : MonoBehaviour
 
             //Position
             pSender.position.x = (float)reader.ReadDouble();
-            pSender.position.y = (float)reader.ReadDouble();
             pSender.position.z = (float)reader.ReadDouble();
+            if(reader.ReadBoolean())
+			{
+                pSender.position.y = groundLevel;
+			}
+            else
+			{
+                pSender.position.y = (float)reader.ReadDouble();
+			}
 
             //Rotation
             pSender.rotation.x = (float)reader.ReadDouble();
@@ -342,4 +358,16 @@ public class GameplayManager : MonoBehaviour
         data = null;
         Thread.Sleep(100);
     }
+
+    //for positions & rotations
+    // 0.1 & 0.01 precision respectively
+    UInt16 ConvertToFixed(float inNumber, float inMin, float inPrecision)
+	{
+        return (UInt16)((inNumber - inMin) /inPrecision);
+	}
+
+    float ConvertFromFixed(UInt16 inNumber, float inMin, float inPrecision)
+	{
+        return (float)(inNumber * inPrecision) + inMin;
+	}
 }
