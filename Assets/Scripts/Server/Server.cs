@@ -109,7 +109,7 @@ public class Server : MonoBehaviour
         Debug.Log("SendList(): Sending list...");
         BroadcastServerInfo(stream);
 
-        Thread.Sleep(100);
+        Thread.Sleep(1);
     }
 
     //Adds a player to the list & binds them with a uid
@@ -268,11 +268,11 @@ public class Server : MonoBehaviour
 
                     string tmp = stringData;
                     Debug.Log("RecieveData(): " + stringData);
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     BroadcastServerMessage(ManageMessage("/>servername " + serverName, true, true));
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     SendPlayerList();
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     BroadcastServerMessage(ManageMessage(tmp, true));
                 }
                 else if (stringData.Contains("/>goodbye</")) //Goodbye message
@@ -281,9 +281,9 @@ public class Server : MonoBehaviour
                     uint tmpUid = uint.Parse(tmpSplit[1]);
                     stringData = "User " + lobby.usersList[tmpUid] + " has left the server!";
                     lobby.usersList.Remove(tmpUid);
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     BroadcastServerMessage(ManageMessage(stringData,true));
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     sender = (IPEndPoint)remote;
                     clientListUDP.Remove(sender);
                     SendPlayerList();
@@ -301,7 +301,7 @@ public class Server : MonoBehaviour
                     Debug.Log("RecieveData(): Client data recieved: " + stringData);
                     BroadcastServerMessage(ManageMessage(stringData));
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(1);
             }
         }
         catch (Exception e)

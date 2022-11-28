@@ -204,7 +204,7 @@ public class Client : MonoBehaviour
                                 messageRecieved = true;
                                 Debug.Log("Recieve(): No new server name changes detected");
                             }
-                            Thread.Sleep(100);
+                            Thread.Sleep(1);
                         }
                     }
                 }
@@ -288,7 +288,7 @@ public class Client : MonoBehaviour
             }
         }
         data = null;
-        Thread.Sleep(100);
+        Thread.Sleep(1);
     }
 
     //Close all threads

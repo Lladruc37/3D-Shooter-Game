@@ -19,6 +19,7 @@ public class GameplayManager : MonoBehaviour
     public Thread recieveThread = null;
 
     //Point system
+    public int pointsToScore = 5;
     public int firstPlayer = 0;
     public string firstPlayerUsername = "";
     public float winnerTime = 5.0f;
@@ -115,7 +116,7 @@ public class GameplayManager : MonoBehaviour
                 }
             }
             firstPlayerText.text = firstPlayer.ToString();
-            if (firstPlayer >= 2) //If a player reaches the goal the game ends
+            if (firstPlayer >= pointsToScore) //If a player reaches the goal the game ends
             {
                 GameEnd();
             }
@@ -284,7 +285,7 @@ public class GameplayManager : MonoBehaviour
         {
             client.SendInfo(stream);
         }
-        Thread.Sleep(100);
+        Thread.Sleep(1);
     }
 
     public void RecieveGameState() //GATHER OTHERS INFO
@@ -356,7 +357,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
         data = null;
-        Thread.Sleep(100);
+        Thread.Sleep(1);
     }
 
     //for positions & rotations
