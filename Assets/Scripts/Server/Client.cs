@@ -105,9 +105,16 @@ public class Client : MonoBehaviour
             {
                 if (chatManager.input.text != "")
                 {
-                    string msg = "\n" + "/>client/>chat" + uuid + "</" + chatManager.input.text;
+                    MemoryStream stream = new MemoryStream();
+                    BinaryWriter writer = new BinaryWriter(stream);
+                    writer.Write(true);
+                    writer.Write((short)packetType.chat);
+                    writer.Write(uuid);
+                    writer.Write(chatManager.input.text);
+
                     chatManager.input.text = "";
-                    Send(msg);
+
+                    SendInfo(stream);
                 }
             }
         }
@@ -167,8 +174,10 @@ public class Client : MonoBehaviour
                     Debug.Log("Recieve(): New message detected in client side!");
                     if (!isLoopback) //To avoid loopback
                     {
+                        Debug.Log("Recieve(): No Loopback detected!");
                         short header = reader.ReadInt16();
                         packetType type = (packetType)header;
+
                         if (type == packetType.error)
                         {
                             Debug.Log("Recieve(): Data was empty :c");
@@ -202,7 +211,7 @@ public class Client : MonoBehaviour
                             recievePlayerListThread.Start();
                             Thread.Sleep(200);
                         }
-                        else
+                        else //chat
                         {
                             //Start/End game
                             if (type == packetType.startGame)
@@ -215,10 +224,14 @@ public class Client : MonoBehaviour
                             }
                             //Add message to the chat
                             stringData = reader.ReadString();
+                            Debug.Log("Recieve(): Message was: " + stringData);
                             messageRecieved = true;
-                            Debug.Log("Recieve(): No new server name changes detected");
                         }
                         Thread.Sleep(1);
+                    }
+                    else
+                    {
+                        Debug.Log("Recieve(): Loopback detected. Procedure canceled.");
                     }
                 }
             }
@@ -228,22 +241,6 @@ public class Client : MonoBehaviour
             Debug.LogError("Recieve(): Error receiving: " + e);
         }
     }
-
-    //Send data to the server
-    public void Send(string m)
-    {
-        Debug.Log("Send(): Sending message..." + m);
-        byte[] dataTMP = Encoding.ASCII.GetBytes(m);
-        try
-        {
-            server.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Send(): Error receiving: " + e);
-        }
-    }
-
     //Send gameplay data to the server
     public void SendInfo(MemoryStream stream)
     {

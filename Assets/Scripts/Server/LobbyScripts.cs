@@ -122,7 +122,9 @@ public class LobbyScripts : MonoBehaviour
         BinaryWriter writer = new BinaryWriter(stream);
         writer.Write(false);
         writer.Write((short)packetType.endSession);
-        writer.Write("Ending session...");
+        string msg = "\nEnding session...";
+        writer.Write(msg);
+        server.chatManager.SendMsg(msg);
 
         server.BroadcastServerInfo(stream);
         inputCanvas.GetComponent<Canvas>().enabled = true;
@@ -192,8 +194,10 @@ public class LobbyScripts : MonoBehaviour
             BinaryWriter writer = new BinaryWriter(stream);
             writer.Write(false);
             writer.Write((short)packetType.startGame);
-            writer.Write("Starting session...");
+            string msg = "\nStarting game...";
+            writer.Write(msg);
             server.BroadcastServerInfo(stream);
+            server.chatManager.SendMsg(msg);
         }
 
         Debug.Log("LobbyScripts(): Game scene enabled...");

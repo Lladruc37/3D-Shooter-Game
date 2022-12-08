@@ -78,9 +78,17 @@ public class Server : MonoBehaviour
             {
                 if (chatManager.input.text != "")
                 {
-                    string msg = "\n" + "/>client/>chat" + uid + "</" + chatManager.input.text;
+                    MemoryStream stream = new MemoryStream();
+                    BinaryWriter writer = new BinaryWriter(stream);
+                    writer.Write(false);
+                    writer.Write((short)packetType.chat);
+                    string resultingMessage = "\n[" + lobby.usersList[uid] + "]>>" + chatManager.input.text;
+                    chatManager.SendMsg(resultingMessage);
+                    writer.Write(resultingMessage);
+
                     chatManager.input.text = "";
-                    BroadcastServerMessage(ManageMessage(msg));
+
+                    BroadcastServerInfo(stream);
                 }
             }
         }
@@ -131,74 +139,6 @@ public class Server : MonoBehaviour
         else
         {
             Debug.LogError("AddClientUDP(): No clients connected. Waiting to accept...");
-        }
-    }
-
-    //Process message
-    public string ManageMessage(string m, bool isServer = false, bool isServernameMessage = false)
-    {
-        string result = "";
-        string[] splitName;
-        if (isServer) //Will show as a server message/notification
-        {
-            if (m.Contains("/>startgame"))
-            {
-                string tmp = m;
-                splitName = tmp.Split("</");
-                m = splitName[1];
-            }
-            else if (m.Contains("/>endsession"))
-            {
-                string tmp = m;
-                splitName = tmp.Split("</");
-                m = splitName[1];
-            }
-            result = "\n" + m;
-        }
-        else //Will show as a user message
-        {
-            if (m.Contains("/>client/>chat")) //process user uid to get username
-            {
-                string tmp = m.Remove(0, 15);
-                splitName = tmp.Split("</");
-                m = splitName[1];
-                uint uid = uint.Parse(splitName[0]);
-                string username = "";
-                if (lobby.usersList.ContainsKey(uid))
-                {
-                    username = lobby.usersList[uid];
-                    result = "\n[" + username + "]>>" + m;
-                }
-                else
-                {
-                    Debug.LogError("ManageMessage(): No username with UID: " + uid);
-                    result = "";
-                }
-            }
-            else
-            {
-                Debug.LogError("ManageMessage(): Error: No username detected");
-            }
-        }
-        Debug.Log("ManageMessage(): Sending message: " + result);
-        if (!isServernameMessage) //send it to this user also
-        {
-            stringData = result;
-            newMessage = true;
-        }
-        return result;
-    }
-
-    //Sends the processed message to the list of listening users
-    public void BroadcastServerMessage(string m)
-    {
-        byte[] dataTMP = new byte[1024];
-        dataTMP = Encoding.ASCII.GetBytes(m);
-
-        foreach (IPEndPoint ip in clientListUDP)
-        {
-            EndPoint remote = (EndPoint)ip;
-            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
         }
     }
 
@@ -269,11 +209,11 @@ public class Server : MonoBehaviour
                     string userName = reader.ReadString();
                     AddPlayer(userName);
 
-                    stringData = "User '" + userName + "' joined the lobby!";
+                    stringData = "\nUser '" + userName + "' joined the lobby!";
+                    newMessage = true;
 
                     string tmp = stringData;
                     Debug.Log("RecieveData(): " + stringData);
-                    Thread.Sleep(1);
 
                     MemoryStream streamHello = new MemoryStream();
                     BinaryWriter writerHello = new BinaryWriter(streamHello);
@@ -281,18 +221,34 @@ public class Server : MonoBehaviour
                     writerHello.Write((short)packetType.servername);
                     writerHello.Write(serverName);
 
+                    MemoryStream streamChat = new MemoryStream();
+                    BinaryWriter writerChat = new BinaryWriter(streamChat);
+                    writerChat.Write(false);
+                    writerChat.Write((short)packetType.chat);
+                    writerChat.Write(stringData);
+
                     BroadcastServerInfo(streamHello);
                     Thread.Sleep(100);
                     SendPlayerList();
+                    Thread.Sleep(100);
+                    BroadcastServerInfo(streamChat);
                 }
                 else if (type == packetType.goodbye) //Goodbye message
 				{
                     uint tmpUid = reader.ReadUInt32();
-                    stringData = "User '" + lobby.usersList[tmpUid] + "' has left the server!";
+
+                    MemoryStream streamGoodbye = new MemoryStream();
+                    BinaryWriter writerGoodbye = new BinaryWriter(streamGoodbye);
+                    writerGoodbye.Write(false);
+                    writerGoodbye.Write((short)packetType.chat);
+
+                    stringData = "\nUser '" + lobby.usersList[tmpUid] + "' has left the server!";
+                    newMessage = true;
+                    writerGoodbye.Write(stringData);
+
                     lobby.usersList.Remove(tmpUid);
-                    Thread.Sleep(1);
-                    BroadcastServerMessage(ManageMessage(stringData,true));
-                    Thread.Sleep(1);
+                    BroadcastServerInfo(streamGoodbye);
+                    Thread.Sleep(100);
                     sender = (IPEndPoint)remote;
                     clientListUDP.Remove(sender);
                     SendPlayerList();
@@ -305,10 +261,32 @@ public class Server : MonoBehaviour
                     manager.recieveThread.Start();
                     BroadcastPlayerInfo(dataTMP);
                 }
-                else //Process & broadcast message
+                else if (type == packetType.chat) //Process & broadcast message
                 {
-                    Debug.Log("RecieveData(): Client data recieved: " + stringData);
-                    BroadcastServerMessage(ManageMessage(stringData));
+                    Debug.Log("RecieveData(): New chat message from user!");
+                    uint uid = reader.ReadUInt32();
+                    string m = reader.ReadString();
+
+                    MemoryStream streamChat = new MemoryStream();
+                    BinaryWriter writerChat = new BinaryWriter(streamChat);
+                    writerChat.Write(false);
+                    writerChat.Write((short)packetType.chat);
+                    if (lobby.usersList.ContainsKey(uid))
+                    {
+                        string username = lobby.usersList[uid];
+                        string resultingMessage = "\n[" + username + "]>>" + m;
+                        stringData = resultingMessage;
+                        writerChat.Write(resultingMessage);
+                    }
+                    else
+                    {
+                        string resultingMessage = "Error Message: Something wrong happened!";
+                        stringData = resultingMessage;
+                        writerChat.Write(resultingMessage);
+                    }
+                    newMessage = true;
+
+                    BroadcastServerInfo(streamChat);
                 }
                 Thread.Sleep(1);
             }
