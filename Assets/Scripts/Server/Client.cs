@@ -178,60 +178,68 @@ public class Client : MonoBehaviour
                         short header = reader.ReadInt16();
                         packetType type = (packetType)header;
 
-                        if (type == packetType.error)
+                        switch (type)
                         {
-                            Debug.Log("Recieve(): Data was empty :c");
-                        }
-                        else if (type == packetType.servername) //Update server name
-                        {
-                            newServerName = true;
-                            stringData = reader.ReadString();
-                            Debug.Log("Recieve(): New server name change detected");
-                            Thread.Sleep(200);
-                        }
-                        else if (type == packetType.playerInfo) //Gameplay data
-                        {
-                            Debug.Log("Recieve(): New game state detected");
-                            manager.data = dataTMP;
-                            manager.recieveThread = new Thread(manager.RecieveGameState);
-                            try
-                            {
-                                manager.recieveThread.Start();
-                            }
-                            catch (ThreadStartException e)
-                            {
-                                Debug.LogError("Start(): Error starting thread: " + e);
-                            }
-                        }
-                        else if (type == packetType.list) //Player List to sync server & client to start game
-                        {
-                            Debug.Log("Recieve(): New users list detected");
-                            data = dataTMP;
-                            recievePlayerListThread = new Thread(RecievePlayerList);
-                            recievePlayerListThread.Start();
-                            Thread.Sleep(200);
-                        }
-                        else //chat
-                        {
-                            //Start/End game
-                            if (type == packetType.startGame)
-                            {
-                                startGame = true;
-                            }
-                            else if (type == packetType.endSession)
-                            {
-                                endGame = true;
-                            }
-                            //Add message to the chat
-                            stringData = reader.ReadString();
-                            Debug.Log("Recieve(): Message was: " + stringData);
-                            messageRecieved = true;
+                            case packetType.error:
+                                {
+                                    Debug.Log("Recieve(): Error packet type received :c");
+                                    break;
+                                }
+                            case packetType.servername:
+                                {
+                                    newServerName = true;
+                                    stringData = reader.ReadString();
+                                    Debug.Log("Recieve(): New server name change detected");
+                                    Thread.Sleep(200);
+                                    break;
+                                }
+                            case packetType.playerInfo:
+                                {
+                                    Debug.Log("Recieve(): New game state detected");
+                                    manager.data = dataTMP;
+                                    manager.recieveThread = new Thread(manager.RecieveGameState);
+                                    try
+                                    {
+                                        manager.recieveThread.Start();
+                                    }
+                                    catch (ThreadStartException e)
+                                    {
+                                        Debug.LogError("Start(): Error starting thread: " + e);
+                                    }
+                                    break;
+                                }
+                            case packetType.list:
+                                {
+                                    Debug.Log("Recieve(): New users list detected");
+                                    data = dataTMP;
+                                    recievePlayerListThread = new Thread(RecievePlayerList);
+                                    recievePlayerListThread.Start();
+                                    Thread.Sleep(200);
+                                    break;
+                                }
+                            default:
+                                {
+                                    //Start/End game
+                                    if (type == packetType.startGame)
+                                    {
+                                        startGame = true;
+                                    }
+                                    else if (type == packetType.endSession)
+                                    {
+                                        endGame = true;
+                                    }
+                                    //Add message to the chat
+                                    stringData = reader.ReadString();
+                                    Debug.Log("Recieve(): Message was: " + stringData);
+                                    messageRecieved = true;
+                                    break;
+                                }
                         }
                         Thread.Sleep(1);
                     }
                     else
                     {
-                        Debug.Log("Recieve(): Loopback detected. Procedure canceled.");
+                        Debug.LogWarning("Recieve(): Loopback detected. Procedure canceled.");
                     }
                 }
             }

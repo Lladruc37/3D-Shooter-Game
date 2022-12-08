@@ -196,97 +196,110 @@ public class Server : MonoBehaviour
                 Debug.Log("RecieveData(): Message was: " + stringData);
 
                 socket.SendTo(dataTMP, recv, SocketFlags.None, remote);
-                if (type == packetType.error)
+                switch (type)
                 {
-                    Debug.LogError("RecieveData(): Data was empty :c");
-                }
-                else if (type == packetType.hello) //Hello message
-                {
-                    Debug.Log("RecieveData(): New client detected!");
-                    sender = (IPEndPoint)remote;
-                    AddClientUDP(sender);
+                    case packetType.error:
+                        {
+                            Debug.LogError("Recieve(): Error packet type received :c");
+                            break;
+                        }
+                    case packetType.hello:
+                        {
+                            Debug.Log("RecieveData(): New client detected!");
+                            sender = (IPEndPoint)remote;
+                            AddClientUDP(sender);
 
-                    string userName = reader.ReadString();
-                    AddPlayer(userName);
+                            string userName = reader.ReadString();
+                            AddPlayer(userName);
 
-                    stringData = "\nUser '" + userName + "' joined the lobby!";
-                    newMessage = true;
+                            stringData = "\nUser '" + userName + "' joined the lobby!";
+                            newMessage = true;
 
-                    string tmp = stringData;
-                    Debug.Log("RecieveData(): " + stringData);
+                            string tmp = stringData;
+                            Debug.Log("RecieveData(): " + stringData);
 
-                    MemoryStream streamHello = new MemoryStream();
-                    BinaryWriter writerHello = new BinaryWriter(streamHello);
-                    writerHello.Write(false);
-                    writerHello.Write((short)packetType.servername);
-                    writerHello.Write(serverName);
+                            MemoryStream streamHello = new MemoryStream();
+                            BinaryWriter writerHello = new BinaryWriter(streamHello);
+                            writerHello.Write(false);
+                            writerHello.Write((short)packetType.servername);
+                            writerHello.Write(serverName);
 
-                    MemoryStream streamChat = new MemoryStream();
-                    BinaryWriter writerChat = new BinaryWriter(streamChat);
-                    writerChat.Write(false);
-                    writerChat.Write((short)packetType.chat);
-                    writerChat.Write(stringData);
+                            MemoryStream streamChat = new MemoryStream();
+                            BinaryWriter writerChat = new BinaryWriter(streamChat);
+                            writerChat.Write(false);
+                            writerChat.Write((short)packetType.chat);
+                            writerChat.Write(stringData);
 
-                    BroadcastServerInfo(streamHello);
-                    Thread.Sleep(100);
-                    SendPlayerList();
-                    Thread.Sleep(100);
-                    BroadcastServerInfo(streamChat);
-                }
-                else if (type == packetType.goodbye) //Goodbye message
-				{
-                    uint tmpUid = reader.ReadUInt32();
+                            BroadcastServerInfo(streamHello);
+                            Thread.Sleep(100);
+                            SendPlayerList();
+                            Thread.Sleep(100);
+                            BroadcastServerInfo(streamChat);
+                            break;
+                        }
+                    case packetType.goodbye:
+                        {
+                            uint tmpUid = reader.ReadUInt32();
 
-                    MemoryStream streamGoodbye = new MemoryStream();
-                    BinaryWriter writerGoodbye = new BinaryWriter(streamGoodbye);
-                    writerGoodbye.Write(false);
-                    writerGoodbye.Write((short)packetType.chat);
+                            MemoryStream streamGoodbye = new MemoryStream();
+                            BinaryWriter writerGoodbye = new BinaryWriter(streamGoodbye);
+                            writerGoodbye.Write(false);
+                            writerGoodbye.Write((short)packetType.chat);
 
-                    stringData = "\nUser '" + lobby.usersList[tmpUid] + "' has left the server!";
-                    newMessage = true;
-                    writerGoodbye.Write(stringData);
+                            stringData = "\nUser '" + lobby.usersList[tmpUid] + "' has left the server!";
+                            newMessage = true;
+                            writerGoodbye.Write(stringData);
 
-                    lobby.usersList.Remove(tmpUid);
-                    BroadcastServerInfo(streamGoodbye);
-                    Thread.Sleep(100);
-                    sender = (IPEndPoint)remote;
-                    clientListUDP.Remove(sender);
-                    SendPlayerList();
-                }
-                else if (type == packetType.playerInfo) //Gameplay data
-                {
-                    Debug.Log("RecieveData(): New game state detected");
-                    manager.data = dataTMP;
-                    manager.recieveThread = new Thread(manager.RecieveGameState);
-                    manager.recieveThread.Start();
-                    BroadcastPlayerInfo(dataTMP);
-                }
-                else if (type == packetType.chat) //Process & broadcast message
-                {
-                    Debug.Log("RecieveData(): New chat message from user!");
-                    uint uid = reader.ReadUInt32();
-                    string m = reader.ReadString();
+                            lobby.usersList.Remove(tmpUid);
+                            BroadcastServerInfo(streamGoodbye);
+                            Thread.Sleep(100);
+                            sender = (IPEndPoint)remote;
+                            clientListUDP.Remove(sender);
+                            SendPlayerList();
+                            break;
+                        }
+                    case packetType.list:
+                        {
+                            Debug.Log("RecieveData(): New game state detected");
+                            manager.data = dataTMP;
+                            manager.recieveThread = new Thread(manager.RecieveGameState);
+                            manager.recieveThread.Start();
+                            BroadcastPlayerInfo(dataTMP);
+                            break;
+                        }
+                    case packetType.chat:
+                        {
+                            Debug.Log("RecieveData(): New chat message from user!");
+                            uint uid = reader.ReadUInt32();
+                            string m = reader.ReadString();
 
-                    MemoryStream streamChat = new MemoryStream();
-                    BinaryWriter writerChat = new BinaryWriter(streamChat);
-                    writerChat.Write(false);
-                    writerChat.Write((short)packetType.chat);
-                    if (lobby.usersList.ContainsKey(uid))
-                    {
-                        string username = lobby.usersList[uid];
-                        string resultingMessage = "\n[" + username + "]>>" + m;
-                        stringData = resultingMessage;
-                        writerChat.Write(resultingMessage);
-                    }
-                    else
-                    {
-                        string resultingMessage = "Error Message: Something wrong happened!";
-                        stringData = resultingMessage;
-                        writerChat.Write(resultingMessage);
-                    }
-                    newMessage = true;
+                            MemoryStream streamChat = new MemoryStream();
+                            BinaryWriter writerChat = new BinaryWriter(streamChat);
+                            writerChat.Write(false);
+                            writerChat.Write((short)packetType.chat);
+                            if (lobby.usersList.ContainsKey(uid))
+                            {
+                                string username = lobby.usersList[uid];
+                                string resultingMessage = "\n[" + username + "]>>" + m;
+                                stringData = resultingMessage;
+                                writerChat.Write(resultingMessage);
+                            }
+                            else
+                            {
+                                string resultingMessage = "Error Message: Something wrong happened!";
+                                stringData = resultingMessage;
+                                writerChat.Write(resultingMessage);
+                            }
+                            newMessage = true;
 
-                    BroadcastServerInfo(streamChat);
+                            BroadcastServerInfo(streamChat);
+                            break;
+                        }
+                    default:
+                        {
+                            Debug.LogError("Recieve(): Message was: " + stringData);
+                            break;
+                        }
                 }
                 Thread.Sleep(1);
             }
