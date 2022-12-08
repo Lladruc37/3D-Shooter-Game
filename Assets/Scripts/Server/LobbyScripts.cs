@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Linq;
+using System.IO;
 
 public class LobbyScripts : MonoBehaviour
 {
@@ -117,8 +118,13 @@ public class LobbyScripts : MonoBehaviour
     public void EndServer()
     {
         Debug.Log("EndServer(): Ending server.");
-        string msg = "/>endsession</Ending session...";
-        server.BroadcastServerMessage(server.ManageMessage(msg, true, true));
+        MemoryStream stream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(stream);
+        writer.Write(false);
+        writer.Write((short)packetType.endSession);
+        writer.Write("Ending session...");
+
+        server.BroadcastServerInfo(stream);
         inputCanvas.GetComponent<Canvas>().enabled = true;
         chatCanvas.GetComponent<Canvas>().enabled = false;
         startGameButton.SetActive(false);
@@ -149,7 +155,14 @@ public class LobbyScripts : MonoBehaviour
         inputUserName.text = "";
         inputServer.text = "";
         inputChat.text = "";
-        client.Send("/>goodbye</"+ client.uuid);
+
+        MemoryStream stream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(stream);
+        writer.Write(false);
+        writer.Write((short)packetType.goodbye);
+        writer.Write(client.uuid);
+        client.SendInfo(stream);
+
         client.Leave();
         title.text = "Join a server!";
 
@@ -175,8 +188,12 @@ public class LobbyScripts : MonoBehaviour
         {
             server.SendPlayerList();
             manager.UserName = server.hostUsername;
-            string msg = "/>startgame</Starting game...";
-            server.BroadcastServerMessage(server.ManageMessage(msg, true));
+            MemoryStream stream = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(stream);
+            writer.Write(false);
+            writer.Write((short)packetType.startGame);
+            writer.Write("Starting session...");
+            server.BroadcastServerInfo(stream);
         }
 
         Debug.Log("LobbyScripts(): Game scene enabled...");

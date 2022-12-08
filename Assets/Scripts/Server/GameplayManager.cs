@@ -6,6 +6,24 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
+//Message Management
+public enum packetType
+{
+    //Default
+    error = -1,
+
+    //Client
+    hello, //Ping to enter server
+    chat, //Chat message
+    goodbye, //Leave server
+    playerInfo, //Update user
+
+    //Server
+    servername, //Confirm ping with server name
+    list, //Player list
+    startGame, //Start game
+    endSession, //End server/game
+}
 public class GameplayManager : MonoBehaviour
 {
     //Server/Client & other
@@ -235,7 +253,8 @@ public class GameplayManager : MonoBehaviour
         BinaryWriter writer = new BinaryWriter(stream);
 
         //Header
-        writer.Write("/>PlayerInfo:");
+        writer.Write(false);
+        writer.Write((short) packetType.playerInfo);
         writer.Write(UserUid);
         writer.Write(UserName);
 
@@ -296,8 +315,10 @@ public class GameplayManager : MonoBehaviour
         stream.Seek(0, SeekOrigin.Begin);
 
         //Header
-        string header = reader.ReadString();
-        Debug.Log("RecieveGameState(" + UserUid + "): Header is " + header);
+        reader.ReadBoolean();
+        short header = reader.ReadInt16();
+        packetType type = (packetType)header;
+        Debug.Log("RecieveGameState(" + UserUid + "): Header is " + type.ToString());
 
         uint uid = reader.ReadUInt32();
         string dump = reader.ReadString();

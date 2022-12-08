@@ -83,7 +83,7 @@ public class SendRecieve : MonoBehaviour
             if (updateCharacter) //Updates character's HP
             {
                 updateCharacter = false;
-                Debug.Log("Uid: " + uid + ", Hp: " + target.health);
+                //Debug.Log("Uid: " + uid + ", Hp: " + target.health);
 
                 if (target.health > 0)
                 {

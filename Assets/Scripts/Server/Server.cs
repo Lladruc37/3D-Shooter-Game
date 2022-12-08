@@ -78,7 +78,7 @@ public class Server : MonoBehaviour
             {
                 if (chatManager.input.text != "")
                 {
-                    string msg = "\n" + "/>client/>uuid" + uid + "</" + chatManager.input.text;
+                    string msg = "\n" + "/>client/>chat" + uid + "</" + chatManager.input.text;
                     chatManager.input.text = "";
                     BroadcastServerMessage(ManageMessage(msg));
                 }
@@ -93,7 +93,8 @@ public class Server : MonoBehaviour
         BinaryWriter writer = new BinaryWriter(stream);
 
         //Header
-        writer.Write("/>list</");
+        writer.Write(false);
+        writer.Write((short)packetType.list);
         writer.Write(lobby.usersList.Count);
 
         //List
@@ -156,7 +157,7 @@ public class Server : MonoBehaviour
         }
         else //Will show as a user message
         {
-            if (m.Contains("/>client/>uuid")) //process user uid to get username
+            if (m.Contains("/>client/>chat")) //process user uid to get username
             {
                 string tmp = m.Remove(0, 15);
                 splitName = tmp.Split("</");
@@ -246,40 +247,48 @@ public class Server : MonoBehaviour
                 Debug.Log("RecieveData(): Count for stringData: " + recv);
                 Debug.Log("RecieveData(): Length of Data: " + dataTMP.Length);
 
-                stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
+                MemoryStream stream = new MemoryStream(dataTMP);
+                BinaryReader reader = new BinaryReader(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                reader.ReadBoolean();
+                short header = reader.ReadInt16();
+                packetType type = (packetType)header;
                 Debug.Log("RecieveData(): Message was: " + stringData);
 
                 socket.SendTo(dataTMP, recv, SocketFlags.None, remote);
-                if (stringData.Equals(""))
+                if (type == packetType.error)
                 {
                     Debug.LogError("RecieveData(): Data was empty :c");
                 }
-                else if (stringData.Contains("/>hello</")) //Hello message
+                else if (type == packetType.hello) //Hello message
                 {
                     Debug.Log("RecieveData(): New client detected!");
                     sender = (IPEndPoint)remote;
                     AddClientUDP(sender);
 
-                    stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-                    string[] tmpSplit = stringData.Split("</");
-                    AddPlayer(tmpSplit[1]);
+                    string userName = reader.ReadString();
+                    AddPlayer(userName);
 
-                    stringData = "User '" + tmpSplit[1] + "' joined the lobby!";
+                    stringData = "User '" + userName + "' joined the lobby!";
 
                     string tmp = stringData;
                     Debug.Log("RecieveData(): " + stringData);
                     Thread.Sleep(1);
-                    BroadcastServerMessage(ManageMessage("/>servername " + serverName, true, true));
-                    Thread.Sleep(1);
+
+                    MemoryStream streamHello = new MemoryStream();
+                    BinaryWriter writerHello = new BinaryWriter(streamHello);
+                    writerHello.Write(false);
+                    writerHello.Write((short)packetType.servername);
+                    writerHello.Write(serverName);
+
+                    BroadcastServerInfo(streamHello);
+                    Thread.Sleep(100);
                     SendPlayerList();
-                    Thread.Sleep(1);
-                    BroadcastServerMessage(ManageMessage(tmp, true));
                 }
-                else if (stringData.Contains("/>goodbye</")) //Goodbye message
+                else if (type == packetType.goodbye) //Goodbye message
 				{
-                    string[] tmpSplit = stringData.Split("</");
-                    uint tmpUid = uint.Parse(tmpSplit[1]);
-                    stringData = "User " + lobby.usersList[tmpUid] + " has left the server!";
+                    uint tmpUid = reader.ReadUInt32();
+                    stringData = "User '" + lobby.usersList[tmpUid] + "' has left the server!";
                     lobby.usersList.Remove(tmpUid);
                     Thread.Sleep(1);
                     BroadcastServerMessage(ManageMessage(stringData,true));
@@ -288,7 +297,7 @@ public class Server : MonoBehaviour
                     clientListUDP.Remove(sender);
                     SendPlayerList();
                 }
-                else if (stringData.Contains("/>PlayerInfo:")) //Gameplay data
+                else if (type == packetType.playerInfo) //Gameplay data
                 {
                     Debug.Log("RecieveData(): New game state detected");
                     manager.data = dataTMP;

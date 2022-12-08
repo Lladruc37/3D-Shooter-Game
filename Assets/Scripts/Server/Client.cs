@@ -84,8 +84,8 @@ public class Client : MonoBehaviour
             if (newServerName) //Update the lobby title string
             {
                 newServerName = false;
-                string tmp = stringData.Remove(0, 14);
-                clientTitle.text = "Welcome to " + tmp + "!";
+                Debug.Log("Update(): serverName is: " + stringData);
+                clientTitle.text = "Welcome to " + stringData + "!";
                 chatCanvas.GetComponent<Canvas>().enabled = true;
                 Debug.Log("Update(): Changed server title to: " + clientTitle.text);
             }
@@ -105,7 +105,7 @@ public class Client : MonoBehaviour
             {
                 if (chatManager.input.text != "")
                 {
-                    string msg = "\n" + "/>client/>uuid" + uuid + "</" + chatManager.input.text;
+                    string msg = "\n" + "/>client/>chat" + uuid + "</" + chatManager.input.text;
                     chatManager.input.text = "";
                     Send(msg);
                 }
@@ -119,7 +119,14 @@ public class Client : MonoBehaviour
         try
         {
             //Hello message & start receiving
-            Send("/>client/>hello</" + username);
+            MemoryStream stream = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(stream);
+            writer.Write(true);
+            writer.Write((short)packetType.hello);
+            writer.Write(username);
+
+            SendInfo(stream);
+
             connected = true;
             receiveThread = new Thread(Receive);
             try
@@ -152,60 +159,66 @@ public class Client : MonoBehaviour
                     byte[] dataTMP = new byte[1024];
 
                     recv = server.ReceiveFrom(dataTMP, ref Remote);
+
+                    MemoryStream stream = new MemoryStream(dataTMP);
+                    BinaryReader reader = new BinaryReader(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    bool isLoopback = reader.ReadBoolean();
                     Debug.Log("Recieve(): New message detected in client side!");
-                    stringData = Encoding.ASCII.GetString(dataTMP, 0, recv);
-                    if (!stringData.Contains("/>client")) //To avoid loopback
+                    if (!isLoopback) //To avoid loopback
                     {
-                        Debug.Log("Recieve(): Message was: " + stringData);
-                        if (stringData.Equals(""))
+                        short header = reader.ReadInt16();
+                        packetType type = (packetType)header;
+                        if (type == packetType.error)
                         {
                             Debug.Log("Recieve(): Data was empty :c");
                         }
+                        else if (type == packetType.servername) //Update server name
+                        {
+                            newServerName = true;
+                            stringData = reader.ReadString();
+                            Debug.Log("Recieve(): New server name change detected");
+                            Thread.Sleep(200);
+                        }
+                        else if (type == packetType.playerInfo) //Gameplay data
+                        {
+                            Debug.Log("Recieve(): New game state detected");
+                            manager.data = dataTMP;
+                            manager.recieveThread = new Thread(manager.RecieveGameState);
+                            try
+                            {
+                                manager.recieveThread.Start();
+                            }
+                            catch (ThreadStartException e)
+                            {
+                                Debug.LogError("Start(): Error starting thread: " + e);
+                            }
+                        }
+                        else if (type == packetType.list) //Player List to sync server & client to start game
+                        {
+                            Debug.Log("Recieve(): New users list detected");
+                            data = dataTMP;
+                            recievePlayerListThread = new Thread(RecievePlayerList);
+                            recievePlayerListThread.Start();
+                            Thread.Sleep(200);
+                        }
                         else
                         {
-                            if (stringData.Contains("/>servername")) //Update server name
+                            //Start/End game
+                            if (type == packetType.startGame)
                             {
-                                newServerName = true;
-                                Debug.Log("Recieve(): New server name change detected");
+                                startGame = true;
                             }
-                            else if (stringData.Contains("/>PlayerInfo:")) //Gameplay data
+                            else if (type == packetType.endSession)
                             {
-                                Debug.Log("Recieve(): New game state detected");
-                                manager.data = dataTMP;
-                                manager.recieveThread = new Thread(manager.RecieveGameState);
-                                try
-                                {
-                                    manager.recieveThread.Start();
-                                }
-                                catch (ThreadStartException e)
-                                {
-                                    Debug.LogError("Start(): Error starting thread: " + e);
-                                }
+                                endGame = true;
                             }
-                            else if (stringData.Contains("/>list</")) //Player List to sync server & client to start game
-                            {
-                                Debug.Log("Recieve(): New users list detected");
-                                data = dataTMP;
-                                recievePlayerListThread = new Thread(RecievePlayerList);
-                                recievePlayerListThread.Start();
-                            }
-                            else
-                            {
-                                //Start/End game
-                                if (stringData == "\nStarting game...")
-                                {
-                                    startGame = true;
-                                }
-                                else if (stringData == "\nEnding session...")
-                                {
-                                    endGame = true;
-                                }
-                                //Add message to the chat
-                                messageRecieved = true;
-                                Debug.Log("Recieve(): No new server name changes detected");
-                            }
-                            Thread.Sleep(1);
+                            //Add message to the chat
+                            stringData = reader.ReadString();
+                            messageRecieved = true;
+                            Debug.Log("Recieve(): No new server name changes detected");
                         }
+                        Thread.Sleep(1);
                     }
                 }
             }
@@ -260,8 +273,10 @@ public class Client : MonoBehaviour
         stream.Seek(0, SeekOrigin.Begin);
 
         //Header
-        string header = reader.ReadString();
-        Debug.Log("RecieveList(): Header is " + header);
+        reader.ReadBoolean();
+        short header = reader.ReadInt16();
+        packetType type = (packetType)header;
+        Debug.Log("RecieveList(): Header is " + type);
 
         //List
         lobby.usersList.Clear();
