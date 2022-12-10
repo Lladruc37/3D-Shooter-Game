@@ -268,8 +268,9 @@ public class GameplayManager : MonoBehaviour
                 writer.Write(p.kills);
 
                 //Position
-                writer.Write((double)p.position.x);
-                writer.Write((double)p.position.z);
+                ushort x = ConvertToFixed(p.position.x, -130f,0.01f), y = ConvertToFixed(p.position.y, -130f,0.01f), z = ConvertToFixed(p.position.z, -130f,0.01f);
+                writer.Write(x);
+                writer.Write(z);
                 if (p.position.y == groundLevel)
                 {
                     writer.Write(true);
@@ -277,17 +278,17 @@ public class GameplayManager : MonoBehaviour
                 else
                 {
                     writer.Write(false);
-                    writer.Write((double)p.position.y);
+                    writer.Write(y);
                 }
 
                 //Rotation
-                writer.Write((double)p.rotation.x);
-                writer.Write((double)p.rotation.y);
-                writer.Write((double)p.rotation.z);
+                y = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
+                writer.Write(y);
 
                 //Weapon Action
                 writer.Write(p.gun.fire);
-                writer.Write((double)p.gunDirection.xRotation);
+                x = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
+                writer.Write(x);
                 writer.Write(p.uidHit);
                 p.uidHit = -1;
 
@@ -341,25 +342,23 @@ public class GameplayManager : MonoBehaviour
             pSender.kills = reader.ReadInt32();
 
             //Position
-            pSender.position.x = (float)reader.ReadDouble();
-            pSender.position.z = (float)reader.ReadDouble();
+            pSender.position.x = ConvertFromFixed(reader.ReadUInt16(),-130f,0.01f);
+            pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
             if(reader.ReadBoolean())
 			{
                 pSender.position.y = groundLevel;
 			}
             else
 			{
-                pSender.position.y = (float)reader.ReadDouble();
+                pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
 			}
 
             //Rotation
-            pSender.rotation.x = (float)reader.ReadDouble();
-            pSender.rotation.y = (float)reader.ReadDouble();
-            pSender.rotation.z = (float)reader.ReadDouble();
+            pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;
 
             //Weapon Action
             pSender.gun.fire = reader.ReadBoolean();
-            pSender.gunDirection.xRotation = (float)reader.ReadDouble();
+            pSender.gunDirection.xRotation = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f) * 90.0f;
 
             pSender.updateCharacter = true;
 
@@ -382,7 +381,7 @@ public class GameplayManager : MonoBehaviour
     }
 
     //for positions & rotations
-    // 0.1 & 0.01 precision respectively
+    // 0.01 & 0.0001 precision respectively
     UInt16 ConvertToFixed(float inNumber, float inMin, float inPrecision)
 	{
         return (UInt16)((inNumber - inMin) /inPrecision);

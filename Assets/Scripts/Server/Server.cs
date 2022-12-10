@@ -179,23 +179,24 @@ public class Server : MonoBehaviour
                 EndPoint remote = (EndPoint)(sender);
                 int recv;
 
-                byte[] dataTMP = new byte[1024];
+                byte[] tempData = new byte[1024];
                 Debug.Log("RecieveData(): Begin to listen...");
-                recv = socket.ReceiveFrom(dataTMP, ref remote);
-                Debug.Log("RecieveData(): New message!");
+                recv = socket.ReceiveFrom(tempData, ref remote);
+                Debug.Log("RecieveData(): New packet recieved!");
 
-                Debug.Log("RecieveData(): Count for stringData: " + recv);
-                Debug.Log("RecieveData(): Length of Data: " + dataTMP.Length);
+                byte[] packetData = new byte[recv];
+                Array.Copy(tempData, packetData, recv);
 
-                MemoryStream stream = new MemoryStream(dataTMP);
+                Debug.Log("RecieveData(): Count for recv: " + recv);
+                Debug.Log("RecieveData(): Length of Data: " + packetData.Length);
+
+                MemoryStream stream = new MemoryStream(packetData);
                 BinaryReader reader = new BinaryReader(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 reader.ReadBoolean();
                 short header = reader.ReadInt16();
                 packetType type = (packetType)header;
-                Debug.Log("RecieveData(): Message was: " + stringData);
 
-                socket.SendTo(dataTMP, recv, SocketFlags.None, remote);
                 switch (type)
                 {
                     case packetType.error:
@@ -261,10 +262,10 @@ public class Server : MonoBehaviour
                     case packetType.list:
                         {
                             Debug.Log("RecieveData(): New game state detected");
-                            manager.data = dataTMP;
+                            manager.data = packetData;
                             manager.recieveThread = new Thread(manager.RecieveGameState);
                             manager.recieveThread.Start();
-                            BroadcastPlayerInfo(dataTMP);
+                            BroadcastPlayerInfo(packetData);
                             break;
                         }
                     case packetType.chat:
@@ -295,13 +296,21 @@ public class Server : MonoBehaviour
                             BroadcastServerInfo(streamChat);
                             break;
                         }
+                    case packetType.playerInfo:
+                        {
+                            Debug.Log("RecieveData(): New game state detected");
+                            manager.data = packetData;
+                            manager.recieveThread = new Thread(manager.RecieveGameState);
+                            manager.recieveThread.Start();
+                            BroadcastPlayerInfo(packetData);
+                            break;
+                        }
                     default:
                         {
                             Debug.LogError("Recieve(): Message was: " + stringData);
                             break;
                         }
                 }
-                Thread.Sleep(1);
             }
         }
         catch (Exception e)
