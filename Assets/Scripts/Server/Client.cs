@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class Client : MonoBehaviour
 {
     //Sockets & other
-    public Socket server;
+    public Socket socket;
     public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
     public IPEndPoint clientep;
     public EndPoint clientRemote;
@@ -56,7 +56,7 @@ public class Client : MonoBehaviour
                 ipep = new IPEndPoint(IPAddress.Parse(serverIP), 9050);
             }
 
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             connectThread = new Thread(Connect);
 
             try
@@ -108,13 +108,12 @@ public class Client : MonoBehaviour
                     MemoryStream stream = new MemoryStream();
                     BinaryWriter writer = new BinaryWriter(stream);
                     writer.Write(true);
-                    writer.Write((short)packetType.chat);
+                    writer.Write((byte)packetType.chat);
                     writer.Write(uuid);
                     writer.Write(chatManager.input.text);
+                    SendInfo(stream);
 
                     chatManager.input.text = "";
-
-                    SendInfo(stream);
                 }
             }
         }
@@ -129,13 +128,12 @@ public class Client : MonoBehaviour
             MemoryStream stream = new MemoryStream();
             BinaryWriter writer = new BinaryWriter(stream);
             writer.Write(true);
-            writer.Write((short)packetType.hello);
+            writer.Write((byte)packetType.hello);
             writer.Write(username);
-
             SendInfo(stream);
 
             connected = true;
-            receiveThread = new Thread(Receive);
+            receiveThread = new Thread(ReceiveClient);
             try
             {
                 receiveThread.Start();
@@ -153,50 +151,56 @@ public class Client : MonoBehaviour
     }
 
     //Receive data from the server
-    void Receive()
+    void ReceiveClient()
     {
         try
         {
-            EndPoint Remote = (EndPoint)ipep;
+            EndPoint remote = (EndPoint)ipep;
             while (true)
             {
                 if (connected)
                 {
                     int recv;
-                    byte[] dataTMP = new byte[1024];
+                    byte[] tempData = new byte[1024];
+                    Debug.Log("ReceiveClient(): Begin to listen...");
+                    recv = socket.ReceiveFrom(tempData, ref remote);
+                    Debug.Log("ReceiveClient(): New packet recieved!");
 
-                    recv = server.ReceiveFrom(dataTMP, ref Remote);
+                    byte[] packetData = new byte[recv];
+                    Array.Copy(tempData, packetData, recv);
 
-                    MemoryStream stream = new MemoryStream(dataTMP);
+                    Debug.Log("ReceiveClient(): Count for recv: " + recv);
+                    Debug.Log("ReceiveClient(): Length of Data: " + packetData.Length);
+
+                    MemoryStream stream = new MemoryStream(packetData);
                     BinaryReader reader = new BinaryReader(stream);
                     stream.Seek(0, SeekOrigin.Begin);
                     bool isLoopback = reader.ReadBoolean();
-                    Debug.Log("Recieve(): New message detected in client side!");
                     if (!isLoopback) //To avoid loopback
                     {
-                        Debug.Log("Recieve(): No Loopback detected!");
-                        short header = reader.ReadInt16();
+                        Debug.Log("ReceiveClient(): No Loopback detected!");
+                        short header = reader.ReadByte();
                         packetType type = (packetType)header;
 
                         switch (type)
                         {
                             case packetType.error:
                                 {
-                                    Debug.Log("Recieve(): Error packet type received :c");
+                                    Debug.Log("ReceiveClient(): Error packet type received :c");
                                     break;
                                 }
                             case packetType.servername:
                                 {
                                     newServerName = true;
                                     stringData = reader.ReadString();
-                                    Debug.Log("Recieve(): New server name change detected");
+                                    Debug.Log("ReceiveClient(): New server name change detected");
                                     Thread.Sleep(200);
                                     break;
                                 }
                             case packetType.playerInfo:
                                 {
-                                    Debug.Log("Recieve(): New game state detected");
-                                    manager.data = dataTMP;
+                                    Debug.Log("ReceiveClient(): New game state detected");
+                                    manager.data = packetData;
                                     manager.recieveThread = new Thread(manager.RecieveGameState);
                                     try
                                     {
@@ -204,14 +208,14 @@ public class Client : MonoBehaviour
                                     }
                                     catch (ThreadStartException e)
                                     {
-                                        Debug.LogError("Start(): Error starting thread: " + e);
+                                        Debug.LogError("ReceiveClient(): Error starting thread: " + e);
                                     }
                                     break;
                                 }
                             case packetType.list:
                                 {
-                                    Debug.Log("Recieve(): New users list detected");
-                                    data = dataTMP;
+                                    Debug.Log("ReceiveClient(): New users list detected");
+                                    data = packetData;
                                     recievePlayerListThread = new Thread(RecievePlayerList);
                                     recievePlayerListThread.Start();
                                     Thread.Sleep(200);
@@ -230,7 +234,7 @@ public class Client : MonoBehaviour
                                     }
                                     //Add message to the chat
                                     stringData = reader.ReadString();
-                                    Debug.Log("Recieve(): Message was: " + stringData);
+                                    Debug.Log("ReceiveClient(): Message was: " + stringData);
                                     messageRecieved = true;
                                     break;
                                 }
@@ -254,14 +258,12 @@ public class Client : MonoBehaviour
     {
         Debug.Log("SendInfo(): Sending gameplay state...");
 
-        byte[] dataTMP = new byte[1024];
-        dataTMP = stream.GetBuffer();
-
-        Debug.Log("SendInfo(): Data Length is: " + stream.Length);
+        byte[] dataTMP = stream.GetBuffer();
+        Debug.Log("SendInfo(): Data Length is: " + dataTMP.Length);
 
         try
         {
-            server.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
+            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, ipep);
         }
         catch (Exception e)
         {
@@ -279,7 +281,7 @@ public class Client : MonoBehaviour
 
         //Header
         reader.ReadBoolean();
-        short header = reader.ReadInt16();
+        short header = reader.ReadByte();
         packetType type = (packetType)header;
         Debug.Log("RecieveList(): Header is " + type);
 
@@ -363,13 +365,13 @@ public class Client : MonoBehaviour
         newServerName = false;
         newServerIP = false;
         messageRecieved = false;
-        server = null;
+        socket = null;
         ipep = new IPEndPoint(IPAddress.Any, 9050);
 
-        if (server != null)
+        if (socket != null)
         {
-            server.Close();
-            server = null;
+            socket.Close();
+            socket = null;
         }
 
         CloseThreads();
@@ -377,10 +379,10 @@ public class Client : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        if (server != null)
+        if (socket != null)
         {
-            server.Close();
-            server = null;
+            socket.Close();
+            socket = null;
         }
     }
 }

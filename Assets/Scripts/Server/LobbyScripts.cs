@@ -121,12 +121,12 @@ public class LobbyScripts : MonoBehaviour
         MemoryStream stream = new MemoryStream();
         BinaryWriter writer = new BinaryWriter(stream);
         writer.Write(false);
-        writer.Write((short)packetType.endSession);
+        writer.Write((byte)packetType.endSession);
         string msg = "\nEnding session...";
         writer.Write(msg);
-        server.chatManager.SendMsg(msg);
-
         server.BroadcastServerInfo(stream);
+
+        server.chatManager.SendMsg(msg);
         inputCanvas.GetComponent<Canvas>().enabled = true;
         chatCanvas.GetComponent<Canvas>().enabled = false;
         startGameButton.SetActive(false);
@@ -161,7 +161,7 @@ public class LobbyScripts : MonoBehaviour
         MemoryStream stream = new MemoryStream();
         BinaryWriter writer = new BinaryWriter(stream);
         writer.Write(false);
-        writer.Write((short)packetType.goodbye);
+        writer.Write((byte)packetType.goodbye);
         writer.Write(client.uuid);
         client.SendInfo(stream);
 
@@ -190,13 +190,15 @@ public class LobbyScripts : MonoBehaviour
         {
             server.SendPlayerList();
             manager.UserName = server.hostUsername;
+
             MemoryStream stream = new MemoryStream();
             BinaryWriter writer = new BinaryWriter(stream);
             writer.Write(false);
-            writer.Write((short)packetType.startGame);
+            writer.Write((byte)packetType.startGame);
             string msg = "\nStarting game...";
             writer.Write(msg);
             server.BroadcastServerInfo(stream);
+
             server.chatManager.SendMsg(msg);
         }
 

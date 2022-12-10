@@ -254,7 +254,7 @@ public class GameplayManager : MonoBehaviour
 
         //Header
         writer.Write(false);
-        writer.Write((short) packetType.playerInfo);
+        writer.Write((byte) packetType.playerInfo);
         writer.Write(UserUid);
         writer.Write(UserName);
 
@@ -317,7 +317,7 @@ public class GameplayManager : MonoBehaviour
 
         //Header
         reader.ReadBoolean();
-        short header = reader.ReadInt16();
+        short header = reader.ReadByte();
         packetType type = (packetType)header;
         Debug.Log("RecieveGameState(" + UserUid + "): Header is " + type.ToString());
 
@@ -364,6 +364,7 @@ public class GameplayManager : MonoBehaviour
 
             //User who got hit
             int _uidHit = reader.ReadInt32();
+            Debug.Log("Hit player: " + _uidHit);
             if (UserUid == _uidHit)
             {
                 foreach (SendRecieve p in pScripts)
