@@ -97,8 +97,11 @@ public class Server : MonoBehaviour
                     BroadcastServerInfo(stream);
                 }
             }
+            pingTimer += Time.deltaTime;
             if (pingTimer >= pingTme) //Ping the players
             {
+                pingTimer = 0.0f;
+                pingList.Add(uid, ipep);
                 foreach (KeyValuePair<uint, string> user in lobby.usersList)
 				{
                     if(!pingList.ContainsKey(user.Key))
@@ -106,6 +109,7 @@ public class Server : MonoBehaviour
                         GoodbyeUser(user.Key, pingList[user.Key]);
                     }
 				}
+                pingList.Clear();
 
                 MemoryStream stream = new MemoryStream();
                 BinaryWriter writer = new BinaryWriter(stream);
