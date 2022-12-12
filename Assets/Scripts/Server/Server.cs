@@ -37,6 +37,12 @@ public class Server : MonoBehaviour
     public LobbyScripts lobby;
     public Chat chatManager;
 
+    //Pings
+    float pingTme = 1.5f;
+    float pingTimer;
+    Dictionary<uint,IPEndPoint> pingList = new Dictionary<uint, IPEndPoint>();
+
+
     //Gameplay
     public GameObject gameplayScene;
     public GameplayManager manager;
@@ -90,6 +96,23 @@ public class Server : MonoBehaviour
 
                     BroadcastServerInfo(stream);
                 }
+            }
+            if (pingTimer >= pingTme) //Ping the players
+            {
+                foreach (KeyValuePair<uint, string> user in lobby.usersList)
+				{
+                    if(!pingList.ContainsKey(user.Key))
+                    {
+                        GoodbyeUser(user.Key, pingList[user.Key]);
+                    }
+				}
+
+                MemoryStream stream = new MemoryStream();
+                BinaryWriter writer = new BinaryWriter(stream);
+                writer.Write(false);
+                writer.Write((byte)packetType.ping);
+
+                BroadcastServerInfo(stream);
             }
         }
     }
@@ -166,6 +189,25 @@ public class Server : MonoBehaviour
         }
     }
 
+    void GoodbyeUser(uint user, IPEndPoint ip)
+	{
+        MemoryStream streamGoodbye = new MemoryStream();
+        BinaryWriter writerGoodbye = new BinaryWriter(streamGoodbye);
+        writerGoodbye.Write(false);
+        writerGoodbye.Write((byte)packetType.chat);
+
+        stringData = "\nUser '" + lobby.usersList[user] + "' has left the server!";
+        newMessage = true;
+        writerGoodbye.Write(stringData);
+
+        lobby.usersList.Remove(user);
+
+        BroadcastServerInfo(streamGoodbye);
+        Thread.Sleep(100);
+        clientListUDP.Remove(ip);
+        SendPlayerList();
+    }
+
     //Receives data from users
     void RecieveServer()
     {
@@ -238,24 +280,7 @@ public class Server : MonoBehaviour
                         }
                     case packetType.goodbye:
                         {
-                            uint tmpUid = reader.ReadUInt32();
-
-                            MemoryStream streamGoodbye = new MemoryStream();
-                            BinaryWriter writerGoodbye = new BinaryWriter(streamGoodbye);
-                            writerGoodbye.Write(false);
-                            writerGoodbye.Write((byte)packetType.chat);
-
-                            stringData = "\nUser '" + lobby.usersList[tmpUid] + "' has left the server!";
-                            newMessage = true;
-                            writerGoodbye.Write(stringData);
-
-                            lobby.usersList.Remove(tmpUid);
-
-                            BroadcastServerInfo(streamGoodbye);
-                            Thread.Sleep(100);
-                            sender = (IPEndPoint)remote;
-                            clientListUDP.Remove(sender);
-                            SendPlayerList();
+                            GoodbyeUser(reader.ReadUInt32(), (IPEndPoint)remote);
                             break;
                         }
                     case packetType.list:
@@ -303,6 +328,16 @@ public class Server : MonoBehaviour
                             BroadcastServerInfo(packetData);
                             break;
                         }
+                    case packetType.ping:
+						{
+                            Debug.Log("RecieveServer(): Ping");
+                            uint userUid = reader.ReadUInt32();
+                            if(!pingList.ContainsKey(userUid))
+							{
+                                pingList.Add(userUid,(IPEndPoint)remote);
+							}
+                            break;
+						}
                     default:
                         {
                             Debug.LogError("RecieveServer(): Message was: " + stringData);

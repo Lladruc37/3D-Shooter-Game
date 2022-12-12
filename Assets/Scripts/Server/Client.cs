@@ -221,6 +221,19 @@ public class Client : MonoBehaviour
                                     Thread.Sleep(200);
                                     break;
                                 }
+                            case packetType.ping:
+								{
+                                    Debug.Log("ReceiveClient(): Ping");
+                                    MemoryStream streamPing = new MemoryStream();
+                                    BinaryWriter writer = new BinaryWriter(streamPing);
+                                    writer.Write(true);
+                                    writer.Write((byte)packetType.ping);
+                                    writer.Write(uuid);
+
+                                    SendInfo(streamPing);
+
+                                    break;
+								}
                             default:
                                 {
                                     //Start/End game

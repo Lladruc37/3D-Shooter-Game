@@ -11,6 +11,7 @@ public enum packetType
 {
     //Default
     error = -1,
+    ping, //Regular ping
 
     //Client
     hello, //Ping to enter server
