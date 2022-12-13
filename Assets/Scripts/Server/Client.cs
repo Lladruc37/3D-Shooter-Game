@@ -194,7 +194,7 @@ public class Client : MonoBehaviour
                                     newServerName = true;
                                     stringData = reader.ReadString();
                                     Debug.Log("ReceiveClient(): New server name change detected");
-                                    Thread.Sleep(200);
+                                    Thread.Sleep(100);
                                     break;
                                 }
                             case packetType.playerInfo:
@@ -218,7 +218,7 @@ public class Client : MonoBehaviour
                                     data = packetData;
                                     recievePlayerListThread = new Thread(RecievePlayerList);
                                     recievePlayerListThread.Start();
-                                    Thread.Sleep(200);
+                                    Thread.Sleep(100);
                                     break;
                                 }
                             case packetType.ping:
@@ -252,7 +252,6 @@ public class Client : MonoBehaviour
                                     break;
                                 }
                         }
-                        Thread.Sleep(1);
                     }
                     else
                     {

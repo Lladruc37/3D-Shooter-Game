@@ -36,7 +36,7 @@ public class Server : MonoBehaviour
     public Chat chatManager;
 
     //Pings
-    float pingTme = 1.5f;
+    float pingTme = 3.0f;
     float pingTimer;
     List<uint> pingList = new List<uint>();
 
@@ -94,7 +94,6 @@ public class Server : MonoBehaviour
                     BroadcastServerInfo(stream);
                 }
             }
-
             Ping();
         }
     }
@@ -105,12 +104,27 @@ public class Server : MonoBehaviour
         {
             pingTimer = 0.0f;
             pingList.Add(uid);
-            foreach (PlayerNetInfo user in lobby.clientList.ToArray())
+            List<PlayerNetInfo> currentList = lobby.clientList;
+            foreach (PlayerNetInfo user in currentList)
             {
                 if (!pingList.Contains(user.uid))
                 {
                     Debug.Log("Ping(): No ping from " + user.uid + ": " + user.username);
                     GoodbyeUser(user.uid);
+                    if (recieveDataThread != null)
+                    {
+                        recieveDataThread.Abort();
+                        recieveDataThread = null;
+                        recieveDataThread = new Thread(RecieveServer);
+                        try
+                        {
+                            recieveDataThread.Start();
+                        }
+                        catch (ThreadStartException e)
+                        {
+                            Debug.LogError("Start(): Error starting thread: " + e);
+                        }
+                    }
                 }
             }
             pingList.Clear();

@@ -114,16 +114,31 @@ public class GameplayManager : MonoBehaviour
         if(update) //Updates point system & HP UI
 		{
             hpText.text = "HP: " + playerHp.health.ToString();
-            foreach (SendRecieve p in pScripts)
+            if (pScripts.Count != lobby.clientList.Count)
             {
-                if (p.kills > firstPlayer)
+                foreach (SendRecieve sr in pScripts)
                 {
-                    firstPlayer = p.kills;
-                    firstPlayerUsername = p.username;
+                    if(!lobby.clientList.Exists(p => p.uid == sr.uid))
+                    {
+                        GameObject gOremoved = sr.gameObject;
+                        firstPlayer = 0;
+                        pScripts.Remove(sr);
+                        playerList.Remove(gOremoved);
+                        Destroy(gOremoved);
+                    }
                 }
-                if (playerText && p.uid == UserUid)
+            }
+
+            foreach (SendRecieve sr in pScripts)
+            {
+                if (sr.kills > firstPlayer)
                 {
-                    playerText.text = p.kills.ToString();
+                    firstPlayer = sr.kills;
+                    firstPlayerUsername = sr.username;
+                }
+                if (playerText && sr.uid == UserUid)
+                {
+                    playerText.text = sr.kills.ToString();
                 }
             }
             firstPlayerText.text = firstPlayer.ToString();
@@ -142,8 +157,10 @@ public class GameplayManager : MonoBehaviour
                     update = false;
                     winnerBox.SetActive(false);
                     lobby.gameplayScene.SetActive(false);
+                    
+                    lobby.title.enabled = true;
                     lobby.exitGameButton.SetActive(true);
-                    lobby.lobbyCanvas.GetComponent<Canvas>().enabled = true;
+                    if (server) lobby.startGameButton.SetActive(true);
                 }
             }
         }
@@ -307,7 +324,6 @@ public class GameplayManager : MonoBehaviour
         {
             client.SendInfo(stream);
         }
-        Thread.Sleep(1);
     }
 
     public void RecieveGameState() //GATHER OTHERS INFO
@@ -380,7 +396,6 @@ public class GameplayManager : MonoBehaviour
             }
         }
         data = null;
-        Thread.Sleep(1);
     }
 
     //for positions & rotations

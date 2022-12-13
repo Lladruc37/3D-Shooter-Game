@@ -138,6 +138,7 @@ public class LobbyScripts : MonoBehaviour
         inputChat.text = "";
         server.Close();
         title.text = "Host a server!";
+        title.enabled = true;
 
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
         gameplayScene.SetActive(false);
@@ -169,6 +170,7 @@ public class LobbyScripts : MonoBehaviour
 
         client.Leave();
         title.text = "Join a server!";
+        title.enabled = true;
 
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
         gameplayScene.SetActive(false);
@@ -183,15 +185,16 @@ public class LobbyScripts : MonoBehaviour
     public void StartGame()
     {
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
-        lobbyCanvas.GetComponent<Canvas>().enabled = false;
         gameplayScene.SetActive(true);
-        exitGameButton.SetActive(false);
+        title.enabled = false;
         manager.start = true;
+        exitGameButton.SetActive(false);
 
         if (server)
         {
             server.SendPlayerList();
             manager.UserName = server.hostUsername;
+            startGameButton.SetActive(false);
 
             MemoryStream stream = new MemoryStream();
             BinaryWriter writer = new BinaryWriter(stream);
