@@ -49,6 +49,13 @@ public class GameplayManager : MonoBehaviour
     public Client client;
     public byte[] data;
 
+    //Instantiate players
+    public GameObject playerPrefab;
+    public LayerMask playerMask;
+    public LayerMask environmentMask;
+    public Camera lobbyCamera;
+    public Image hitMarkImage;
+
     //Threads
     public Thread sendThread = null;
     public Thread recieveThread = null;
@@ -61,6 +68,7 @@ public class GameplayManager : MonoBehaviour
     float winnerTimer = 0.0f;
     public Text firstPlayerText; //winning player
     public Text playerText; //you
+    bool win = false;
     public Text winnerText; //"you win" text
     public GameObject winnerBox;
 
@@ -74,8 +82,7 @@ public class GameplayManager : MonoBehaviour
     public bool start, update = false;
 
     //All users data
-    public GameObject p1, p2, p3, p4;
-    public GameObject[] playerList;
+    public List<GameObject> playerList = new List<GameObject>();
     public List<SendRecieve> pScripts;
     public float groundLevel = 1.234f;
 
@@ -89,48 +96,17 @@ public class GameplayManager : MonoBehaviour
 
             if (c != 0) //Setup gameplay scene
             {
-                //TODO: INSTANTIATE PLAYERS & ADD RANDOM UID
-                playerList = null;
-                playerList = new GameObject[] { p1, p2, p3, p4 };
-                Debug.Log("Start(): Player Models: " + playerList.Length);
-
+                //TODO: INSTANTIATE PLAYERS
+                playerList.Clear();
                 pScripts.Clear();
-                int i = 0;
-                foreach (PlayerNetInfo u in lobby.clientList) //Add players to the list
+                foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list
                 {
-                    Debug.Log("Start(): Adding pScripts, values: " + u.uid + " - " + u.username);
-                    playerList[i].name = u.username;
-                    pScripts.Add(playerList[i].GetComponent<SendRecieve>());
-                    playerList[i].GetComponent<SendRecieve>().assigned = true;
-                    playerList[i].GetComponent<SendRecieve>().uid = u.uid;
-                    ++i;
+                    Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
+                    CreateNewPlayer(user);
                 }
-
-                foreach (GameObject player in playerList) //Setup each individual player
-                {
-                    if (player.GetComponent<SendRecieve>().assigned)
-                    {
-                        Target t = player.GetComponent<Target>();
-                        t.bodyMesh.enabled = true;
-                        t.gunBarrelMesh.enabled = true;
-                        t.gun.enabled = true;
-
-                        if (player.name == UserName)
-                        {
-                            SetupPlayer(player);
-                        }
-                        else
-                        {
-                            SetupOtherPlayer(player);
-                        }
-                    }
-                    else
-					{
-                        player.SetActive(false);
-					}
-                }
-                InitializePosition(c);
             }
+            Debug.Log("Start(): Player Models: " + playerList.Count);
+
             start = false;
             update = true;
 		}
@@ -155,11 +131,12 @@ public class GameplayManager : MonoBehaviour
             {
                 GameEnd();
             }
-            if (winnerText.text != "") //Timer for the winning screen
+            if (win) //Timer for the winning screen
             {
                 winnerTimer += Time.deltaTime;
                 if (winnerTimer >= winnerTime) //Return to lobby
                 {
+                    win = false;
                     winnerText.text = "";
                     winnerTimer = 0.0f;
                     update = false;
@@ -175,30 +152,68 @@ public class GameplayManager : MonoBehaviour
     //End game setup
     void GameEnd()
     {
+        Debug.Log("GameEnd(): Game finished! Kills: " + firstPlayer);
         winnerBox.SetActive(true);
         winnerText.text = firstPlayerUsername + " wins the game!";
+        win = true;
         Cursor.lockState = CursorLockMode.None;
         winnerTimer = 0.0f;
         foreach (SendRecieve p in pScripts)
 		{
             if (firstPlayer == p.kills) SendGameState();
-            p.target.health = p.target.maxHealth;
-            p.kills = 0;
-            Camera[] cameras = p.GetComponentsInChildren<Camera>();
-            foreach (Camera camera in cameras)
-            {
-                camera.enabled = false;
-            }
-            p.GetComponent<CharacterController>().enabled = false;
-            p.GetComponent<CapsuleCollider>().enabled = false;
-            p.GetComponent<PlayerMovement>().enabled = false;
-            p.GetComponent<SendRecieve>().isControlling = false;
-            p.GetComponentInChildren<MouseLook>().enabled = false;
-            p.GetComponentInChildren<Gun>().isControllingGun = false;
-            p.GetComponentInChildren<Gun>().hitMark.enabled = false;
         }
         firstPlayer = 0;
         lobby.lobbyCamera.enabled = true;
+        foreach (GameObject gO in playerList)
+        {
+            Destroy(gO);
+        }
+        playerList.Clear();
+        pScripts.Clear();
+    }
+
+    void CreateNewPlayer(PlayerNetInfo u)
+    {
+        GameObject newPlayer = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+        newPlayer.transform.parent = this.transform;
+
+        newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+        while (Physics.CheckSphere(newPlayer.transform.localPosition, 35.0f, playerMask) && Physics.CheckSphere(newPlayer.transform.localPosition, 1.0f, environmentMask))
+        {
+            newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+        }
+
+        newPlayer.layer = LayerMask.NameToLayer("Players");
+        newPlayer.name = u.username;
+
+        SendRecieve sr = newPlayer.GetComponent<SendRecieve>();
+        sr.uid = u.uid;
+        sr.gm = this;
+        pScripts.Add(sr);
+
+        Target t = newPlayer.GetComponent<Target>();
+        t.bodyMesh.enabled = true;
+        t.gunBarrelMesh.enabled = true;
+        t.gun.enabled = true;
+        t.deathBoxUI = winnerBox;
+        t.deathText = winnerText;
+
+        MouseLook ml = newPlayer.GetComponentInChildren<MouseLook>();
+        ml.lobbyCamera = lobbyCamera;
+
+        Gun g = newPlayer.GetComponentInChildren<Gun>();
+        g.hitMark = hitMarkImage;
+
+        if (newPlayer.name == UserName)
+        {
+            SetupPlayer(newPlayer);
+        }
+        else
+        {
+            SetupOtherPlayer(newPlayer);
+        }
+
+        playerList.Add(newPlayer);
     }
 
     void SetupOtherPlayer(GameObject player)
@@ -232,43 +247,6 @@ public class GameplayManager : MonoBehaviour
             camera.enabled = true;
         }
         UserUid = player.GetComponent<SendRecieve>().uid;
-    }
-
-    void InitializePosition(int c)
-	{
-        switch (c)
-        {
-            case 1:
-                {
-                    Debug.Log("InitializePosition(): Spawn 1");
-                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
-                    break;
-                }
-            case 2:
-                {
-                    Debug.Log("InitializePosition(): Spawn 2");
-                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
-                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
-                    break;
-                }
-            case 3:
-                {
-                    Debug.Log("InitializePosition(): Spawn 3");
-                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
-                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
-                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
-                    break;
-                }
-            case 4:
-                {
-                    Debug.Log("InitializePosition(): Spawn 4");
-                    p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
-                    p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
-                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
-                    p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
-                    break;
-                }
-        }
     }
 
     public void SendGameState() //YOU SEND YOUR INFO
@@ -320,7 +298,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        Debug.Log("SendGameState(): Sending serialized data...");
+        //Debug.Log("SendGameState(): Sending serialized data...");
         if (server)
         {
             server.BroadcastServerInfo(stream);
@@ -334,7 +312,7 @@ public class GameplayManager : MonoBehaviour
 
     public void RecieveGameState() //GATHER OTHERS INFO
     {
-        Debug.Log("RecieveGameState(" + UserUid + "): Recieved info");
+        //Debug.Log("RecieveGameState(" + UserUid + "): Recieved info");
         MemoryStream stream = new MemoryStream(data);
         BinaryReader reader = new BinaryReader(stream);
         stream.Seek(0, SeekOrigin.Begin);
@@ -343,11 +321,11 @@ public class GameplayManager : MonoBehaviour
         reader.ReadBoolean();
         short header = reader.ReadByte();
         packetType type = (packetType)header;
-        Debug.Log("RecieveGameState(" + UserUid + "): Header is " + type.ToString());
+        //Debug.Log("RecieveGameState(" + UserUid + "): Header is " + type.ToString());
 
         uint uid = reader.ReadUInt32();
         string dump = reader.ReadString();
-        Debug.Log(dump + " - " + UserName);
+        //Debug.Log(dump + " - " + UserName);
 
         SendRecieve pSender = null;
         foreach (SendRecieve p in pScripts)

@@ -46,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
 
             //Movement calculations
             Vector3 move = transform.right * x + transform.forward * z;
-            cc.Move(move * speed * Time.deltaTime);
+            if (cc.enabled) cc.Move(move * speed * Time.deltaTime);
         }
 		else if (WeaponMode) //Move with the recoil of the weapons
         {
@@ -73,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 impact = direction.normalized * -currentStrength;
             }
-            cc.Move(impact * speed * Time.deltaTime);
+            if (cc.enabled) cc.Move(impact * speed * Time.deltaTime);
         }
 
         //Handles bounces
@@ -93,6 +93,6 @@ public class PlayerMovement : MonoBehaviour
 
         //Movement calculations
         velocity.y += gravity * Time.deltaTime;
-        cc.Move(velocity * Time.deltaTime);
+        if (cc.enabled) cc.Move(velocity * Time.deltaTime);
     }
 }

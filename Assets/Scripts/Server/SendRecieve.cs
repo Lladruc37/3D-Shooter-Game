@@ -10,7 +10,6 @@ public class SendRecieve : MonoBehaviour
     public uint uid;
     public string username;
     public bool isControlling = false;
-    public bool assigned = false;
     public bool updateCharacter;
     public GameplayManager gm;
 

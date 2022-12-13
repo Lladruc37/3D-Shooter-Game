@@ -169,8 +169,8 @@ public class Client : MonoBehaviour
                     byte[] packetData = new byte[recv];
                     Array.Copy(tempData, packetData, recv);
 
-                    Debug.Log("ReceiveClient(): Count for recv: " + recv);
-                    Debug.Log("ReceiveClient(): Length of Data: " + packetData.Length);
+                    //Debug.Log("ReceiveClient(): Count for recv: " + recv);
+                    //Debug.Log("ReceiveClient(): Length of Data: " + packetData.Length);
 
                     MemoryStream stream = new MemoryStream(packetData);
                     BinaryReader reader = new BinaryReader(stream);
