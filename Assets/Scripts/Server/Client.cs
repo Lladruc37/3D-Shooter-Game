@@ -222,7 +222,7 @@ public class Client : MonoBehaviour
                                     break;
                                 }
                             case packetType.ping:
-								{
+                                {
                                     Debug.Log("ReceiveClient(): Ping");
                                     MemoryStream streamPing = new MemoryStream();
                                     BinaryWriter writer = new BinaryWriter(streamPing);
@@ -233,7 +233,7 @@ public class Client : MonoBehaviour
                                     SendInfo(streamPing);
 
                                     break;
-								}
+                                }
                             default:
                                 {
                                     //Start/End game
@@ -256,14 +256,14 @@ public class Client : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogWarning("Recieve(): Loopback detected. Procedure canceled.");
+                        Debug.LogWarning("ReceiveClient(): Loopback detected. Procedure canceled.");
                     }
                 }
             }
         }
         catch (Exception e)
         {
-            Debug.LogError("Recieve(): Error receiving: " + e);
+            Debug.LogError("ReceiveClient(): Error receiving: " + e);
         }
     }
     //Send gameplay data to the server
@@ -299,31 +299,36 @@ public class Client : MonoBehaviour
         Debug.Log("RecieveList(): Header is " + type);
 
         //List
-        lobby.usersList.Clear();
+        lobby.clientList.Clear();
         int count = reader.ReadInt32();
         Debug.Log("RecieveList(): Count: " + count);
         for (int i = 0; i < count; i++)
         {
-            string tmp = reader.ReadString();
             uint uid = reader.ReadUInt32();
-            if (tmp == username)
+            string tmpUsername = reader.ReadString();
+            reader.ReadBoolean(); //Dump
+            string ipString = reader.ReadString();
+            int port = reader.ReadInt32();
+            IPEndPoint ip = new IPEndPoint(IPAddress.Parse(ipString), port);
+            if (tmpUsername == username)
             {
                 uuid = uid;
             }
-            Debug.Log("RecieveList(): Recieved data: " + uid + " - " + tmp);
-            if (lobby.usersList.ContainsKey(uid))
+            Debug.Log("RecieveList(): Recieved data: " + uid + " - " + tmpUsername);
+            if (lobby.clientList.Exists(user => user.uid == uid))
             {
                 Debug.Log("RecieveList(): Updating data");
-                lobby.usersList[uid] = tmp;
+                lobby.clientList.Find(user => user.uid == uid).uid = uid;
+                lobby.clientList.Find(user => user.uid == uid).username = tmpUsername;
+                lobby.clientList.Find(user => user.uid == uid).ip = ip;
             }
             else
             {
                 Debug.Log("RecieveList(): Adding data");
-                lobby.usersList.Add(uid, tmp);
+                lobby.clientList.Add(new PlayerNetInfo(uid, tmpUsername, ip));
             }
         }
         data = null;
-        Thread.Sleep(1);
     }
 
     //Close all threads

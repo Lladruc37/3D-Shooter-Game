@@ -15,8 +15,6 @@ public class Server : MonoBehaviour
     public Socket socket;
     public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
     public IPEndPoint clientep;
-    //To keep track of accepted users
-    public List<IPEndPoint> clientListUDP = new List<IPEndPoint>();
 
     //Threads
     Thread recieveDataThread = null;
@@ -40,8 +38,7 @@ public class Server : MonoBehaviour
     //Pings
     float pingTme = 1.5f;
     float pingTimer;
-    Dictionary<uint,IPEndPoint> pingList = new Dictionary<uint, IPEndPoint>();
-
+    List<uint> pingList = new List<uint>();
 
     //Gameplay
     public GameObject gameplayScene;
@@ -69,7 +66,7 @@ public class Server : MonoBehaviour
             }
 
             //Adds this user to the list of players
-            AddPlayer(hostUsername);
+            AddClient(hostUsername, ipep);
             Debug.Log("Server(): Server started successfully!");
         }
 
@@ -88,7 +85,7 @@ public class Server : MonoBehaviour
                     BinaryWriter writer = new BinaryWriter(stream);
                     writer.Write(false);
                     writer.Write((byte)packetType.chat);
-                    string resultingMessage = "\n[" + lobby.usersList[uid] + "]>>" + chatManager.input.text;
+                    string resultingMessage = "\n[" + hostUsername + "]>>" + chatManager.input.text;
                     chatManager.SendMsg(resultingMessage);
                     writer.Write(resultingMessage);
 
@@ -97,27 +94,33 @@ public class Server : MonoBehaviour
                     BroadcastServerInfo(stream);
                 }
             }
-            pingTimer += Time.deltaTime;
-            if (pingTimer >= pingTme) //Ping the players
+
+            Ping();
+        }
+    }
+    public void Ping()
+    {
+        pingTimer += Time.deltaTime;
+        if (pingTimer >= pingTme) //Ping the players
+        {
+            pingTimer = 0.0f;
+            pingList.Add(uid);
+            foreach (PlayerNetInfo user in lobby.clientList.ToArray())
             {
-                pingTimer = 0.0f;
-                pingList.Add(uid, ipep);
-                foreach (KeyValuePair<uint, string> user in lobby.usersList)
-				{
-                    if(!pingList.ContainsKey(user.Key))
-                    {
-                        GoodbyeUser(user.Key, pingList[user.Key]);
-                    }
-				}
-                pingList.Clear();
-
-                MemoryStream stream = new MemoryStream();
-                BinaryWriter writer = new BinaryWriter(stream);
-                writer.Write(false);
-                writer.Write((byte)packetType.ping);
-
-                BroadcastServerInfo(stream);
+                if (!pingList.Contains(user.uid))
+                {
+                    Debug.Log("Ping(): No ping from " + user.uid + ": " + user.username);
+                    GoodbyeUser(user.uid);
+                }
             }
+            pingList.Clear();
+
+            MemoryStream stream = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(stream);
+            writer.Write(false);
+            writer.Write((byte)packetType.ping);
+
+            BroadcastServerInfo(stream);
         }
     }
 
@@ -130,15 +133,18 @@ public class Server : MonoBehaviour
         //Header
         writer.Write(false);
         writer.Write((byte)packetType.list);
-        writer.Write(lobby.usersList.Count);
+        writer.Write(lobby.clientList.Count);
 
         //List
         int i = 0;
-        foreach (KeyValuePair<uint, string> user in lobby.usersList)
+        foreach (PlayerNetInfo user in lobby.clientList)
         {
-            Debug.Log("SendList(): Values: " + user.Key + " - " + user.Value);
-            writer.Write(user.Value);
-            writer.Write(user.Key);
+            Debug.Log("SendList(): Values: " + user.uid + " - " + user.username + " - " + user.ip);
+            writer.Write(user.uid);
+            writer.Write(user.username);
+            writer.Write(true);
+            writer.Write(user.ip.Address.ToString());
+            writer.Write(user.ip.Port);
             i++;
         }
 
@@ -147,25 +153,22 @@ public class Server : MonoBehaviour
         BroadcastServerInfo(stream);
     }
 
-    //Adds a player to the list & binds them with a uid
-    void AddPlayer(string name)
+    PlayerNetInfo AddClient(string username, IPEndPoint ip)
     {
-        lobby.usersList.Add(maxUid, name);
-        maxUid++;
-    }
-
-    //Adds a user to the list of listening users (to send messages)
-    void AddClientUDP(IPEndPoint newClient)
-    {
-        if (newClient.ToString() != "")
+        PlayerNetInfo newPlayer = null;
+        if(ip.ToString() != "")
         {
-            clientListUDP.Add(newClient);
-            Debug.Log("AddClientUDP(): Connected to: " + newClient.ToString());
+            newPlayer = new PlayerNetInfo(maxUid, username, ip);
+            lobby.clientList.Add(newPlayer);
+            maxUid++;
+            Debug.Log("AddClient(): Connected to: " + ip.ToString());
         }
         else
         {
-            Debug.LogError("AddClientUDP(): No clients connected. Waiting to accept...");
+            Debug.LogError("AddClient(): No clients connected. Waiting to accept...");
         }
+
+        return newPlayer;
     }
 
     //Sends the player list to the list of listening users
@@ -173,10 +176,13 @@ public class Server : MonoBehaviour
     {
         byte[] dataTMP = stream.GetBuffer();
 
-        foreach (IPEndPoint ip in clientListUDP)
+        foreach (PlayerNetInfo info in lobby.clientList)
         {
-            EndPoint remote = (EndPoint)ip;
-            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+            if (info.ip.Address.ToString() != "0.0.0.0")
+            {
+                EndPoint remote = (EndPoint)info.ip;
+                socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, remote);
+            }
         }
     }
 
@@ -185,30 +191,34 @@ public class Server : MonoBehaviour
     {
         Debug.Log("BroadcastPlayerInfo(): Sending gameplay state from player...");
 
-        foreach (IPEndPoint ip in clientListUDP)
+        foreach (PlayerNetInfo info in lobby.clientList)
         {
-            EndPoint remote = (EndPoint)ip;
-            socket.SendTo(data, data.Length, SocketFlags.None, remote);
-            Debug.Log("BroadcastPlayerInfo(): Message sent successfully");
+            if (info.ip.Address.ToString() != "0.0.0.0")
+            {
+                EndPoint remote = (EndPoint)info.ip;
+                socket.SendTo(data, data.Length, SocketFlags.None, remote);
+                Debug.Log("BroadcastPlayerInfo(): Message sent successfully");
+            }
         }
     }
 
-    void GoodbyeUser(uint user, IPEndPoint ip)
+    void GoodbyeUser(uint uid)
 	{
         MemoryStream streamGoodbye = new MemoryStream();
         BinaryWriter writerGoodbye = new BinaryWriter(streamGoodbye);
         writerGoodbye.Write(false);
         writerGoodbye.Write((byte)packetType.chat);
 
-        stringData = "\nUser '" + lobby.usersList[user] + "' has left the server!";
+        PlayerNetInfo user = lobby.clientList.Find(user => user.uid == uid);
+
+        stringData = "\nUser '" + user.username + "' has left the server!";
         newMessage = true;
         writerGoodbye.Write(stringData);
 
-        lobby.usersList.Remove(user);
+        lobby.clientList.Remove(user);
 
         BroadcastServerInfo(streamGoodbye);
         Thread.Sleep(100);
-        clientListUDP.Remove(ip);
         SendPlayerList();
     }
 
@@ -252,10 +262,10 @@ public class Server : MonoBehaviour
                         {
                             Debug.Log("RecieveServer(): New client detected!");
                             sender = (IPEndPoint)remote;
-                            AddClientUDP(sender);
-
                             string userName = reader.ReadString();
-                            AddPlayer(userName);
+
+                            PlayerNetInfo newPlayer = AddClient(userName, sender);
+                            pingList.Add(newPlayer.uid);
 
                             stringData = "\nUser '" + userName + "' joined the lobby!";
                             newMessage = true;
@@ -284,7 +294,7 @@ public class Server : MonoBehaviour
                         }
                     case packetType.goodbye:
                         {
-                            GoodbyeUser(reader.ReadUInt32(), (IPEndPoint)remote);
+                            GoodbyeUser(reader.ReadUInt32());
                             break;
                         }
                     case packetType.list:
@@ -306,9 +316,9 @@ public class Server : MonoBehaviour
                             BinaryWriter writerChat = new BinaryWriter(streamChat);
                             writerChat.Write(false);
                             writerChat.Write((byte)packetType.chat);
-                            if (lobby.usersList.ContainsKey(uid))
+                            if (lobby.clientList.Exists(user => user.uid == uid))
                             {
-                                string username = lobby.usersList[uid];
+                                string username = lobby.clientList.Find(user => user.uid == uid).username;
                                 string resultingMessage = "\n[" + username + "]>>" + m;
                                 stringData = resultingMessage;
                                 writerChat.Write(resultingMessage);
@@ -333,15 +343,16 @@ public class Server : MonoBehaviour
                             break;
                         }
                     case packetType.ping:
-						{
+                        {
                             Debug.Log("RecieveServer(): Ping");
                             uint userUid = reader.ReadUInt32();
-                            if(!pingList.ContainsKey(userUid))
-							{
-                                pingList.Add(userUid,(IPEndPoint)remote);
-							}
+                            if (!pingList.Contains(userUid))
+                            {
+                                Debug.Log("RecieveServer(): New ping from " + userUid);
+                                pingList.Add(userUid);
+                            }
                             break;
-						}
+                        }
                     default:
                         {
                             Debug.LogError("RecieveServer(): Message was: " + stringData);
@@ -352,7 +363,7 @@ public class Server : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError("RecieveData(): Error receiving: " + e);
+            Debug.LogError("RecieveServer(): Error receiving: " + e);
         }
     }
 

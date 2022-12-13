@@ -31,10 +31,12 @@ public class LobbyScripts : MonoBehaviour
     public Server server;
     public Client client;
     public GameObject gameplayScene;
-    public Dictionary<uint,string> usersList = new Dictionary<uint, string>();
+    public List<PlayerNetInfo> clientList = new List<PlayerNetInfo>();
+
+    //public Dictionary<uint,string> usersList = new Dictionary<uint, string>();
 
     //Cap framerate
-	private void Start()
+    private void Start()
 	{
         Application.targetFrameRate = 60;
 	}

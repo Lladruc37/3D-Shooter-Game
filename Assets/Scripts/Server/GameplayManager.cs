@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,10 +26,25 @@ public enum packetType
     startGame, //Start game
     endSession, //End server/game
 }
+
+public class PlayerNetInfo
+{
+    public uint uid;
+    public string username;
+    public IPEndPoint ip;
+
+    public PlayerNetInfo() { }
+    public PlayerNetInfo(uint _uid, string _username, IPEndPoint _ip)
+    {
+        uid = _uid;
+        username = _username;
+        ip = _ip;
+    }
+}
 public class GameplayManager : MonoBehaviour
 {
     //Server/Client & other
-    public LobbyScripts comunicationDevice;
+    public LobbyScripts lobby;
     public Server server;
     public Client client;
     public byte[] data;
@@ -68,7 +84,7 @@ public class GameplayManager : MonoBehaviour
         if (start)
 		{
             Application.targetFrameRate = 60;
-            int c = comunicationDevice.usersList.Count;
+            int c = lobby.clientList.Count;
             Debug.Log("Start(): Player count: " + c);
 
             if (c != 0) //Setup gameplay scene
@@ -80,13 +96,13 @@ public class GameplayManager : MonoBehaviour
 
                 pScripts.Clear();
                 int i = 0;
-                foreach (KeyValuePair<uint,string> u in comunicationDevice.usersList) //Add players to the list
+                foreach (PlayerNetInfo u in lobby.clientList) //Add players to the list
                 {
-                    Debug.Log("Start(): Adding pScripts, values: " + u.Key + " - " + u.Value);
-                    playerList[i].name = u.Value;
+                    Debug.Log("Start(): Adding pScripts, values: " + u.uid + " - " + u.username);
+                    playerList[i].name = u.username;
                     pScripts.Add(playerList[i].GetComponent<SendRecieve>());
                     playerList[i].GetComponent<SendRecieve>().assigned = true;
-                    playerList[i].GetComponent<SendRecieve>().uid = u.Key;
+                    playerList[i].GetComponent<SendRecieve>().uid = u.uid;
                     ++i;
                 }
 
@@ -148,9 +164,9 @@ public class GameplayManager : MonoBehaviour
                     winnerTimer = 0.0f;
                     update = false;
                     winnerBox.SetActive(false);
-                    comunicationDevice.gameplayScene.SetActive(false);
-                    comunicationDevice.exitGameButton.SetActive(true);
-                    comunicationDevice.lobbyCanvas.GetComponent<Canvas>().enabled = true;
+                    lobby.gameplayScene.SetActive(false);
+                    lobby.exitGameButton.SetActive(true);
+                    lobby.lobbyCanvas.GetComponent<Canvas>().enabled = true;
                 }
             }
         }
@@ -182,7 +198,7 @@ public class GameplayManager : MonoBehaviour
             p.GetComponentInChildren<Gun>().hitMark.enabled = false;
         }
         firstPlayer = 0;
-        comunicationDevice.lobbyCamera.enabled = true;
+        lobby.lobbyCamera.enabled = true;
     }
 
     void SetupOtherPlayer(GameObject player)
@@ -220,31 +236,38 @@ public class GameplayManager : MonoBehaviour
 
     void InitializePosition(int c)
 	{
-        if (c == 1)
+        switch (c)
         {
-            Debug.Log("InitializePosition(): Spawn 1");
-            p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
-        }
-        else if (c == 2)
-        {
-            Debug.Log("InitializePosition(): Spawn 2");
-            p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
-            p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
-        }
-        else if (c == 3)
-        {
-            Debug.Log("InitializePosition(): Spawn 3");
-            p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
-            p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
-            p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
-        }
-        else if (c == 4)
-        {
-            Debug.Log("InitializePosition(): Spawn 4");
-            p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
-            p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
-            p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
-            p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
+            case 1:
+                {
+                    Debug.Log("InitializePosition(): Spawn 1");
+                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, -25.0f);
+                    break;
+                }
+            case 2:
+                {
+                    Debug.Log("InitializePosition(): Spawn 2");
+                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
+                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
+                    break;
+                }
+            case 3:
+                {
+                    Debug.Log("InitializePosition(): Spawn 3");
+                    p1.transform.localPosition = new Vector3(-25.0f, groundLevel, 85.0f);
+                    p2.transform.localPosition = new Vector3(-25.0f, groundLevel, -115.0f);
+                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
+                    break;
+                }
+            case 4:
+                {
+                    Debug.Log("InitializePosition(): Spawn 4");
+                    p1.transform.localPosition = new Vector3(-15.0f, groundLevel, 90.0f);
+                    p2.transform.localPosition = new Vector3(-15.0f, groundLevel, -105.0f);
+                    p3.transform.localPosition = new Vector3(-125.0f, groundLevel, -25.0f);
+                    p4.transform.localPosition = new Vector3(75.0f, groundLevel, -25.0f);
+                    break;
+                }
         }
     }
 
