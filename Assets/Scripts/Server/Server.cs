@@ -292,6 +292,7 @@ public class Server : MonoBehaviour
                             writerHello.Write(false);
                             writerHello.Write((byte)packetType.servername);
                             writerHello.Write(serverName);
+                            writerHello.Write(manager.update);
 
                             MemoryStream streamChat = new MemoryStream();
                             BinaryWriter writerChat = new BinaryWriter(streamChat);
@@ -299,9 +300,11 @@ public class Server : MonoBehaviour
                             writerChat.Write((byte)packetType.chat);
                             writerChat.Write(stringData);
 
-                            BroadcastServerInfo(streamHello);
-                            Thread.Sleep(100);
                             SendPlayerList();
+                            Thread.Sleep(100);
+                            byte[] dataTMP = streamHello.GetBuffer();
+                            EndPoint playerEP = (EndPoint)newPlayer.ip;
+                            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, playerEP);
                             Thread.Sleep(100);
                             BroadcastServerInfo(streamChat);
                             break;

@@ -194,6 +194,7 @@ public class LobbyScripts : MonoBehaviour
         {
             server.SendPlayerList();
             manager.UserName = server.hostUsername;
+            manager.UserUid = server.uid;
             startGameButton.SetActive(false);
 
             MemoryStream stream = new MemoryStream();

@@ -114,7 +114,18 @@ public class GameplayManager : MonoBehaviour
         if(update) //Updates point system & HP UI
 		{
             hpText.text = "HP: " + playerHp.health.ToString();
-            if (pScripts.Count != lobby.clientList.Count)
+            if (pScripts.Count < lobby.clientList.Count)
+            {
+                foreach (PlayerNetInfo p in lobby.clientList)
+                {
+                    if(!pScripts.Exists(sr => sr.uid == p.uid))
+                    {
+                        CreateNewPlayer(p);
+                    }
+                }
+
+            }
+            else if (pScripts.Count > lobby.clientList.Count)
             {
                 foreach (SendRecieve sr in pScripts)
                 {
@@ -191,14 +202,15 @@ public class GameplayManager : MonoBehaviour
 
     void CreateNewPlayer(PlayerNetInfo u)
     {
-        GameObject newPlayer = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
-        newPlayer.transform.parent = this.transform;
+        GameObject newPlayer = Instantiate(playerPrefab, new Vector3(0, 1.234f, 0), Quaternion.identity, this.transform);
 
+        Debug.Log("CreateNewPlayer():Initial Position: " + newPlayer.transform.position);
         newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
         while (Physics.CheckSphere(newPlayer.transform.localPosition, 35.0f, playerMask) && Physics.CheckSphere(newPlayer.transform.localPosition, 1.0f, environmentMask))
         {
             newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
         }
+        Debug.Log("CreateNewPlayer():Final Position: " + newPlayer.transform.position);
 
         newPlayer.layer = LayerMask.NameToLayer("Players");
         newPlayer.name = u.username;
@@ -221,7 +233,7 @@ public class GameplayManager : MonoBehaviour
         Gun g = newPlayer.GetComponentInChildren<Gun>();
         g.hitMark = hitMarkImage;
 
-        if (newPlayer.name == UserName)
+        if (u.uid == UserUid)
         {
             SetupPlayer(newPlayer);
         }
@@ -263,7 +275,6 @@ public class GameplayManager : MonoBehaviour
         {
             camera.enabled = true;
         }
-        UserUid = player.GetComponent<SendRecieve>().uid;
     }
 
     public void SendGameState() //YOU SEND YOUR INFO

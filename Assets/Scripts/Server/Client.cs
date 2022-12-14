@@ -93,6 +93,7 @@ public class Client : MonoBehaviour
             {
                 startGame = false;
                 manager.UserName = username;
+                manager.UserUid = uuid;
                 lobby.StartGame();
             }
             else if (endGame) //Called when end game message is recieved
@@ -194,6 +195,8 @@ public class Client : MonoBehaviour
                                     newServerName = true;
                                     stringData = reader.ReadString();
                                     Debug.Log("ReceiveClient(): New server name change detected");
+                                    startGame = reader.ReadBoolean();
+                                    if(startGame) Debug.Log("ReceiveClient(): Game in progress detected");
                                     Thread.Sleep(100);
                                     break;
                                 }
