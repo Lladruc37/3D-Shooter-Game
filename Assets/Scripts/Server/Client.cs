@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -19,6 +20,7 @@ public class Client : MonoBehaviour
     Thread connectThread = null;
     Thread receiveThread = null;
     Thread recievePlayerListThread = null;
+    bool threadsActive = true;
 
     //User info
     public uint uuid;
@@ -58,6 +60,7 @@ public class Client : MonoBehaviour
 
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             connectThread = new Thread(Connect);
+            threadsActive = true;
 
             try
             {
@@ -123,43 +126,52 @@ public class Client : MonoBehaviour
     //Connect to the server
     void Connect()
     {
-        try
+        if (threadsActive)
         {
-            //Hello message & start receiving
-            MemoryStream stream = new MemoryStream();
-            BinaryWriter writer = new BinaryWriter(stream);
-            writer.Write(true);
-            writer.Write((byte)packetType.hello);
-            writer.Write(username);
-            SendInfo(stream);
-
-            connected = true;
-            receiveThread = new Thread(ReceiveClient);
             try
             {
-                receiveThread.Start();
-            }
-            catch (ThreadStartException e)
-            {
-                Debug.LogError("Start(): Error starting thread: " + e);
-            }
+                //Hello message & start receiving
+                MemoryStream stream = new MemoryStream();
+                BinaryWriter writer = new BinaryWriter(stream);
+                writer.Write(true);
+                writer.Write((byte)packetType.hello);
+                writer.Write(username);
+                SendInfo(stream);
 
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError("Connect(): Connection failed.. trying again...\n Error: " + e);
+                connected = true;
+                receiveThread = new Thread(ReceiveClient);
+                try
+                {
+                    receiveThread.Start();
+                }
+                catch (ThreadStartException e)
+                {
+                    Debug.LogError("Start(): Error starting thread: " + e);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Connect(): Connection failed.. trying again...\n Error: " + e);
+            }
         }
     }
 
     //Receive data from the server
     void ReceiveClient()
     {
+        List<Socket> readList = new List<Socket>();
+
         try
         {
             EndPoint remote = (EndPoint)ipep;
-            while (true)
+            while (threadsActive && connected)
             {
-                if (connected)
+                readList.Clear();
+                readList.Add(socket);
+                Socket.Select(readList, null, null, 1);
+                Thread.Sleep(10);
+                if (readList.Count != 0)
                 {
                     int recv;
                     byte[] tempData = new byte[1024];
@@ -196,7 +208,7 @@ public class Client : MonoBehaviour
                                     stringData = reader.ReadString();
                                     Debug.Log("ReceiveClient(): New server name change detected");
                                     startGame = reader.ReadBoolean();
-                                    if(startGame) Debug.Log("ReceiveClient(): Game in progress detected");
+                                    if (startGame) Debug.Log("ReceiveClient(): Game in progress detected");
                                     Thread.Sleep(100);
                                     break;
                                 }
@@ -289,58 +301,62 @@ public class Client : MonoBehaviour
     //Reads player list & setup to start game
     public void RecievePlayerList()
     {
-        Debug.Log("RecieveList(): Recieved info");
-        MemoryStream stream = new MemoryStream(data);
-        BinaryReader reader = new BinaryReader(stream);
-        stream.Seek(0, SeekOrigin.Begin);
-
-        //Header
-        reader.ReadBoolean();
-        short header = reader.ReadByte();
-        packetType type = (packetType)header;
-        Debug.Log("RecieveList(): Header is " + type);
-
-        //List
-        lobby.clientList.Clear();
-        int count = reader.ReadInt32();
-        Debug.Log("RecieveList(): Count: " + count);
-        for (int i = 0; i < count; i++)
+        if (threadsActive)
         {
-            uint uid = reader.ReadUInt32();
-            string tmpUsername = reader.ReadString();
-            reader.ReadBoolean(); //Dump
-            string ipString = reader.ReadString();
-            int port = reader.ReadInt32();
-            IPEndPoint ip = new IPEndPoint(IPAddress.Parse(ipString), port);
-            if (tmpUsername == username)
+            Debug.Log("RecieveList(): Recieved info");
+            MemoryStream stream = new MemoryStream(data);
+            BinaryReader reader = new BinaryReader(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            //Header
+            reader.ReadBoolean();
+            short header = reader.ReadByte();
+            packetType type = (packetType)header;
+            Debug.Log("RecieveList(): Header is " + type);
+
+            //List
+            lobby.clientList.Clear();
+            int count = reader.ReadInt32();
+            Debug.Log("RecieveList(): Count: " + count);
+            for (int i = 0; i < count; i++)
             {
-                uuid = uid;
+                uint uid = reader.ReadUInt32();
+                string tmpUsername = reader.ReadString();
+                reader.ReadBoolean(); //Dump
+                string ipString = reader.ReadString();
+                int port = reader.ReadInt32();
+                IPEndPoint ip = new IPEndPoint(IPAddress.Parse(ipString), port);
+                if (tmpUsername == username)
+                {
+                    uuid = uid;
+                }
+                Debug.Log("RecieveList(): Recieved data: " + uid + " - " + tmpUsername);
+                if (lobby.clientList.Exists(user => user.uid == uid))
+                {
+                    Debug.Log("RecieveList(): Updating data");
+                    lobby.clientList.Find(user => user.uid == uid).uid = uid;
+                    lobby.clientList.Find(user => user.uid == uid).username = tmpUsername;
+                    lobby.clientList.Find(user => user.uid == uid).ip = ip;
+                }
+                else
+                {
+                    Debug.Log("RecieveList(): Adding data");
+                    lobby.clientList.Add(new PlayerNetInfo(uid, tmpUsername, ip));
+                }
             }
-            Debug.Log("RecieveList(): Recieved data: " + uid + " - " + tmpUsername);
-            if (lobby.clientList.Exists(user => user.uid == uid))
-            {
-                Debug.Log("RecieveList(): Updating data");
-                lobby.clientList.Find(user => user.uid == uid).uid = uid;
-                lobby.clientList.Find(user => user.uid == uid).username = tmpUsername;
-                lobby.clientList.Find(user => user.uid == uid).ip = ip;
-            }
-            else
-            {
-                Debug.Log("RecieveList(): Adding data");
-                lobby.clientList.Add(new PlayerNetInfo(uid, tmpUsername, ip));
-            }
+            data = null;
         }
-        data = null;
     }
 
     //Close all threads
     public void CloseThreads()
     {
+        threadsActive = false;
+
         try
         {
             if (connectThread != null)
             {
-                connectThread.Abort();
                 connectThread = null;
             }
         }
@@ -353,7 +369,6 @@ public class Client : MonoBehaviour
         {
             if (receiveThread != null)
             {
-                receiveThread.Abort();
                 receiveThread = null;
             }
         }
@@ -366,7 +381,6 @@ public class Client : MonoBehaviour
         {
             if (recievePlayerListThread != null)
             {
-                recievePlayerListThread.Abort();
                 recievePlayerListThread = null;
             }
         }

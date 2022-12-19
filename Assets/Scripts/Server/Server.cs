@@ -18,6 +18,7 @@ public class Server : MonoBehaviour
 
     //Threads
     Thread recieveDataThread = null;
+    bool threadsActive = true;
 
     //User info
     public uint uid = 0;
@@ -56,6 +57,7 @@ public class Server : MonoBehaviour
             socket.Bind(ipep);
 
             recieveDataThread = new Thread(RecieveServer);
+            threadsActive = true;
             try
             {
                 recieveDataThread.Start();
@@ -113,9 +115,16 @@ public class Server : MonoBehaviour
                     GoodbyeUser(user.uid);
                     if (recieveDataThread != null)
                     {
-                        recieveDataThread.Abort();
-                        recieveDataThread = null;
-                        recieveDataThread = new Thread(RecieveServer);
+                        threadsActive = false;
+                        while (!threadsActive)
+						{
+                            if (!recieveDataThread.IsAlive)
+							{
+                                threadsActive = true;
+                                recieveDataThread = null;
+                                recieveDataThread = new Thread(RecieveServer);
+                            }
+                        }
                         try
                         {
                             recieveDataThread.Start();
@@ -129,12 +138,15 @@ public class Server : MonoBehaviour
             }
             pingList.Clear();
 
-            MemoryStream stream = new MemoryStream();
-            BinaryWriter writer = new BinaryWriter(stream);
-            writer.Write(false);
-            writer.Write((byte)packetType.ping);
+            if (threadsActive)
+            {
+                MemoryStream stream = new MemoryStream();
+                BinaryWriter writer = new BinaryWriter(stream);
+                writer.Write(false);
+                writer.Write((byte)packetType.ping);
 
-            BroadcastServerInfo(stream);
+                BroadcastServerInfo(stream);
+            }
         }
     }
 
@@ -239,156 +251,168 @@ public class Server : MonoBehaviour
     //Receives data from users
     void RecieveServer()
     {
+        List<Socket> readList = new List<Socket>();
+
         try
         {
-            while (true)
+			while (threadsActive)
             {
-                IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
-                EndPoint remote = (EndPoint)(sender);
-                int recv;
-
-                byte[] tempData = new byte[1024];
-                Debug.Log("RecieveServer(): Begin to listen...");
-                recv = socket.ReceiveFrom(tempData, ref remote);
-                Debug.Log("RecieveServer(): New packet recieved!");
-
-                byte[] packetData = new byte[recv];
-                Array.Copy(tempData, packetData, recv);
-
-                Debug.Log("RecieveServer(): Count for recv: " + recv);
-                Debug.Log("RecieveServer(): Length of Data: " + packetData.Length);
-
-                MemoryStream stream = new MemoryStream(packetData);
-                BinaryReader reader = new BinaryReader(stream);
-                stream.Seek(0, SeekOrigin.Begin);
-                reader.ReadBoolean();
-                short header = reader.ReadByte();
-                packetType type = (packetType)header;
-
-                switch (type)
+                readList.Clear();
+                readList.Add(socket);
+                Socket.Select(readList, null, null, 1);
+                Thread.Sleep(10);
+                //Debug.Log("OUT");
+                if (readList.Count != 0)
                 {
-                    case packetType.error:
-                        {
-                            Debug.LogError("RecieveServer(): Error packet type received :c");
-                            break;
-                        }
-                    case packetType.hello:
-                        {
-                            Debug.Log("RecieveServer(): New client detected!");
-                            sender = (IPEndPoint)remote;
-                            string userName = reader.ReadString();
+                    //Debug.Log("IN");
+                    IPEndPoint sender = new IPEndPoint(IPAddress.Any, 9050);
+                    EndPoint remote = (EndPoint)(sender);
+                    int recv;
 
-                            PlayerNetInfo newPlayer = AddClient(userName, sender);
-                            pingList.Add(newPlayer.uid);
+                    byte[] tempData = new byte[1024];
+                    Debug.Log("RecieveServer(): Begin to listen...");
+                    recv = socket.ReceiveFrom(tempData, ref remote);
+                    Debug.Log("RecieveServer(): New packet recieved!");
 
-                            stringData = "\nUser '" + userName + "' joined the lobby!";
-                            newMessage = true;
+                    byte[] packetData = new byte[recv];
+                    Array.Copy(tempData, packetData, recv);
 
-                            string tmp = stringData;
-                            Debug.Log("RecieveServer(): " + stringData);
+                    Debug.Log("RecieveServer(): Count for recv: " + recv);
+                    Debug.Log("RecieveServer(): Length of Data: " + packetData.Length);
 
-                            MemoryStream streamHello = new MemoryStream();
-                            BinaryWriter writerHello = new BinaryWriter(streamHello);
-                            writerHello.Write(false);
-                            writerHello.Write((byte)packetType.servername);
-                            writerHello.Write(serverName);
-                            writerHello.Write(manager.update);
+                    MemoryStream stream = new MemoryStream(packetData);
+                    BinaryReader reader = new BinaryReader(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    reader.ReadBoolean();
+                    short header = reader.ReadByte();
+                    packetType type = (packetType)header;
 
-                            MemoryStream streamChat = new MemoryStream();
-                            BinaryWriter writerChat = new BinaryWriter(streamChat);
-                            writerChat.Write(false);
-                            writerChat.Write((byte)packetType.chat);
-                            writerChat.Write(stringData);
-
-                            SendPlayerList();
-                            Thread.Sleep(100);
-                            byte[] dataTMP = streamHello.GetBuffer();
-                            EndPoint playerEP = (EndPoint)newPlayer.ip;
-                            socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, playerEP);
-                            Thread.Sleep(100);
-                            BroadcastServerInfo(streamChat);
-                            break;
-                        }
-                    case packetType.goodbye:
-                        {
-                            GoodbyeUser(reader.ReadUInt32());
-                            break;
-                        }
-                    case packetType.list:
-                        {
-                            Debug.Log("RecieveServer(): New game state detected");
-                            manager.data = packetData;
-                            manager.recieveThread = new Thread(manager.RecieveGameState);
-                            manager.recieveThread.Start();
-                            BroadcastServerInfo(packetData);
-                            break;
-                        }
-                    case packetType.chat:
-                        {
-                            Debug.Log("RecieveServer(): New chat message from user!");
-                            uint uid = reader.ReadUInt32();
-                            string m = reader.ReadString();
-
-                            MemoryStream streamChat = new MemoryStream();
-                            BinaryWriter writerChat = new BinaryWriter(streamChat);
-                            writerChat.Write(false);
-                            writerChat.Write((byte)packetType.chat);
-                            if (lobby.clientList.Exists(user => user.uid == uid))
+                    switch (type)
+                    {
+                        case packetType.error:
                             {
-                                string username = lobby.clientList.Find(user => user.uid == uid).username;
-                                string resultingMessage = "\n[" + username + "]>>" + m;
-                                stringData = resultingMessage;
-                                writerChat.Write(resultingMessage);
+                                Debug.LogError("RecieveServer(): Error packet type received :c");
+                                break;
                             }
-                            else
+                        case packetType.hello:
                             {
-                                string resultingMessage = "Error Message: Something wrong happened!";
-                                stringData = resultingMessage;
-                                writerChat.Write(resultingMessage);
+                                Debug.Log("RecieveServer(): New client detected!");
+                                sender = (IPEndPoint)remote;
+                                string userName = reader.ReadString();
+
+                                PlayerNetInfo newPlayer = AddClient(userName, sender);
+                                pingList.Add(newPlayer.uid);
+
+                                stringData = "\nUser '" + userName + "' joined the lobby!";
+                                newMessage = true;
+
+                                string tmp = stringData;
+                                Debug.Log("RecieveServer(): " + stringData);
+
+                                MemoryStream streamHello = new MemoryStream();
+                                BinaryWriter writerHello = new BinaryWriter(streamHello);
+                                writerHello.Write(false);
+                                writerHello.Write((byte)packetType.servername);
+                                writerHello.Write(serverName);
+                                writerHello.Write(manager.update);
+
+                                MemoryStream streamChat = new MemoryStream();
+                                BinaryWriter writerChat = new BinaryWriter(streamChat);
+                                writerChat.Write(false);
+                                writerChat.Write((byte)packetType.chat);
+                                writerChat.Write(stringData);
+
+                                SendPlayerList();
+                                Thread.Sleep(100);
+                                byte[] dataTMP = streamHello.GetBuffer();
+                                EndPoint playerEP = (EndPoint)newPlayer.ip;
+                                socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, playerEP);
+                                Thread.Sleep(100);
+                                BroadcastServerInfo(streamChat);
+                                break;
                             }
-                            newMessage = true;
-                            BroadcastServerInfo(streamChat);
-                            break;
-                        }
-                    case packetType.playerInfo:
-                        {
-                            Debug.Log("RecieveServer(): New game state detected");
-                            manager.data = packetData;
-                            manager.recieveThread = new Thread(manager.RecieveGameState);
-                            manager.recieveThread.Start();
-                            BroadcastServerInfo(packetData);
-                            break;
-                        }
-                    case packetType.ping:
-                        {
-                            Debug.Log("RecieveServer(): Ping");
-                            uint userUid = reader.ReadUInt32();
-                            if (!pingList.Contains(userUid))
+                        case packetType.goodbye:
                             {
-                                Debug.Log("RecieveServer(): New ping from " + userUid);
-                                pingList.Add(userUid);
+                                GoodbyeUser(reader.ReadUInt32());
+                                break;
                             }
-                            break;
-                        }
-                    default:
-                        {
-                            Debug.LogError("RecieveServer(): Message was: " + stringData);
-                            break;
-                        }
+                        case packetType.list:
+                            {
+                                Debug.Log("RecieveServer(): New game state detected");
+                                manager.data = packetData;
+                                manager.recieveThread = new Thread(manager.RecieveGameState);
+                                manager.recieveThread.Start();
+                                BroadcastServerInfo(packetData);
+                                break;
+                            }
+                        case packetType.chat:
+                            {
+                                Debug.Log("RecieveServer(): New chat message from user!");
+                                uint uid = reader.ReadUInt32();
+                                string m = reader.ReadString();
+
+                                MemoryStream streamChat = new MemoryStream();
+                                BinaryWriter writerChat = new BinaryWriter(streamChat);
+                                writerChat.Write(false);
+                                writerChat.Write((byte)packetType.chat);
+                                if (lobby.clientList.Exists(user => user.uid == uid))
+                                {
+                                    string username = lobby.clientList.Find(user => user.uid == uid).username;
+                                    string resultingMessage = "\n[" + username + "]>>" + m;
+                                    stringData = resultingMessage;
+                                    writerChat.Write(resultingMessage);
+                                }
+                                else
+                                {
+                                    string resultingMessage = "Error Message: Something wrong happened!";
+                                    stringData = resultingMessage;
+                                    writerChat.Write(resultingMessage);
+                                }
+                                newMessage = true;
+                                BroadcastServerInfo(streamChat);
+                                break;
+                            }
+                        case packetType.playerInfo:
+                            {
+                                Debug.Log("RecieveServer(): New game state detected");
+                                manager.data = packetData;
+                                manager.recieveThread = new Thread(manager.RecieveGameState);
+                                manager.recieveThread.Start();
+                                BroadcastServerInfo(packetData);
+                                break;
+                            }
+                        case packetType.ping:
+                            {
+                                Debug.Log("RecieveServer(): Ping");
+                                uint userUid = reader.ReadUInt32();
+                                if (!pingList.Contains(userUid))
+                                {
+                                    Debug.Log("RecieveServer(): New ping from " + userUid);
+                                    pingList.Add(userUid);
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                Debug.LogError("RecieveServer(): Message was: " + stringData);
+                                break;
+                            }
+                    }
                 }
             }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("RecieveServer(): Error receiving: " + e);
-        }
-    }
+		}
+		catch (Exception e)
+		{
+			Debug.LogError("RecieveServer(): Error receiving: " + e);
+		}
+	}
 
     //Close all connections
     public void Close()
     {
         start = false;
         update = false;
+        pingList.Clear();
 
         if (socket != null)
         {
@@ -404,13 +428,13 @@ public class Server : MonoBehaviour
     {
         try
         {
+            threadsActive = false;
             if (recieveDataThread != null)
             {
-                recieveDataThread.Abort();
                 recieveDataThread = null;
             }
         }
-        catch (ThreadAbortException e)
+        catch (ThreadStateException e)
         {
             Debug.LogError("CloseThreads(): Error closing server: " + e);
         }

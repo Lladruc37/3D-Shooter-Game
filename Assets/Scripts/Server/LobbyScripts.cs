@@ -127,6 +127,7 @@ public class LobbyScripts : MonoBehaviour
         string msg = "\nEnding session...";
         writer.Write(msg);
         server.BroadcastServerInfo(stream);
+        clientList.Clear();
 
         server.chatManager.SendMsg(msg);
         inputCanvas.GetComponent<Canvas>().enabled = true;
@@ -160,6 +161,7 @@ public class LobbyScripts : MonoBehaviour
         inputUserName.text = "";
         inputServer.text = "";
         inputChat.text = "";
+        clientList.Clear();
 
         MemoryStream stream = new MemoryStream();
         BinaryWriter writer = new BinaryWriter(stream);
