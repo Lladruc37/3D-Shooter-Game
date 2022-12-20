@@ -9,6 +9,8 @@ public class Target : MonoBehaviour
     public MeshRenderer gunBarrelMesh;
     public MeshRenderer gunBodyMesh;
 
+    public LayerMask ceilingMask;
+    public LayerMask playerMask;
     public Gun gun;
     public CharacterController controller;
     public CapsuleCollider bodyCollider;
@@ -65,20 +67,34 @@ public class Target : MonoBehaviour
 
     public Vector3 RandomizeSpawn() //return a random position within the map bounds
 	{
-        Vector3 result = new Vector3(Random.Range(-115.0f, 65.0f), 1.234f, Random.Range(-105.0f, 75.0f));
-        return result;
-	}
+        Vector3 position = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+        bool playersHit = Physics.CheckSphere(position, 35.0f, playerMask);
+        bool ceilingHit = Physics.CheckCapsule(position, position + new Vector3(0, 350, 0), 1.0f, ceilingMask);
 
-	//private void OnCollisionEnter(Collision collision) //in case you spawn inside another object
-	//{
- //       if(!collision.transform.GetComponent("Target"))
-	//	{
- //           sr.position = RandomizeSpawn();
-	//	}
-	//}
+        Debug.Log("RandomizeSpawn(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
+        while (playersHit || ceilingHit)
+        {
+            Debug.Log("RandomizeSpawn(): Updating position...");
+            position = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+            playersHit = Physics.CheckSphere(position, 35.0f, playerMask);
+            ceilingHit = Physics.CheckCapsule(position, position + new Vector3(0, 350, 0), 1.0f, ceilingMask);
+            Debug.Log("RandomizeSpawn(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
+        }
+        Debug.Log("RandomizeSpawn(): Final Position: " + position);
+
+        return position;
+    }
+
+    private void OnCollisionEnter(Collision collision) //in case you spawn inside another object
+    {
+        if (!collision.transform.GetComponent("Target"))
+        {
+            sr.position = RandomizeSpawn();
+        }
+    }
 
 
-	public bool takeDamage (int amount) //reduce HP and return true if dead
+    public bool takeDamage (int amount) //reduce HP and return true if dead
     {
         health -= amount;
         if (health <= 0)

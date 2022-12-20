@@ -254,12 +254,18 @@ MonoBehaviour:
   client: {fileID: 146827588}
   data: 
   playerPrefab: {fileID: 7056015063186161605, guid: 0b14bdf7c798ec14892e5f83cf97b899, type: 3}
+  ignoreRaycast:
+    serializedVersion: 2
+    m_Bits: 4
   playerMask:
     serializedVersion: 2
     m_Bits: 64
   environmentMask:
     serializedVersion: 2
     m_Bits: 8
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 128
   lobbyCamera: {fileID: 1371795213}
   hitMarkImage: {fileID: 787191026}
   pointsToScore: 5
@@ -271,6 +277,8 @@ MonoBehaviour:
   winnerText: {fileID: 163329124}
   winnerBox: {fileID: 1213765189}
   hpText: {fileID: 163329126}
+  TmpFloat: 1
+  TmpVector: {x: 0, y: 0, z: 0}
   UserUid: 0
   UserName: 
   start: 0
@@ -2698,7 +2706,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -179279.36}
+  m_AnchoredPosition: {x: -0.40000916, y: -186036.52}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1604552425

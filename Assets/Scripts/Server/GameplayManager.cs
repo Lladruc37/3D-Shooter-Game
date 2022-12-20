@@ -51,11 +51,13 @@ public class GameplayManager : MonoBehaviour
 
     //Instantiate players
     public GameObject playerPrefab;
+    public LayerMask ignoreRaycast;
     public LayerMask playerMask;
     public LayerMask environmentMask;
     public LayerMask ceilingMask;
     public Camera lobbyCamera;
     public Image hitMarkImage;
+    Vector3 lp = Vector3.zero;
 
     //Threads
     public Thread sendThread = null;
@@ -76,8 +78,6 @@ public class GameplayManager : MonoBehaviour
     //Other UI
     Target targetScript;
     public Text hpText;
-    public float TmpFloat = 1.0f;
-    public Vector3 TmpVector = new Vector3();
 
     //User data
     public uint UserUid;
@@ -105,7 +105,8 @@ public class GameplayManager : MonoBehaviour
                 foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list
                 {
                     Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
-                    CreateNewPlayer(user);
+                    GameObject player = CreateNewPlayer(user);
+                    player.transform.localPosition = lp;
                 }
             }
             Debug.Log("Start(): Player Models: " + playerList.Count);
@@ -123,7 +124,8 @@ public class GameplayManager : MonoBehaviour
                 {
                     if(!pScripts.Exists(sr => sr.uid == p.uid))
                     {
-                        CreateNewPlayer(p);
+                        GameObject player = CreateNewPlayer(p);
+                        player.transform.localPosition = lp;
                     }
                 }
 
@@ -204,35 +206,56 @@ public class GameplayManager : MonoBehaviour
     }
 
     private void OnDrawGizmos()
-	{
-        Gizmos.DrawSphere(TmpVector, TmpFloat);
-	}
+    {
+        DrawCylinder(lp, Quaternion.identity, 350, 1);
+    }
+    public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius)
+    {
+        Vector3 localUp = orientation * Vector3.up;
+        Vector3 localRight = orientation * Vector3.right;
+        Vector3 localForward = orientation * Vector3.forward;
+
+        Vector3 basePosition = position;
+        Vector3 topPosition = basePosition + localUp * height;
+
+        Vector3 pointA = basePosition + localRight * radius;
+        Vector3 pointB = basePosition + localForward * radius;
+        Vector3 pointC = basePosition - localRight * radius;
+        Vector3 pointD = basePosition - localForward * radius;
+
+        Gizmos.DrawLine(pointA, pointA + (localUp * height));
+        Gizmos.DrawLine(pointC, pointC + (localUp * height));
+        Gizmos.DrawLine(pointD, pointD + (localUp * height));
+        Gizmos.DrawLine(pointB, pointB + (localUp * height));
+
+        Gizmos.DrawSphere(basePosition, radius);
+        Gizmos.DrawSphere(topPosition, radius);
+    }
 
     // Works with actual position not local position
-    void CreateNewPlayer(PlayerNetInfo u)
+    GameObject CreateNewPlayer(PlayerNetInfo u)
     {
         GameObject newPlayer = Instantiate(playerPrefab, new Vector3(0, 1.234f, 0), Quaternion.identity, this.transform);
-        newPlayer.layer = LayerMask.NameToLayer("Ignore Raycast");
+        newPlayer.layer = ignoreRaycast;
 
-        Debug.Log("CreateNewPlayer():Initial Position: " + newPlayer.transform.localPosition);
+        Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
 
-        Vector3 lp = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
-        Ray ray = new Ray(lp, newPlayer.transform.up);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit, 1000f, ceilingMask);
-        TmpVector = hit.transform.position;
+        newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+        lp = newPlayer.transform.localPosition;
+        bool playersHit = Physics.CheckSphere(lp, 35.0f, playerMask);
+        bool ceilingHit = Physics.CheckCapsule(lp, lp + new Vector3(0, 350, 0), 1.0f, ceilingMask);
 
-        while (Physics.CheckSphere(lp, 35.0f, playerMask) && Physics.CheckSphere(lp, 1.0f, environmentMask) && hit.collider.gameObject.layer != ceilingMask)
+        Debug.Log("CreateNewPlayer(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
+        while (playersHit || ceilingHit)
         {
-            lp = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
-            ray = new Ray(lp, newPlayer.transform.up);
-            Physics.Raycast(ray, out hit, 1000f, ceilingMask);
-            TmpVector = hit.transform.position;
-            Debug.Log("WALL OR PLAYER");
+            Debug.Log("CreateNewPlayer(): Updating position...");
+            newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+            lp = newPlayer.transform.localPosition;
+            playersHit = Physics.CheckSphere(lp, 35.0f, playerMask);
+            ceilingHit = Physics.CheckCapsule(lp, lp + new Vector3(0, 350, 0), 1.0f, ceilingMask);
+            Debug.Log("CreateNewPlayer(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
         }
-        newPlayer.transform.position = lp;
-        //TmpVector = lp;
-        Debug.Log("CreateNewPlayer():Final Position: " + newPlayer.transform.localPosition);
+        Debug.Log("CreateNewPlayer(): Final Position: " + newPlayer.transform.localPosition);
 
         newPlayer.layer = LayerMask.NameToLayer("Players");
         newPlayer.name = u.username;
@@ -240,6 +263,8 @@ public class GameplayManager : MonoBehaviour
         SendRecieve sr = newPlayer.GetComponent<SendRecieve>();
         sr.uid = u.uid;
         sr.gm = this;
+        sr.updateCharacter = true;
+        sr.position = lp;
         pScripts.Add(sr);
 
         Target t = newPlayer.GetComponent<Target>();
@@ -265,6 +290,7 @@ public class GameplayManager : MonoBehaviour
         }
 
         playerList.Add(newPlayer);
+        return newPlayer;
     }
 
     void SetupOtherPlayer(GameObject player)

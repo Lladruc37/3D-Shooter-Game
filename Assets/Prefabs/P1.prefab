@@ -5428,6 +5428,12 @@ MonoBehaviour:
   bodyMesh: {fileID: 7056015063558104420}
   gunBarrelMesh: {fileID: 7056015062042124923}
   gunBodyMesh: {fileID: 7056015062844333005}
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 128
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 64
   gun: {fileID: 7056015062042124901}
   controller: {fileID: 7056015063186161629}
   bodyCollider: {fileID: 5801553125977564559}
@@ -5452,7 +5458,6 @@ MonoBehaviour:
   uid: 0
   username: 
   isControlling: 1
-  assigned: 0
   updateCharacter: 0
   gm: {fileID: 0}
   kills: 0
