@@ -53,6 +53,7 @@ public class GameplayManager : MonoBehaviour
     public GameObject playerPrefab;
     public LayerMask playerMask;
     public LayerMask environmentMask;
+    public LayerMask ceilingMask;
     public Camera lobbyCamera;
     public Image hitMarkImage;
 
@@ -73,8 +74,10 @@ public class GameplayManager : MonoBehaviour
     public GameObject winnerBox;
 
     //Other UI
-    Target playerHp;
+    Target targetScript;
     public Text hpText;
+    public float TmpFloat = 1.0f;
+    public Vector3 TmpVector = new Vector3();
 
     //User data
     public uint UserUid;
@@ -113,7 +116,7 @@ public class GameplayManager : MonoBehaviour
 
         if(update) //Updates point system & HP UI
 		{
-            hpText.text = "HP: " + playerHp.health.ToString();
+            hpText.text = "HP: " + targetScript.health.ToString();
             if (pScripts.Count < lobby.clientList.Count)
             {
                 foreach (PlayerNetInfo p in lobby.clientList)
@@ -200,17 +203,36 @@ public class GameplayManager : MonoBehaviour
         pScripts.Clear();
     }
 
+    private void OnDrawGizmos()
+	{
+        Gizmos.DrawSphere(TmpVector, TmpFloat);
+	}
+
+    // Works with actual position not local position
     void CreateNewPlayer(PlayerNetInfo u)
     {
         GameObject newPlayer = Instantiate(playerPrefab, new Vector3(0, 1.234f, 0), Quaternion.identity, this.transform);
+        newPlayer.layer = LayerMask.NameToLayer("Ignore Raycast");
 
-        Debug.Log("CreateNewPlayer():Initial Position: " + newPlayer.transform.position);
-        newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
-        while (Physics.CheckSphere(newPlayer.transform.localPosition, 35.0f, playerMask) && Physics.CheckSphere(newPlayer.transform.localPosition, 1.0f, environmentMask))
+        Debug.Log("CreateNewPlayer():Initial Position: " + newPlayer.transform.localPosition);
+
+        Vector3 lp = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+        Ray ray = new Ray(lp, newPlayer.transform.up);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 1000f, ceilingMask);
+        TmpVector = hit.transform.position;
+
+        while (Physics.CheckSphere(lp, 35.0f, playerMask) && Physics.CheckSphere(lp, 1.0f, environmentMask) && hit.collider.gameObject.layer != ceilingMask)
         {
-            newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+            lp = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+            ray = new Ray(lp, newPlayer.transform.up);
+            Physics.Raycast(ray, out hit, 1000f, ceilingMask);
+            TmpVector = hit.transform.position;
+            Debug.Log("WALL OR PLAYER");
         }
-        Debug.Log("CreateNewPlayer():Final Position: " + newPlayer.transform.position);
+        newPlayer.transform.position = lp;
+        //TmpVector = lp;
+        Debug.Log("CreateNewPlayer():Final Position: " + newPlayer.transform.localPosition);
 
         newPlayer.layer = LayerMask.NameToLayer("Players");
         newPlayer.name = u.username;
@@ -269,7 +291,7 @@ public class GameplayManager : MonoBehaviour
         player.GetComponentInChildren<MouseLook>().enabled = true;
         player.GetComponentInChildren<MouseLook>().start = true;
         player.GetComponentInChildren<Gun>().isControllingGun = true;
-        playerHp = player.GetComponent<Target>();
+        targetScript = player.GetComponent<Target>();
         Camera[] cameras = player.GetComponentsInChildren<Camera>();
         foreach (Camera camera in cameras)
         {
