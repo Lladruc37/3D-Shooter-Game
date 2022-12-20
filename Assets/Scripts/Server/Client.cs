@@ -38,6 +38,8 @@ public class Client : MonoBehaviour
     public bool newServerIP = false;
     bool startGame = false;
     bool endGame = false;
+    public float pingTime = 6.0f;
+    float pingTimer = 0.0f;
 
     //Lobby
     public LobbyScripts lobby;
@@ -77,6 +79,16 @@ public class Client : MonoBehaviour
 
         if (update)
         {
+            if (connected)
+            {
+                pingTimer += Time.deltaTime;
+                if (pingTimer >= pingTime)
+                {
+                    Debug.Log("Update(): No server connection detected. Leaving...");
+                    endGame = true;
+                }
+            }
+
             if (messageRecieved) //Adds message to the chat
             {
                 messageRecieved = false;
@@ -138,7 +150,6 @@ public class Client : MonoBehaviour
                 writer.Write(username);
                 SendInfo(stream);
 
-                connected = true;
                 receiveThread = new Thread(ReceiveClient);
                 try
                 {
@@ -161,11 +172,12 @@ public class Client : MonoBehaviour
     void ReceiveClient()
     {
         List<Socket> readList = new List<Socket>();
+        Debug.Log("ReceiveClient(): Begin to listen...");
 
         try
         {
             EndPoint remote = (EndPoint)ipep;
-            while (threadsActive && connected)
+            while (threadsActive)
             {
                 readList.Clear();
                 readList.Add(socket);
@@ -173,9 +185,9 @@ public class Client : MonoBehaviour
                 Thread.Sleep(10);
                 if (readList.Count != 0)
                 {
+                    connected = true;
                     int recv;
                     byte[] tempData = new byte[1024];
-                    Debug.Log("ReceiveClient(): Begin to listen...");
                     recv = socket.ReceiveFrom(tempData, ref remote);
                     Debug.Log("ReceiveClient(): New packet recieved!");
 
@@ -239,6 +251,7 @@ public class Client : MonoBehaviour
                             case packetType.ping:
                                 {
                                     Debug.Log("ReceiveClient(): Ping");
+                                    pingTimer = 0.0f;
                                     MemoryStream streamPing = new MemoryStream();
                                     BinaryWriter writer = new BinaryWriter(streamPing);
                                     writer.Write(true);

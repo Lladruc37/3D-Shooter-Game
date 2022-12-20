@@ -70,9 +70,38 @@ public class LobbyScripts : MonoBehaviour
 		}
         else
 		{
-            client.newServerIP = true;
-            client.serverIP = s;
-		}
+            bool valid = true;
+
+            string[] ipStringArr = s.Split('.');
+            int[] ipIntArr = new int[ipStringArr.Length];
+            if (ipIntArr.Length != 4)
+            {
+                Debug.LogError("ReadStringInputServer(): Not a valid IP address.");
+                valid = false;
+            }
+            else
+            {
+                for (int i = 0; i < ipStringArr.Length; i++)
+                {
+                    ipIntArr[i] = Int32.Parse(ipStringArr[i]);
+                    if (ipIntArr[i] < 0 || ipIntArr[i] > 255)
+                    {
+                        Debug.LogError("ReadStringInputServer(): Not a valid IP address.");
+                        valid = false;
+                    }
+                }
+            }
+
+            if (valid)
+            {
+                client.newServerIP = true;
+                client.serverIP = s;
+            }
+            else
+            {
+                inputServer.text = "";
+            }
+        }
         Debug.Log("ReadStringInputServer(): New name: " + inputServer.text);
     }
 
@@ -107,13 +136,20 @@ public class LobbyScripts : MonoBehaviour
     //Join a server created
     public void JoinServer()
     {
-        Debug.Log("JoinServer(): Joined server: " + inputServer.text);
-        title.text = "No server found...";
-        inputCanvas.GetComponent<Canvas>().enabled = false;
-        exitGameButton.SetActive(true);
-        
-        chatText.text = "This is the beginning of the chat!";
-        client.start = true;
+        if (inputServer.text != "" && inputUserName.text != "")
+        {
+            Debug.Log("JoinServer(): Joined server: " + inputServer.text);
+            title.text = "No server found...";
+            inputCanvas.GetComponent<Canvas>().enabled = false;
+            exitGameButton.SetActive(true);
+
+            chatText.text = "This is the beginning of the chat!";
+            client.start = true;
+        }
+        else
+        {
+            Debug.LogError("JoinServer(): Please input Username & IP");
+        }
     }
 
     //Close a server created

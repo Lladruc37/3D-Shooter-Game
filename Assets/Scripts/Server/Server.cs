@@ -37,7 +37,7 @@ public class Server : MonoBehaviour
     public Chat chatManager;
 
     //Pings
-    float pingTme = 3.0f;
+    float pingTime = 3.0f;
     float pingTimer;
     List<uint> pingList = new List<uint>();
 
@@ -102,7 +102,7 @@ public class Server : MonoBehaviour
     public void Ping()
     {
         pingTimer += Time.deltaTime;
-        if (pingTimer >= pingTme) //Ping the players
+        if (pingTimer >= pingTime) //Ping the players
         {
             pingTimer = 0.0f;
             pingList.Add(uid);
