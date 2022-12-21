@@ -6,7 +6,7 @@ public class console : MonoBehaviour
 {
     string myLog = "*begin log";
     string filename = "";
-    bool doShow = true;
+    bool doShow = false;
     int kChars = 700;
     void OnEnable() {
         Application.logMessageReceivedThreaded += Log;
