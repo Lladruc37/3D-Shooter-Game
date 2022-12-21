@@ -64,14 +64,14 @@ public class GameplayManager : MonoBehaviour
     public Thread recieveThread = null;
 
     //Point system
-    public int pointsToScore = 5;
+    public int pointsToScore = 2;
     public int firstPlayer = 0;
     public string firstPlayerUsername = "";
     public float winnerTime = 5.0f;
     float winnerTimer = 0.0f;
     public Text firstPlayerText; //winning player
     public Text playerText; //you
-    bool win = false;
+    public bool win = false;
     public Text winnerText; //"you win" text
     public GameObject winnerBox;
 
@@ -118,29 +118,32 @@ public class GameplayManager : MonoBehaviour
         if(update) //Updates point system & HP UI
 		{
             hpText.text = "HP: " + targetScript.health.ToString();
-            if (pScripts.Count < lobby.clientList.Count)
+            if (!win)
             {
-                foreach (PlayerNetInfo p in lobby.clientList)
+                if (pScripts.Count < lobby.clientList.Count)
                 {
-                    if(!pScripts.Exists(sr => sr.uid == p.uid))
+                    foreach (PlayerNetInfo p in lobby.clientList)
                     {
-                        GameObject player = CreateNewPlayer(p);
-                        player.transform.localPosition = lp;
+                        if (!pScripts.Exists(sr => sr.uid == p.uid))
+                        {
+                            GameObject player = CreateNewPlayer(p);
+                            player.transform.localPosition = lp;
+                        }
                     }
-                }
 
-            }
-            else if (pScripts.Count > lobby.clientList.Count)
-            {
-                foreach (SendRecieve sr in pScripts)
+                }
+                else if (pScripts.Count > lobby.clientList.Count)
                 {
-                    if(!lobby.clientList.Exists(p => p.uid == sr.uid))
+                    foreach (SendRecieve sr in pScripts)
                     {
-                        GameObject gOremoved = sr.gameObject;
-                        firstPlayer = 0;
-                        pScripts.Remove(sr);
-                        playerList.Remove(gOremoved);
-                        Destroy(gOremoved);
+                        if (!lobby.clientList.Exists(p => p.uid == sr.uid))
+                        {
+                            GameObject gOremoved = sr.gameObject;
+                            firstPlayer = 0;
+                            pScripts.Remove(sr);
+                            playerList.Remove(gOremoved);
+                            Destroy(gOremoved);
+                        }
                     }
                 }
             }
@@ -193,16 +196,34 @@ public class GameplayManager : MonoBehaviour
         winnerTimer = 0.0f;
         foreach (SendRecieve p in pScripts)
 		{
+            Debug.Log("foreach1");
             if (firstPlayer == p.kills) SendGameState();
+            p.target.health = p.target.maxHealth;
+            p.kills = 0;
+            Camera[] cameras = p.GetComponentsInChildren<Camera>();
+            foreach (Camera camera in cameras)
+            {
+                camera.tag = "Untagged";
+                camera.enabled = false;
+            }
+            p.GetComponent<CharacterController>().enabled = false;
+            p.GetComponent<CapsuleCollider>().enabled = false;
+            p.GetComponent<PlayerMovement>().enabled = false;
+            p.GetComponent<SendRecieve>().isControlling = false;
+            p.GetComponentInChildren<MouseLook>().enabled = false;
+            p.GetComponentInChildren<Gun>().isControllingGun = false;
+            p.GetComponentInChildren<Gun>().hitMark.enabled = false;
         }
+        pScripts.Clear();
         firstPlayer = 0;
-        lobby.lobbyCamera.enabled = true;
+        playerText.text = 0.ToString();
+        lobbyCamera.enabled = true;
         foreach (GameObject gO in playerList)
         {
+            Debug.Log("Foreach2");
             Destroy(gO);
         }
         playerList.Clear();
-        pScripts.Clear();
     }
 
     private void OnDrawGizmos()

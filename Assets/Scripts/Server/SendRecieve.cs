@@ -60,7 +60,7 @@ public class SendRecieve : MonoBehaviour
                         lastp = position;
                         lastr = rotation;
                         rotation.x = 0.0f;
-                        myTimer = 0;
+                        myTimer = 0.0f;
 
                         gm.sendThread = new Thread(gm.SendGameState);
                         gm.sendThread.Start();
@@ -70,6 +70,7 @@ public class SendRecieve : MonoBehaviour
                 {
                     if (target.health <= 0)
                     {
+                        myTimer = 0.0f;
                         target.bodyMesh.enabled = false;
                         target.gunBarrelMesh.enabled = false;
                         target.gunBodyMesh.enabled = false;

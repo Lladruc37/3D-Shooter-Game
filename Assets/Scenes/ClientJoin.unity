@@ -268,7 +268,7 @@ MonoBehaviour:
     m_Bits: 128
   lobbyCamera: {fileID: 1371795213}
   hitMarkImage: {fileID: 787191026}
-  pointsToScore: 5
+  pointsToScore: 2
   firstPlayer: 0
   firstPlayerUsername: 
   winnerTime: 5
@@ -1395,8 +1395,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1689689711}
   m_HandleRect: {fileID: 1689689709}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0
+  m_Value: 0
+  m_Size: 0.15099029
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2705,7 +2705,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.40000916, y: -230.98929}
+  m_AnchoredPosition: {x: -0.40000916, y: -5426.381}
   m_SizeDelta: {x: 523.3098, y: 0}
   m_Pivot: {x: 0.50000006, y: 0.00000008940697}
 --- !u!114 &1604552425

@@ -333,6 +333,7 @@ public class Server : MonoBehaviour
                             }
                         case packetType.goodbye:
                             {
+                                Debug.Log("FAREWELL");
                                 GoodbyeUser(reader.ReadUInt32());
                                 break;
                             }
@@ -375,10 +376,13 @@ public class Server : MonoBehaviour
                         case packetType.playerInfo:
                             {
                                 Debug.Log("RecieveServer(): New game state detected");
-                                manager.data = packetData;
-                                manager.recieveThread = new Thread(manager.RecieveGameState);
-                                manager.recieveThread.Start();
-                                BroadcastServerInfo(packetData);
+                                if (!manager.win)
+                                {
+                                    manager.data = packetData;
+                                    manager.recieveThread = new Thread(manager.RecieveGameState);
+                                    manager.recieveThread.Start();
+                                    BroadcastServerInfo(packetData);
+                                }
                                 break;
                             }
                         case packetType.ping:

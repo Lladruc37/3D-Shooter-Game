@@ -227,15 +227,18 @@ public class Client : MonoBehaviour
                             case packetType.playerInfo:
                                 {
                                     Debug.Log("ReceiveClient(): New game state detected");
-                                    manager.data = packetData;
-                                    manager.recieveThread = new Thread(manager.RecieveGameState);
-                                    try
+                                    if (!manager.win)
                                     {
-                                        manager.recieveThread.Start();
-                                    }
-                                    catch (ThreadStartException e)
-                                    {
-                                        Debug.LogError("ReceiveClient(): Error starting thread: " + e);
+                                        manager.data = packetData;
+                                        manager.recieveThread = new Thread(manager.RecieveGameState);
+                                        try
+                                        {
+                                            manager.recieveThread.Start();
+                                        }
+                                        catch (ThreadStartException e)
+                                        {
+                                            Debug.LogError("ReceiveClient(): Error starting thread: " + e);
+                                        }
                                     }
                                     break;
                                 }
