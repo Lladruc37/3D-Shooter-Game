@@ -1,7 +1,7 @@
 # **Backfired!:** A 3D Shooter Game
 We are developing a 3D shooter game for the Networks and Online Games subject of the Videogame Development & Design bachelor's degree.
 
-[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=share_link) and [link to see the Exercise 4: World State Replication]() (UPC Login is required)
+[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=share_link) and [link to see the Exercise 4: World State Replication](https://drive.google.com/file/d/1Gcl3fany79bvKzFyl4_L0UMVU383DUOp/view?usp=share_link) (UPC Login is required)
 [Link to the GiHub Repository](https://github.com/Lladruc37/3D-Shooter-Game)
 
 ### About the game
