@@ -1,17 +1,17 @@
 # **Backfired!:** A 3D Shooter Game
 We are developing a 3D shooter game for the Networks and Online Games subject of the Videogame Development & Design bachelor's degree.
 
-[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=sharing) and [link to see the Exercise 3: Serialization](https://drive.google.com/file/d/1XV1GGckFLW_pufWyLg1vFNzTEJiZs8Uc/view?usp=share_link) (UPC Login is required)
+[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=share_link) and [link to see the Exercise 4: World State Replication]() (UPC Login is required)
 [Link to the GiHub Repository](https://github.com/Lladruc37/3D-Shooter-Game)
 
 ### About the game
-_Backfired!_ is a FPS where the end goal is to get 10 points. The twist is that, when you shoot, you are also move backwards, which can be used to jump and move in a fun and unique way. The intended goal is to have 4 different players in the game.
+_Backfired!_ is a FPS where the end goal is to get 5 points. The twist is that, when you shoot, you are also move backwards, which can be used to jump and move in a fun and unique way. The intended goal is to have 4 different players in the game.
 
 ### Team Contributions:
-- [Sergi Colomer](https://github.com/Lladruc37): General Chat functionality, Serialization & Data Dispatch between Server and Client interchangeably
-- [Guillem Alava](https://github.com/WillyTrek19): UI/Scene Design, Serialization & Data Dispatch between Server and Client interchangeably
+- [Sergi Colomer](https://github.com/Lladruc37): Bug Fixing & QA, Ping System
+- [Guillem Alava](https://github.com/WillyTrek19): Bug Fixing & Optimizations, Ingame Console, Ping System
 - [Carles López](https://github.com/carlesli): Bug Fixing & QA, Gameplay
-- [Núria Lamonja](https://github.com/Needlesslord): UI Interconnectivity & Functions, Gameplay
+- [Núria Lamonja](https://github.com/Needlesslord): Bug Fixing & Optimizations
 
 ### Instructions to start the game:
 
@@ -30,7 +30,6 @@ As of now, Backfired! only works on LAN.
 
 #### How to Play
 To create a server:
-- Do not reuse names nor use the charcters [/>] or [</]
 - Fill-in the input fields and press the corresponding button
      - As the Host, you will be asked for your name and the server's name
      - As a Player, you will be asked for your name and the server's IP
@@ -42,11 +41,20 @@ To play:
  - To shoot press [M1]. You can use it also to boost yourself up in the air
  - To look backwards press [M2]
  - Use the mouse to control where the camera points
+ - To activate console press [F12]
+
+### Changes/Errors fixed from previous delivery:
+- Added an ingame console to showcase the commands "Debug.Log" inbuild. This has made debugging much easier.
+- Solved the lag issue. It was due to an overuse of the function "Thread.Sleep()". We have reduced the times and removed unnecessary calls of such functions.
+- Removed all usage of strings and special characters from packets. All packets are now sent as raw data from a MemoryStream, and use IDS to identify the type of package sent (declared in GameplayManager.cs). We have also reduced the size of packets send from 1024 bytes to multiples of 256 bytes (256 being the smallest size).
+- Players are now instantiated instead of prefixed to a set number of characters and spawn in a random position. Therefore, there's no limit to how many players can join in the same game. Players can now join and leave in the middle of the match, and the server will update the games accordingly.
+- Sockets & server now closed properly. No warnings appear regarding aborted threads and aborted connections (to our knowledge).
+- Added a ping system that constantly sends and recieves information to ensure that the connection is still active. If a time has passed without recieving pings from a lagging/disconnected user, the player is removed from the server entirely. If a user doesn't recieve pings from a server, they return to the "Join server" screen.
+- Reduced the amount of lists/dictionaries used in the application from 6 to 3 (1 for networking & 2 for the game). All info regarding the clients is now stored in the same class (Also in GameplayManager.cs)
 
 ### Known bugs:
-- We haven't checked the outcome of using the same name between clients or other special characters common in commands.  We speculate it may interfere with the reception/emission of packets.
-- Sometimes, when ending to debug or exiting, unity logs will start spamming 2 messages simoultaneously, preceded by a socket error not being properly closed. This bug can be solved if starting and ending to debug again and is probably due to an incorrect cleanup of the project. As it is an error regarding the Unity Inspector, we haven't invested time in solving this issue.
-- There are lag spikes and world state update errors when many players are moving simultaneously in-game. This is due to the high amount of sent messages, which our server is not capable of managing. We tried to mitigate some of it by reducing the amount of packages sent, only emitting when a change has happened. This improved the general game experience, but our intention is to make it better in the following deliveries.
+- POLTERBUG: Player may appear inside of a building when spawning (when starting game or after death) or outside the arena alltogether. The first instance (inside the building spawn) we have tried to fix it by using "Physics.CheckSphere" & "Physics.CheckCapsule" with specific hitboxes and, as of this delivery, it happens only 1 - 5% of the time. The second one (outside the arena spawn) we don't know why it happens, and it's extremely rare. We theorize it is due package sending issues (a package is sent with an erroneous position that overrides the random spawn position update).
+- POLTERBUG: Due to delays between threads, there may be instances when the exception "InvalidOperationException: Collection was modified; enumeration operation may not execute" appears and stops the connection alltogether. This is because there are times in which lists are being modified as other threads are using them. However, from our testing, this is extremely rare, as the code is fast/optimized enough so that they don't coincide often. It happens more when, for example, the server is ran in the Unity Engine directly and the users are ran in builds.
 
 ### Credits:
 - Environment used by _ZENRIN CO., LTD._, available in the [Unity Asset Store](https://assetstore.unity.com/packages/3d/environments/urban/japanese-otaku-city-20359)
