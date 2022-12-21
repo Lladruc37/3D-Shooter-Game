@@ -37,7 +37,6 @@ To create a server:
 To play:
  - To unlock the mouse view used to aim, press [F1]. To lock it again, press it again.
  - To chat, simply type whatever you want in the input fields after joining/hosting and press Return to send a message. If you want to use the funcion in-game, you need to press [F1] first and to continue playing, it has to be locked again to continue playing
- - To move, use [WASD] as you would normally ([W] to move forward, [A] to the left, [S] backwards and [D] to the right)
  - To shoot press [M1]. You can use it also to boost yourself up in the air
  - To look backwards press [M2]
  - Use the mouse to control where the camera points
