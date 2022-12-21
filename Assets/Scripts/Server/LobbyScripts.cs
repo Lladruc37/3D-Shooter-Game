@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -32,8 +29,6 @@ public class LobbyScripts : MonoBehaviour
     public Client client;
     public GameObject gameplayScene;
     public List<PlayerNetInfo> clientList = new List<PlayerNetInfo>();
-
-    //public Dictionary<uint,string> usersList = new Dictionary<uint, string>();
 
     //Cap framerate
     private void Start()

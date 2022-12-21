@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -34,6 +33,7 @@ public class PlayerNetInfo
     public IPEndPoint ip;
 
     public PlayerNetInfo() { }
+
     public PlayerNetInfo(uint _uid, string _username, IPEndPoint _ip)
     {
         uid = _uid;
@@ -61,7 +61,7 @@ public class GameplayManager : MonoBehaviour
 
     //Threads
     public Thread sendThread = null;
-    public Thread recieveThread = null;
+    public Thread receiveThread = null;
 
     //Point system
     public int pointsToScore = 2;
@@ -86,7 +86,7 @@ public class GameplayManager : MonoBehaviour
 
     //All users data
     public List<GameObject> playerList = new List<GameObject>();
-    public List<SendRecieve> pScripts;
+    public List<SendReceive> pScripts;
     public float groundLevel = 1.234f;
 
     void Update()
@@ -99,10 +99,9 @@ public class GameplayManager : MonoBehaviour
 
             if (c != 0) //Setup gameplay scene
             {
-                //TODO: INSTANTIATE PLAYERS
                 playerList.Clear();
                 pScripts.Clear();
-                foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list
+                foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
                 {
                     Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
                     GameObject player = CreateNewPlayer(user);
@@ -120,7 +119,7 @@ public class GameplayManager : MonoBehaviour
             hpText.text = "HP: " + targetScript.health.ToString();
             if (!win)
             {
-                if (pScripts.Count < lobby.clientList.Count)
+                if (pScripts.Count < lobby.clientList.Count) //In case player joins mid-game
                 {
                     foreach (PlayerNetInfo p in lobby.clientList)
                     {
@@ -132,9 +131,9 @@ public class GameplayManager : MonoBehaviour
                     }
 
                 }
-                else if (pScripts.Count > lobby.clientList.Count)
+                else if (pScripts.Count > lobby.clientList.Count) //In case player leaves mid-game
                 {
-                    foreach (SendRecieve sr in pScripts)
+                    foreach (SendReceive sr in pScripts)
                     {
                         if (!lobby.clientList.Exists(p => p.uid == sr.uid))
                         {
@@ -146,26 +145,25 @@ public class GameplayManager : MonoBehaviour
                         }
                     }
                 }
-            }
-
-            foreach (SendRecieve sr in pScripts)
-            {
-                if (sr.kills > firstPlayer)
+                foreach (SendReceive sr in pScripts) //Point system & UI
                 {
-                    firstPlayer = sr.kills;
-                    firstPlayerUsername = sr.username;
+                    if (sr.kills > firstPlayer)
+                    {
+                        firstPlayer = sr.kills;
+                        firstPlayerUsername = sr.username;
+                    }
+                    if (playerText && sr.uid == UserUid)
+                    {
+                        playerText.text = sr.kills.ToString();
+                    }
                 }
-                if (playerText && sr.uid == UserUid)
+                firstPlayerText.text = firstPlayer.ToString();
+                if (firstPlayer >= pointsToScore) //If a player reaches the goal the game ends
                 {
-                    playerText.text = sr.kills.ToString();
+                    GameEnd();
                 }
             }
-            firstPlayerText.text = firstPlayer.ToString();
-            if (firstPlayer >= pointsToScore) //If a player reaches the goal the game ends
-            {
-                GameEnd();
-            }
-            if (win) //Timer for the winning screen
+            else //Timer for the winning screen
             {
                 winnerTimer += Time.deltaTime;
                 if (winnerTimer >= winnerTime) //Return to lobby
@@ -192,9 +190,10 @@ public class GameplayManager : MonoBehaviour
         winnerBox.SetActive(true);
         winnerText.text = firstPlayerUsername + " wins the game!";
         win = true;
+        hitMarkImage.enabled = false;
         Cursor.lockState = CursorLockMode.None;
         winnerTimer = 0.0f;
-        foreach (SendRecieve p in pScripts)
+        foreach (SendReceive p in pScripts)
 		{
             if (firstPlayer == p.kills) SendGameState();
         }
@@ -209,10 +208,13 @@ public class GameplayManager : MonoBehaviour
         playerList.Clear();
     }
 
+    //Debug draw cylinder (automated part)
     private void OnDrawGizmos()
     {
         DrawCylinder(lp, Quaternion.identity, 350, 1);
     }
+
+    //Debug draw cylinder (points & lines part)
     public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius)
     {
         Vector3 localUp = orientation * Vector3.up;
@@ -236,7 +238,7 @@ public class GameplayManager : MonoBehaviour
         Gizmos.DrawSphere(topPosition, radius);
     }
 
-    // Works with actual position not local position
+    //Instantiates new player given player info
     GameObject CreateNewPlayer(PlayerNetInfo u)
     {
         GameObject newPlayer = Instantiate(playerPrefab, new Vector3(0, 1.234f, 0), Quaternion.identity, this.transform);
@@ -264,7 +266,7 @@ public class GameplayManager : MonoBehaviour
         newPlayer.layer = LayerMask.NameToLayer("Players");
         newPlayer.name = u.username;
 
-        SendRecieve sr = newPlayer.GetComponent<SendRecieve>();
+        SendReceive sr = newPlayer.GetComponent<SendReceive>();
         sr.uid = u.uid;
         sr.gm = this;
         sr.updateCharacter = true;
@@ -284,6 +286,7 @@ public class GameplayManager : MonoBehaviour
         Gun g = newPlayer.GetComponentInChildren<Gun>();
         g.hitMark = hitMarkImage;
 
+        //To differenciate between you or another player
         if (u.uid == UserUid)
         {
             SetupPlayer(newPlayer);
@@ -302,7 +305,7 @@ public class GameplayManager : MonoBehaviour
         player.GetComponent<CharacterController>().enabled = false;
         player.GetComponent<CapsuleCollider>().enabled = true;
         player.GetComponent<PlayerMovement>().enabled = false;
-        player.GetComponent<SendRecieve>().isControlling = false;
+        player.GetComponent<SendReceive>().isControlling = false;
         player.GetComponentInChildren<MouseLook>().enabled = false;
         player.GetComponentInChildren<Gun>().isControllingGun = false;
         Camera[] cameras = player.GetComponentsInChildren<Camera>();
@@ -317,7 +320,7 @@ public class GameplayManager : MonoBehaviour
         player.GetComponent<CharacterController>().enabled = true;
         player.GetComponent<CapsuleCollider>().enabled = false;
         player.GetComponent<PlayerMovement>().enabled = true;
-        player.GetComponent<SendRecieve>().isControlling = true;
+        player.GetComponent<SendReceive>().isControlling = true;
         player.GetComponentInChildren<MouseLook>().enabled = true;
         player.GetComponentInChildren<MouseLook>().start = true;
         player.GetComponentInChildren<Gun>().isControllingGun = true;
@@ -341,7 +344,7 @@ public class GameplayManager : MonoBehaviour
         writer.Write(UserName);
 
         //Position
-        foreach (SendRecieve p in pScripts)
+        foreach (SendReceive p in pScripts)
         {
             if (p.uid == UserUid)
             {
@@ -378,7 +381,6 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        //Debug.Log("SendGameState(): Sending serialized data...");
         if (server)
         {
             server.BroadcastServerInfo(stream);
@@ -389,9 +391,8 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    public void RecieveGameState() //GATHER OTHERS INFO
+    public void ReceiveGameState() //GATHER OTHERS INFO
     {
-        //Debug.Log("RecieveGameState(" + UserUid + "): Recieved info");
         MemoryStream stream = new MemoryStream(data);
         BinaryReader reader = new BinaryReader(stream);
         stream.Seek(0, SeekOrigin.Begin);
@@ -399,15 +400,12 @@ public class GameplayManager : MonoBehaviour
         //Header
         reader.ReadBoolean();
         short header = reader.ReadByte();
-        packetType type = (packetType)header;
-        //Debug.Log("RecieveGameState(" + UserUid + "): Header is " + type.ToString());
 
         uint uid = reader.ReadUInt32();
         string dump = reader.ReadString();
-        //Debug.Log(dump + " - " + UserName);
 
-        SendRecieve pSender = null;
-        foreach (SendRecieve p in pScripts)
+        SendReceive pSender = null;
+        foreach (SendReceive p in pScripts)
         {
             if (p.uid == uid && uid != UserUid)
             {
@@ -445,14 +443,14 @@ public class GameplayManager : MonoBehaviour
 
             //User who got hit
             int _uidHit = reader.ReadInt32();
-            Debug.Log("Hit player: " + _uidHit);
+            Debug.Log("ReceiveGameState(): Hit player: " + _uidHit);
             if (UserUid == _uidHit)
             {
-                foreach (SendRecieve p in pScripts)
+                foreach (SendReceive p in pScripts)
                 {
                     if (p.uid == UserUid)
                     {
-                        p.target.takeDamage(1);
+                        p.target.TakeDamage(1);
                         break;
                     }
                 }

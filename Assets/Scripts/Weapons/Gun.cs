@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +13,7 @@ public class Gun : MonoBehaviour
     public Image hitMark;
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
-    public SendRecieve playerInfo;
+    public SendReceive playerInfo;
     public LineRenderer laserLine;
 
     //Gun bools
@@ -84,12 +83,15 @@ public class Gun : MonoBehaviour
                     if (target != null) //If the target is a player
                     {
                         hitMark.enabled = true;
-                        uint uid = hit.collider.GetComponent<SendRecieve>().uid;
+                        uint uid = hit.collider.GetComponent<SendReceive>().uid;
                         Debug.Log("ShootLaser(): Hit! UID: " + uid);
-                        playerInfo.uidHit = (int)uid;
-                        if (target.takeDamage(1))
+                        if (uid != playerInfo.uid)
                         {
-                            playerInfo.kills++;
+                            playerInfo.uidHit = (int)uid;
+                            if (target.TakeDamage(1))
+                            {
+                                playerInfo.kills++;
+                            }
                         }
                     }
                     else

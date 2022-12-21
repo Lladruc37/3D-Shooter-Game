@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,7 +18,7 @@ public class Client : MonoBehaviour
     //Threads
     Thread connectThread = null;
     Thread receiveThread = null;
-    Thread recievePlayerListThread = null;
+    Thread receivePlayerListThread = null;
     bool threadsActive = true;
 
     //User info
@@ -33,7 +32,7 @@ public class Client : MonoBehaviour
     public bool start = false;
     public bool update = false;
     bool connected = false;
-    public bool messageRecieved = false;
+    public bool messageReceived = false;
     public bool newServerName = false;
     public bool newServerIP = false;
     bool startGame = false;
@@ -89,13 +88,14 @@ public class Client : MonoBehaviour
                 }
             }
 
-            if (messageRecieved) //Adds message to the chat
+            if (messageReceived) //Adds message to the chat
             {
-                messageRecieved = false;
+                messageReceived = false;
                 Debug.Log("Update(): CurrentMessage: " + stringData);
                 chatManager.SendMsg(stringData);
                 stringData = "";
             }
+
             if (newServerName) //Update the lobby title string
             {
                 newServerName = false;
@@ -104,14 +104,15 @@ public class Client : MonoBehaviour
                 chatCanvas.GetComponent<Canvas>().enabled = true;
                 Debug.Log("Update(): Changed server title to: " + clientTitle.text);
             }
-            if (startGame) //Called when start game message is recieved
+
+            if (startGame) //Called when start game message is received
             {
                 startGame = false;
                 manager.UserName = username;
                 manager.UserUid = uuid;
                 lobby.StartGame();
             }
-            else if (endGame) //Called when end game message is recieved
+            else if (endGame) //Called when end game message is received
             {
                 endGame = false;
                 lobby.LeaveServer();
@@ -189,13 +190,10 @@ public class Client : MonoBehaviour
                     int recv;
                     byte[] tempData = new byte[1024];
                     recv = socket.ReceiveFrom(tempData, ref remote);
-                    Debug.Log("ReceiveClient(): New packet recieved!");
+                    Debug.Log("ReceiveClient(): New packet received!");
 
                     byte[] packetData = new byte[recv];
                     Array.Copy(tempData, packetData, recv);
-
-                    //Debug.Log("ReceiveClient(): Count for recv: " + recv);
-                    //Debug.Log("ReceiveClient(): Length of Data: " + packetData.Length);
 
                     MemoryStream stream = new MemoryStream(packetData);
                     BinaryReader reader = new BinaryReader(stream);
@@ -227,13 +225,13 @@ public class Client : MonoBehaviour
                             case packetType.playerInfo:
                                 {
                                     Debug.Log("ReceiveClient(): New game state detected");
-                                    if (!manager.win)
+                                    if (!manager.win) //Stops the information updates if someone has won
                                     {
                                         manager.data = packetData;
-                                        manager.recieveThread = new Thread(manager.RecieveGameState);
+                                        manager.receiveThread = new Thread(manager.ReceiveGameState);
                                         try
                                         {
-                                            manager.recieveThread.Start();
+                                            manager.receiveThread.Start();
                                         }
                                         catch (ThreadStartException e)
                                         {
@@ -246,8 +244,8 @@ public class Client : MonoBehaviour
                                 {
                                     Debug.Log("ReceiveClient(): New users list detected");
                                     data = packetData;
-                                    recievePlayerListThread = new Thread(RecievePlayerList);
-                                    recievePlayerListThread.Start();
+                                    receivePlayerListThread = new Thread(ReceivePlayerList);
+                                    receivePlayerListThread.Start();
                                     Thread.Sleep(100);
                                     break;
                                 }
@@ -260,9 +258,7 @@ public class Client : MonoBehaviour
                                     writer.Write(true);
                                     writer.Write((byte)packetType.ping);
                                     writer.Write(uuid);
-
                                     SendInfo(streamPing);
-
                                     break;
                                 }
                             default:
@@ -279,7 +275,7 @@ public class Client : MonoBehaviour
                                     //Add message to the chat
                                     stringData = reader.ReadString();
                                     Debug.Log("ReceiveClient(): Message was: " + stringData);
-                                    messageRecieved = true;
+                                    messageReceived = true;
                                     break;
                                 }
                         }
@@ -296,6 +292,7 @@ public class Client : MonoBehaviour
             Debug.LogError("ReceiveClient(): Error receiving: " + e);
         }
     }
+
     //Send gameplay data to the server
     public void SendInfo(MemoryStream stream)
     {
@@ -315,11 +312,11 @@ public class Client : MonoBehaviour
     }
 
     //Reads player list & setup to start game
-    public void RecievePlayerList()
+    public void ReceivePlayerList()
     {
         if (threadsActive)
         {
-            Debug.Log("RecieveList(): Recieved info");
+            Debug.Log("ReceiveList(): Received info");
             MemoryStream stream = new MemoryStream(data);
             BinaryReader reader = new BinaryReader(stream);
             stream.Seek(0, SeekOrigin.Begin);
@@ -328,12 +325,12 @@ public class Client : MonoBehaviour
             reader.ReadBoolean();
             short header = reader.ReadByte();
             packetType type = (packetType)header;
-            Debug.Log("RecieveList(): Header is " + type);
+            Debug.Log("ReceiveList(): Header is " + type);
 
             //List
             lobby.clientList.Clear();
             int count = reader.ReadInt32();
-            Debug.Log("RecieveList(): Count: " + count);
+            Debug.Log("ReceiveList(): Count: " + count);
             for (int i = 0; i < count; i++)
             {
                 uint uid = reader.ReadUInt32();
@@ -346,20 +343,21 @@ public class Client : MonoBehaviour
                 {
                     uuid = uid;
                 }
-                Debug.Log("RecieveList(): Recieved data: " + uid + " - " + tmpUsername);
+                Debug.Log("ReceiveList(): Received data: " + uid + " - " + tmpUsername);
                 if (lobby.clientList.Exists(user => user.uid == uid))
                 {
-                    Debug.Log("RecieveList(): Updating data");
+                    Debug.Log("ReceiveList(): Updating data...");
                     lobby.clientList.Find(user => user.uid == uid).uid = uid;
                     lobby.clientList.Find(user => user.uid == uid).username = tmpUsername;
                     lobby.clientList.Find(user => user.uid == uid).ip = ip;
                 }
                 else
                 {
-                    Debug.Log("RecieveList(): Adding data");
+                    Debug.Log("ReceiveList(): Adding data...");
                     lobby.clientList.Add(new PlayerNetInfo(uid, tmpUsername, ip));
                 }
             }
+            Debug.Log("ReceiveList(): Done reading list");
             data = null;
         }
     }
@@ -378,7 +376,7 @@ public class Client : MonoBehaviour
         }
         catch (ThreadAbortException e)
         {
-            Debug.LogError("CloseThreads(): Error leaving server: " + e);
+            Debug.LogError("CloseThreads(): Error in connect thread: " + e);
         }
 
         try
@@ -390,19 +388,19 @@ public class Client : MonoBehaviour
         }
         catch (ThreadAbortException e)
         {
-            Debug.LogError("CloseThreads(): Error leaving server: " + e);
+            Debug.LogError("CloseThreads(): Error in receive thread: " + e);
         }
 
         try
         {
-            if (recievePlayerListThread != null)
+            if (receivePlayerListThread != null)
             {
-                recievePlayerListThread = null;
+                receivePlayerListThread = null;
             }
         }
         catch (ThreadAbortException e)
         {
-            Debug.LogError("CloseThreads(): Error leaving server: " + e);
+            Debug.LogError("CloseThreads(): Error in receive list thread: " + e);
         }
     }
 
@@ -421,7 +419,7 @@ public class Client : MonoBehaviour
         connected = false;
         newServerName = false;
         newServerIP = false;
-        messageRecieved = false;
+        messageReceived = false;
         socket = null;
         ipep = new IPEndPoint(IPAddress.Any, 9050);
 

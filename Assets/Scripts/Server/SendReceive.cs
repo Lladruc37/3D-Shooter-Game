@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using UnityEngine;
 
-public class SendRecieve : MonoBehaviour
+public class SendReceive : MonoBehaviour
 {
     //User info
     public uint uid;
@@ -16,7 +13,7 @@ public class SendRecieve : MonoBehaviour
     //Gun
     public int kills = 0;
     public int uidHit = -1;
-    public int uidRecieved = -1;
+    public int uidReceived = -1;
     public Gun gun;
     public MouseLook gunDirection;
     public Target target;
@@ -83,7 +80,6 @@ public class SendRecieve : MonoBehaviour
             if (updateCharacter) //Updates character's HP
             {
                 updateCharacter = false;
-                //Debug.Log("Uid: " + uid + ", Hp: " + target.health);
 
                 if (target.health > 0)
                 {

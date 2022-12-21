@@ -14,7 +14,7 @@ public class Target : MonoBehaviour
     public Gun gun;
     public CharacterController controller;
     public CapsuleCollider bodyCollider;
-    public SendRecieve sr;
+    public SendReceive sr;
     public GameObject deathBoxUI;
     public Text deathText;
 
@@ -47,10 +47,10 @@ public class Target : MonoBehaviour
                 gunBarrelMesh.enabled = true;
                 gunBodyMesh.enabled = true;
                 gun.enabled = true;
-                Debug.Log("RESPAWN");
+                Debug.Log("Respawning entity...");
                 if (sr.isControlling) //you respawn
                 {
-                    Debug.Log("YOU RESPAWN");
+                    Debug.Log("You have respawned!");
                     controller.enabled = true;
                     controller.Move(RandomizeSpawn());
                 }
@@ -67,7 +67,7 @@ public class Target : MonoBehaviour
 
     public Vector3 RandomizeSpawn() //return a random position within the map bounds
 	{
-        Vector3 position = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+        Vector3 position = new Vector3(Random.Range(-115.0f, 65.0f), 1.234f, Random.Range(-105.0f, 75.0f));
         bool playersHit = Physics.CheckSphere(position, 35.0f, playerMask);
         bool ceilingHit = Physics.CheckCapsule(position, position + new Vector3(0, 350, 0), 1.0f, ceilingMask);
 
@@ -75,7 +75,7 @@ public class Target : MonoBehaviour
         while (playersHit || ceilingHit)
         {
             Debug.Log("RandomizeSpawn(): Updating position...");
-            position = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
+            position = new Vector3(Random.Range(-115.0f, 65.0f), 1.234f, Random.Range(-105.0f, 75.0f));
             playersHit = Physics.CheckSphere(position, 35.0f, playerMask);
             ceilingHit = Physics.CheckCapsule(position, position + new Vector3(0, 350, 0), 1.0f, ceilingMask);
             Debug.Log("RandomizeSpawn(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
@@ -85,7 +85,7 @@ public class Target : MonoBehaviour
         return position;
     }
 
-    private void OnCollisionEnter(Collision collision) //in case you spawn inside another object
+    private void OnCollisionEnter(Collision collision) //in case you spawn inside another player
     {
         if (!collision.transform.GetComponent("Target"))
         {
@@ -94,12 +94,12 @@ public class Target : MonoBehaviour
     }
 
 
-    public bool takeDamage (int amount) //reduce HP and return true if dead
+    public bool TakeDamage (int amount) //reduce HP and return true if dead
     {
         health -= amount;
         if (health <= 0)
         {
-            Debug.Log("DEAD: " + sr.uid + "-" + sr.isControlling);
+            Debug.Log("TakeDamage(): DEAD: " + sr.uid + "-" + sr.isControlling);
             return true;
         }
         return false;

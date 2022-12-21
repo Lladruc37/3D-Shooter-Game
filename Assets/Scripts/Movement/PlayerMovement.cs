@@ -46,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
 
             //Movement calculations
             Vector3 move = transform.right * x + transform.forward * z;
-            if (cc.enabled) cc.Move(move * speed * Time.deltaTime);
+            if (cc.enabled) cc.Move(speed * Time.deltaTime * move);
         }
 		else if (WeaponMode) //Move with the recoil of the weapons
         {
