@@ -196,23 +196,7 @@ public class GameplayManager : MonoBehaviour
         winnerTimer = 0.0f;
         foreach (SendRecieve p in pScripts)
 		{
-            Debug.Log("foreach1");
             if (firstPlayer == p.kills) SendGameState();
-            p.target.health = p.target.maxHealth;
-            p.kills = 0;
-            Camera[] cameras = p.GetComponentsInChildren<Camera>();
-            foreach (Camera camera in cameras)
-            {
-                camera.tag = "Untagged";
-                camera.enabled = false;
-            }
-            p.GetComponent<CharacterController>().enabled = false;
-            p.GetComponent<CapsuleCollider>().enabled = false;
-            p.GetComponent<PlayerMovement>().enabled = false;
-            p.GetComponent<SendRecieve>().isControlling = false;
-            p.GetComponentInChildren<MouseLook>().enabled = false;
-            p.GetComponentInChildren<Gun>().isControllingGun = false;
-            p.GetComponentInChildren<Gun>().hitMark.enabled = false;
         }
         pScripts.Clear();
         firstPlayer = 0;
@@ -220,7 +204,6 @@ public class GameplayManager : MonoBehaviour
         lobbyCamera.enabled = true;
         foreach (GameObject gO in playerList)
         {
-            Debug.Log("Foreach2");
             Destroy(gO);
         }
         playerList.Clear();

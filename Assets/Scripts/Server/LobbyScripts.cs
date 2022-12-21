@@ -156,16 +156,8 @@ public class LobbyScripts : MonoBehaviour
     public void EndServer()
     {
         Debug.Log("EndServer(): Ending server.");
-        MemoryStream stream = new MemoryStream();
-        BinaryWriter writer = new BinaryWriter(stream);
-        writer.Write(false);
-        writer.Write((byte)packetType.endSession);
-        string msg = "\nEnding session...";
-        writer.Write(msg);
-        server.BroadcastServerInfo(stream);
         clientList.Clear();
 
-        server.chatManager.SendMsg(msg);
         inputCanvas.GetComponent<Canvas>().enabled = true;
         chatCanvas.GetComponent<Canvas>().enabled = false;
         startGameButton.SetActive(false);
@@ -198,13 +190,6 @@ public class LobbyScripts : MonoBehaviour
         inputServer.text = "";
         inputChat.text = "";
         clientList.Clear();
-
-        MemoryStream stream = new MemoryStream();
-        BinaryWriter writer = new BinaryWriter(stream);
-        writer.Write(false);
-        writer.Write((byte)packetType.goodbye);
-        writer.Write(client.uuid);
-        client.SendInfo(stream);
 
         client.Leave();
         title.text = "Join a server!";

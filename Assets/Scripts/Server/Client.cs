@@ -409,6 +409,13 @@ public class Client : MonoBehaviour
     //Close all connections
     public void Leave()
     {
+        MemoryStream stream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(stream);
+        writer.Write(false);
+        writer.Write((byte)packetType.goodbye);
+        writer.Write(uuid);
+        SendInfo(stream);
+
         start = false;
         update = false;
         connected = false;
@@ -429,10 +436,7 @@ public class Client : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        if (socket != null)
-        {
-            socket.Close();
-            socket = null;
-        }
+        Debug.Log("Quitting application...");
+        Leave();
     }
 }

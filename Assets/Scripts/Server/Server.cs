@@ -252,6 +252,7 @@ public class Server : MonoBehaviour
     void RecieveServer()
     {
         List<Socket> readList = new List<Socket>();
+        Debug.Log("RecieveServer(): Begin to listen...");
 
         try
         {
@@ -270,7 +271,6 @@ public class Server : MonoBehaviour
                     int recv;
 
                     byte[] tempData = new byte[1024];
-                    Debug.Log("RecieveServer(): Begin to listen...");
                     recv = socket.ReceiveFrom(tempData, ref remote);
                     Debug.Log("RecieveServer(): New packet recieved!");
 
@@ -333,8 +333,9 @@ public class Server : MonoBehaviour
                             }
                         case packetType.goodbye:
                             {
-                                Debug.Log("FAREWELL");
-                                GoodbyeUser(reader.ReadUInt32());
+                                uint uid = reader.ReadUInt32();
+                                Debug.Log("RecieveServer(): Bye user: " + uid);
+                                GoodbyeUser(uid);
                                 break;
                             }
                         case packetType.list:
@@ -414,6 +415,15 @@ public class Server : MonoBehaviour
     //Close all connections
     public void Close()
     {
+        MemoryStream stream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(stream);
+        writer.Write(false);
+        writer.Write((byte)packetType.endSession);
+        string msg = "\nEnding session...";
+        writer.Write(msg);
+        chatManager.SendMsg(msg);
+        BroadcastServerInfo(stream);
+
         start = false;
         update = false;
         pingList.Clear();
@@ -446,11 +456,7 @@ public class Server : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        if (socket != null)
-        {
-            socket.Close();
-            socket = null;
-        }
-        CloseThreads();
+        Debug.Log("Quitting application...");
+        Close();
     }
 }
