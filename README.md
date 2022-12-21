@@ -38,7 +38,7 @@ To play:
  - To unlock the mouse view used to aim, press [F1]. To lock it again, press it again.
  - To chat, simply type whatever you want in the input fields after joining/hosting and press Return to send a message. If you want to use the funcion in-game, you need to press [F1] first and to continue playing, it has to be locked again to continue playing
  - To shoot press [M1]. You can use it also to boost yourself up in the air
- - To look backwards press [M2]
+ - To look backwards press [M2] or [Alt].
  - Use the mouse to control where the camera points
  - To activate console press [F12]
 
