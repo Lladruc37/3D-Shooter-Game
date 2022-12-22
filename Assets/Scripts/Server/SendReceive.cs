@@ -25,7 +25,7 @@ public class SendReceive : MonoBehaviour
 
     //Send/Receive info
     float myTimer = 0.0f;
-    float interpolationTimer = 0.01f;
+    float interpolationTimer = 0.03f;
     int lastHP = -1;
     Vector3 lastp = Vector3.one;
     Vector3 lastr = Vector3.one;
