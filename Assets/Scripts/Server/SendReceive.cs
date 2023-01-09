@@ -33,66 +33,69 @@ public class SendReceive : MonoBehaviour
     void Update()
     {
         username = name;
-        if (!updateCharacter) //Update the position & rotation of the players
-        {
-            position = transform.localPosition;
-            rotation = transform.rotation.eulerAngles;
-        }
-        myTimer += Time.deltaTime;
-        if(isControlling)
-        {
-            if (target.health > 0)
+        if (gm.update)
+		{
+            if (!updateCharacter) //Update the position & rotation of the players
             {
-                if (myTimer >= interpolationTimer) //Send information in a short period of time
-                {
-                    target.bodyMesh.enabled = true;
-                    target.gunBarrelMesh.enabled = true;
-                    target.gunBodyMesh.enabled = true;
-                    position = transform.localPosition;
-                    rotation = transform.rotation.eulerAngles;
-                    rotation.x = gunDirection.xRotation;
-                    if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
-                    {
-                        lastHP = target.health;
-                        lastp = position;
-                        lastr = rotation;
-                        rotation.x = 0.0f;
-                        myTimer = 0.0f;
-
-                        gm.sendThread = new Thread(gm.SendGameState);
-                        gm.sendThread.Start();
-                    }
-                }
-                else
-                {
-                    if (target.health <= 0)
-                    {
-                        myTimer = 0.0f;
-                        target.bodyMesh.enabled = false;
-                        target.gunBarrelMesh.enabled = false;
-                        target.gunBodyMesh.enabled = false;
-                    }
-                }
+                position = transform.localPosition;
+                rotation = transform.rotation.eulerAngles;
             }
-        }
-        else
-        {
-            if (updateCharacter) //Updates character's HP
+            myTimer += Time.deltaTime;
+            if (isControlling)
             {
-                updateCharacter = false;
-
                 if (target.health > 0)
                 {
-                    this.transform.rotation = Quaternion.Euler(rotation);
-                    gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotation, 0, 0);
-                    target.bodyMesh.enabled = true;
-                    target.gunBarrelMesh.enabled = true;
-                    target.gunBodyMesh.enabled = true;
-                    gun.enabled = true;
+                    if (myTimer >= interpolationTimer) //Send information in a short period of time
+                    {
+                        target.bodyMesh.enabled = true;
+                        target.gunBarrelMesh.enabled = true;
+                        target.gunBodyMesh.enabled = true;
+                        position = transform.localPosition;
+                        rotation = transform.rotation.eulerAngles;
+                        rotation.x = gunDirection.xRotation;
+                        if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
+                        {
+                            lastHP = target.health;
+                            lastp = position;
+                            lastr = rotation;
+                            rotation.x = 0.0f;
+                            myTimer = 0.0f;
+
+                            gm.sendThread = new Thread(gm.SendGameState);
+                            gm.sendThread.Start();
+                        }
+                    }
+                    else
+                    {
+                        if (target.health <= 0)
+                        {
+                            myTimer = 0.0f;
+                            target.bodyMesh.enabled = false;
+                            target.gunBarrelMesh.enabled = false;
+                            target.gunBodyMesh.enabled = false;
+                        }
+                    }
                 }
-                this.transform.localPosition = position;
             }
-            //TODO: LERP
+            else
+            {
+                if (updateCharacter) //Updates character's HP
+                {
+                    updateCharacter = false;
+
+                    if (target.health > 0)
+                    {
+                        this.transform.rotation = Quaternion.Euler(rotation);
+                        gunDirection.transform.localRotation = Quaternion.Euler(gunDirection.xRotation, 0, 0);
+                        target.bodyMesh.enabled = true;
+                        target.gunBarrelMesh.enabled = true;
+                        target.gunBodyMesh.enabled = true;
+                        gun.enabled = true;
+                    }
+                    this.transform.localPosition = position;
+                }
+                //TODO: LERP
+            }
         }
     }
 }

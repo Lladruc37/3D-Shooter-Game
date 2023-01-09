@@ -41,6 +41,7 @@ public class PlayerNetInfo
         ip = _ip;
     }
 }
+
 public class GameplayManager : MonoBehaviour
 {
     //Server/Client & other
@@ -57,7 +58,6 @@ public class GameplayManager : MonoBehaviour
     public LayerMask ceilingMask;
     public Camera lobbyCamera;
     public Image hitMarkImage;
-    Vector3 lp = Vector3.zero;
 
     //Threads
     public Thread sendThread = null;
@@ -88,11 +88,29 @@ public class GameplayManager : MonoBehaviour
     public List<GameObject> playerList = new List<GameObject>();
     public List<SendReceive> pScripts;
     public float groundLevel = 1.234f;
+    public List<Vector3> spawnpoints = new List<Vector3>();
 
     void Update()
     {
         if (start)
 		{
+            spawnpoints.Add(new Vector3(5.0f, groundLevel, -30.0f));
+            spawnpoints.Add(new Vector3(-77.0f, groundLevel, 6.0f));
+            spawnpoints.Add(new Vector3(-105.0f, groundLevel, 75.0f));
+            spawnpoints.Add(new Vector3(-40.0f, groundLevel, 45.0f));
+            spawnpoints.Add(new Vector3(60.0f, groundLevel, 75.0f));
+            spawnpoints.Add(new Vector3(13.0f, groundLevel, 25.0f));
+            spawnpoints.Add(new Vector3(65.0f, groundLevel, -95.0f));
+            spawnpoints.Add(new Vector3(-16.0f, groundLevel, -81.0f));
+            spawnpoints.Add(new Vector3(-105.0f, groundLevel, -105.0f));
+            spawnpoints.Add(new Vector3(-100.0f, groundLevel, -50.0f));
+            spawnpoints.Add(new Vector3(-20.0f, groundLevel, 10.0f));
+            spawnpoints.Add(new Vector3(47.0f, 50.0f, -2.0f));
+            spawnpoints.Add(new Vector3(-15.0f, 50.0f, 50.0f));
+            spawnpoints.Add(new Vector3(-44.0f, 50.0f, -55.0f));
+            spawnpoints.Add(new Vector3(-95.0f, 78.0f, -86.0f));
+            spawnpoints.Add(new Vector3(10.0f, 78.0f, -86.0f));
+
             Application.targetFrameRate = 60;
             int c = lobby.clientList.Count;
             Debug.Log("Start(): Player count: " + c);
@@ -105,7 +123,6 @@ public class GameplayManager : MonoBehaviour
                 {
                     Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
                     GameObject player = CreateNewPlayer(user);
-                    player.transform.localPosition = lp;
                 }
             }
             Debug.Log("Start(): Player Models: " + playerList.Count);
@@ -126,7 +143,6 @@ public class GameplayManager : MonoBehaviour
                         if (!pScripts.Exists(sr => sr.uid == p.uid))
                         {
                             GameObject player = CreateNewPlayer(p);
-                            player.transform.localPosition = lp;
                         }
                     }
 
@@ -208,60 +224,57 @@ public class GameplayManager : MonoBehaviour
         playerList.Clear();
     }
 
-    //Debug draw cylinder (automated part)
-    private void OnDrawGizmos()
-    {
-        DrawCylinder(lp, Quaternion.identity, 350, 1);
-    }
+    ////Debug draw cylinder (automated part)
+    //private void OnDrawGizmos()
+    //{
+    //    DrawSphere(lp, Quaternion.identity, 350, 1);
+    //}
 
-    //Debug draw cylinder (points & lines part)
-    public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius)
-    {
-        Vector3 localUp = orientation * Vector3.up;
-        Vector3 localRight = orientation * Vector3.right;
-        Vector3 localForward = orientation * Vector3.forward;
+    ////Debug draw cylinder (points & lines part)
+    //public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius)
+    //{
+    //    Vector3 localUp = orientation * Vector3.up;
+    //    Vector3 localRight = orientation * Vector3.right;
+    //    Vector3 localForward = orientation * Vector3.forward;
 
-        Vector3 basePosition = position;
-        Vector3 topPosition = basePosition + localUp * height;
+    //    Vector3 basePosition = position;
+    //    Vector3 topPosition = basePosition + localUp * height;
 
-        Vector3 pointA = basePosition + localRight * radius;
-        Vector3 pointB = basePosition + localForward * radius;
-        Vector3 pointC = basePosition - localRight * radius;
-        Vector3 pointD = basePosition - localForward * radius;
+    //    Vector3 pointA = basePosition + localRight * radius;
+    //    Vector3 pointB = basePosition + localForward * radius;
+    //    Vector3 pointC = basePosition - localRight * radius;
+    //    Vector3 pointD = basePosition - localForward * radius;
 
-        Gizmos.DrawLine(pointA, pointA + (localUp * height));
-        Gizmos.DrawLine(pointC, pointC + (localUp * height));
-        Gizmos.DrawLine(pointD, pointD + (localUp * height));
-        Gizmos.DrawLine(pointB, pointB + (localUp * height));
+    //    Gizmos.DrawLine(pointA, pointA + (localUp * height));
+    //    Gizmos.DrawLine(pointC, pointC + (localUp * height));
+    //    Gizmos.DrawLine(pointD, pointD + (localUp * height));
+    //    Gizmos.DrawLine(pointB, pointB + (localUp * height));
 
-        Gizmos.DrawSphere(basePosition, radius);
-        Gizmos.DrawSphere(topPosition, radius);
-    }
+    //    Gizmos.DrawSphere(basePosition, radius);
+    //    Gizmos.DrawSphere(topPosition, radius);
+    //}
 
     //Instantiates new player given player info
     GameObject CreateNewPlayer(PlayerNetInfo u)
     {
-        GameObject newPlayer = Instantiate(playerPrefab, new Vector3(0, 1.234f, 0), Quaternion.identity, this.transform);
+        List<int> blacklistedSpawns = new List<int>();
+        int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+        bool collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex],35.0f,playerMask);
+        while (collide)
+        {
+            blacklistedSpawns.Add(randomSpawnIndex);
+            randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+            while (blacklistedSpawns.Contains(randomSpawnIndex))
+            {
+                randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+            }
+            collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, playerMask);
+        }
+
+        GameObject newPlayer = Instantiate(playerPrefab, spawnpoints[randomSpawnIndex], Quaternion.identity/*, this.transform*/);
         newPlayer.layer = ignoreRaycast;
 
         Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
-
-        newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
-        lp = newPlayer.transform.localPosition;
-        bool playersHit = Physics.CheckSphere(lp, 35.0f, playerMask);
-        bool ceilingHit = Physics.CheckCapsule(lp, lp + new Vector3(0, 350, 0), 1.0f, ceilingMask);
-
-        Debug.Log("CreateNewPlayer(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
-        while (playersHit || ceilingHit)
-        {
-            Debug.Log("CreateNewPlayer(): Updating position...");
-            newPlayer.transform.localPosition = new Vector3(UnityEngine.Random.Range(-115.0f, 65.0f), 1.234f, UnityEngine.Random.Range(-105.0f, 75.0f));
-            lp = newPlayer.transform.localPosition;
-            playersHit = Physics.CheckSphere(lp, 35.0f, playerMask);
-            ceilingHit = Physics.CheckCapsule(lp, lp + new Vector3(0, 350, 0), 1.0f, ceilingMask);
-            Debug.Log("CreateNewPlayer(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
-        }
-        Debug.Log("CreateNewPlayer(): Final Position: " + newPlayer.transform.localPosition);
 
         newPlayer.layer = LayerMask.NameToLayer("Players");
         newPlayer.name = u.username;
@@ -270,7 +283,6 @@ public class GameplayManager : MonoBehaviour
         sr.uid = u.uid;
         sr.gm = this;
         sr.updateCharacter = true;
-        sr.position = lp;
         pScripts.Add(sr);
 
         Target t = newPlayer.GetComponent<Target>();
@@ -297,6 +309,7 @@ public class GameplayManager : MonoBehaviour
         }
 
         playerList.Add(newPlayer);
+        Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
         return newPlayer;
     }
 

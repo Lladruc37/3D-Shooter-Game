@@ -67,22 +67,21 @@ public class Target : MonoBehaviour
 
     public Vector3 RandomizeSpawn() //return a random position within the map bounds
 	{
-        Vector3 position = new Vector3(Random.Range(-115.0f, 65.0f), 1.234f, Random.Range(-105.0f, 75.0f));
-        bool playersHit = Physics.CheckSphere(position, 35.0f, playerMask);
-        bool ceilingHit = Physics.CheckCapsule(position, position + new Vector3(0, 350, 0), 1.0f, ceilingMask);
-
-        Debug.Log("RandomizeSpawn(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
-        while (playersHit || ceilingHit)
+        List<int> blacklistedSpawns = new List<int>();
+        int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+        bool collide = Physics.CheckSphere(sr.gm.spawnpoints[randomSpawnIndex], 35.0f, playerMask);
+        while (collide)
         {
-            Debug.Log("RandomizeSpawn(): Updating position...");
-            position = new Vector3(Random.Range(-115.0f, 65.0f), 1.234f, Random.Range(-105.0f, 75.0f));
-            playersHit = Physics.CheckSphere(position, 35.0f, playerMask);
-            ceilingHit = Physics.CheckCapsule(position, position + new Vector3(0, 350, 0), 1.0f, ceilingMask);
-            Debug.Log("RandomizeSpawn(): Hit player: " + playersHit + ", Hit Ceiling: " + ceilingHit);
+            blacklistedSpawns.Add(randomSpawnIndex);
+            randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+            while (blacklistedSpawns.Contains(randomSpawnIndex))
+            {
+                randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+            }
+            collide = Physics.CheckSphere(sr.gm.spawnpoints[randomSpawnIndex], 35.0f, playerMask);
         }
-        Debug.Log("RandomizeSpawn(): Final Position: " + position);
 
-        return position;
+        return sr.gm.spawnpoints[randomSpawnIndex];
     }
 
     private void OnCollisionEnter(Collision collision) //in case you spawn inside another player
