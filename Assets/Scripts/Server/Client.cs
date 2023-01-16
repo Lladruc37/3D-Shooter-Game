@@ -218,11 +218,7 @@ public class Client : MonoBehaviour
                                     stringData = reader.ReadString();
                                     Debug.Log("ReceiveClient(): New server name change detected");
                                     startGame = reader.ReadBoolean();
-                                    if (startGame)
-                                    {
-                                        Debug.Log("ReceiveClient(): Game in progress detected");
-                                        manager.matchStarted = true;
-                                    }
+                                    if (startGame) Debug.Log("ReceiveClient(): Game in progress detected");
                                     Thread.Sleep(100);
                                     break;
                                 }

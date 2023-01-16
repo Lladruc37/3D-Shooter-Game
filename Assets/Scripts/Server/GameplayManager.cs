@@ -49,7 +49,6 @@ public class GameplayManager : MonoBehaviour
     public Server server;
     public Client client;
     public byte[] data;
-    public bool matchStarted = false;
 
     //Instantiate players
     public GameObject playerPrefab;
@@ -83,7 +82,7 @@ public class GameplayManager : MonoBehaviour
     //User data
     public uint UserUid;
     public string UserName;
-    public bool start, update, startTwo = false;
+    public bool start, update = false;
 
     //All users data
     public List<GameObject> playerList = new List<GameObject>();
@@ -93,21 +92,6 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
-        if(startTwo) //Probably should be a timer cuz one frame isn't enough
-		{
-            foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
-            {
-                if (user.uid == UserUid)
-                {
-                    Debug.Log("StartTwo(): Adding pScripts, values: " + user.uid + " - " + user.username + "START TWOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-                    GameObject player = CreateNewPlayer(user);
-                    break;
-                }
-            }
-            update = true;
-            startTwo = false;
-        }
-
         if (start)
 		{
             spawnpoints.Add(new Vector3(5.0f, groundLevel, -30.0f));
@@ -138,31 +122,13 @@ public class GameplayManager : MonoBehaviour
                 foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
                 {
                     Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
-                    if (matchStarted)
-                    {
-                        if(user.uid != UserUid)
-						{
-                            GameObject player = CreateNewPlayer(user);
-                        }
-                    }
-					else
-					{
-                        GameObject player = CreateNewPlayer(user);
-                    }
+                    GameObject player = CreateNewPlayer(user);
                 }
             }
             Debug.Log("Start(): Player Models: " + playerList.Count);
 
             start = false;
-            if (matchStarted)
-            {
-                startTwo = true;
-                matchStarted = false;
-            }
-            else
-            {
-                update = true;
-            }
+            update = true;
 		}
 
         if(update) //Updates point system & HP UI
@@ -296,14 +262,13 @@ public class GameplayManager : MonoBehaviour
         bool collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex],35.0f,playerMask);
         while (collide)
         {
-            Debug.Log("COLLISION SPAWN");
             blacklistedSpawns.Add(randomSpawnIndex);
             randomSpawnIndex = UnityEngine.Random.Range(0, 15);
             while (blacklistedSpawns.Contains(randomSpawnIndex))
             {
                 randomSpawnIndex = UnityEngine.Random.Range(0, 15);
             }
-            collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, 6);
+            collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, playerMask);
         }
 
         GameObject newPlayer = Instantiate(playerPrefab, spawnpoints[randomSpawnIndex], Quaternion.identity/*, this.transform*/);
@@ -311,7 +276,7 @@ public class GameplayManager : MonoBehaviour
 
         Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
 
-        newPlayer.layer = 6;
+        newPlayer.layer = LayerMask.NameToLayer("Players");
         newPlayer.name = u.username;
 
         SendReceive sr = newPlayer.GetComponent<SendReceive>();
@@ -392,43 +357,40 @@ public class GameplayManager : MonoBehaviour
         writer.Write(UserName);
 
         //Position
-        //lock (pScripts)
+        foreach (SendReceive p in pScripts)
         {
-            foreach (SendReceive p in pScripts)
+            if (p.uid == UserUid)
             {
-                if (p.uid == UserUid)
+                //Health & Kills
+                writer.Write(p.target.health);
+                writer.Write(p.kills);
+
+                //Position
+                ushort x = ConvertToFixed(p.position.x, -130f,0.01f), y = ConvertToFixed(p.position.y, -130f,0.01f), z = ConvertToFixed(p.position.z, -130f,0.01f);
+                writer.Write(x);
+                writer.Write(z);
+                if (p.position.y == groundLevel)
                 {
-                    //Health & Kills
-                    writer.Write(p.target.health);
-                    writer.Write(p.kills);
-
-                    //Position
-                    ushort x = ConvertToFixed(p.position.x, -130f, 0.01f), y = ConvertToFixed(p.position.y, -130f, 0.01f), z = ConvertToFixed(p.position.z, -130f, 0.01f);
-                    writer.Write(x);
-                    writer.Write(z);
-                    if (p.position.y == groundLevel)
-                    {
-                        writer.Write(true);
-                    }
-                    else
-                    {
-                        writer.Write(false);
-                        writer.Write(y);
-                    }
-
-                    //Rotation
-                    y = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
-                    writer.Write(y);
-
-                    //Weapon Action
-                    writer.Write(p.gun.fire);
-                    x = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
-                    writer.Write(x);
-                    writer.Write(p.uidHit);
-                    p.uidHit = -1;
-
-                    break;
+                    writer.Write(true);
                 }
+                else
+                {
+                    writer.Write(false);
+                    writer.Write(y);
+                }
+
+                //Rotation
+                y = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
+                writer.Write(y);
+
+                //Weapon Action
+                writer.Write(p.gun.fire);
+                x = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
+                writer.Write(x);
+                writer.Write(p.uidHit);
+                p.uidHit = -1;
+
+                break;
             }
         }
 
@@ -455,57 +417,54 @@ public class GameplayManager : MonoBehaviour
         uint uid = reader.ReadUInt32();
         string dump = reader.ReadString();
 
-        //lock (pScripts)
+        SendReceive pSender = null;
+        foreach (SendReceive p in pScripts)
         {
-            SendReceive pSender = null;
-            foreach (SendReceive p in pScripts)
+            if (p.uid == uid && uid != UserUid)
             {
-                if (p.uid == uid && uid != UserUid)
-                {
-                    pSender = p;
-                    break;
-                }
+                pSender = p;
+                break;
             }
+        }
 
-            if (pSender != null)
+        if (pSender != null)
+        {
+            //Health & Kills
+            pSender.target.health = reader.ReadInt32();
+            pSender.kills = reader.ReadInt32();
+
+            //Position
+            pSender.position.x = ConvertFromFixed(reader.ReadUInt16(),-130f,0.01f);
+            pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
+            if(reader.ReadBoolean())
+			{
+                pSender.position.y = groundLevel;
+			}
+            else
+			{
+                pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
+			}
+
+            //Rotation
+            pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;
+
+            //Weapon Action
+            pSender.gun.fire = reader.ReadBoolean();
+            pSender.gunDirection.xRotation = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f) * 90.0f;
+
+            pSender.updateCharacter = true;
+
+            //User who got hit
+            int _uidHit = reader.ReadInt32();
+            Debug.Log("ReceiveGameState(): Hit player: " + _uidHit);
+            if (UserUid == _uidHit)
             {
-                //Health & Kills
-                pSender.target.health = reader.ReadInt32();
-                pSender.kills = reader.ReadInt32();
-
-                //Position
-                pSender.position.x = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
-                pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
-                if (reader.ReadBoolean())
+                foreach (SendReceive p in pScripts)
                 {
-                    pSender.position.y = groundLevel;
-                }
-                else
-                {
-                    pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
-                }
-
-                //Rotation
-                pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;
-
-                //Weapon Action
-                pSender.gun.fire = reader.ReadBoolean();
-                pSender.gunDirection.xRotation = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f) * 90.0f;
-
-                pSender.updateCharacter = true;
-
-                //User who got hit
-                int _uidHit = reader.ReadInt32();
-                Debug.Log("ReceiveGameState(): Hit player: " + _uidHit);
-                if (UserUid == _uidHit)
-                {
-                    foreach (SendReceive p in pScripts)
+                    if (p.uid == UserUid)
                     {
-                        if (p.uid == UserUid)
-                        {
-                            p.target.TakeDamage(1);
-                            break;
-                        }
+                        p.target.TakeDamage(1);
+                        break;
                     }
                 }
             }
