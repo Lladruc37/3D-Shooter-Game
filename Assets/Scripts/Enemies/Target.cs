@@ -52,7 +52,7 @@ public class Target : MonoBehaviour
                 {
                     Debug.Log("You have respawned!");
                     controller.enabled = true;
-                    controller.Move(RandomizeSpawn());
+                    this.transform.position = RandomizeSpawn();
                 }
                 else //another player respawns in your world
                 {

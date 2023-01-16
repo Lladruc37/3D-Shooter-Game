@@ -20,7 +20,7 @@ public class Server : MonoBehaviour
     //User info
     public uint uid = 0;
     public string hostUsername = "";
-    string stringData = null;
+    public string stringData = null;
 
     //Server
     public string serverName = "Server";
@@ -77,6 +77,7 @@ public class Server : MonoBehaviour
             {
                 newMessage = false;
                 chatManager.SendMsg(stringData);
+                stringData = "";
             }
             if (Input.GetKeyDown(KeyCode.Return)) //Sends message to all the clients
             {
@@ -326,16 +327,8 @@ public class Server : MonoBehaviour
                                         writerHello.Write(sr.uid);
                                         ushort x = manager.ConvertToFixed(sr.position.x, -130f, 0.01f), y = manager.ConvertToFixed(sr.position.y, -130f, 0.01f), z = manager.ConvertToFixed(sr.position.z, -130f, 0.01f);
                                         writerHello.Write(x);
+                                        writerHello.Write(y);
                                         writerHello.Write(z);
-                                        if (sr.position.y == manager.groundLevel)
-                                        {
-                                            writerHello.Write(true);
-                                        }
-                                        else
-                                        {
-                                            writerHello.Write(false);
-                                            writerHello.Write(y);
-                                        }
                                     }
                                 }
 
@@ -437,14 +430,15 @@ public class Server : MonoBehaviour
 
 	public int RandomizeSpawnIndex()
 	{
-        int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+        var rand = new System.Random();
+        int randomSpawnIndex = rand.Next(0, 15);
         if(blacklistedSpawns.Count == manager.spawnpoints.Count) //in case it is going to perma loop
 		{
             blacklistedSpawns.Clear();
 		}
         while (blacklistedSpawns.Contains(randomSpawnIndex))
         {
-            randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+            randomSpawnIndex = rand.Next(0, 15);
         }
 
         blacklistedSpawns.Add(randomSpawnIndex);

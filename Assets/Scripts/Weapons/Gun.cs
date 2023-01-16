@@ -1,4 +1,5 @@
 using System.Collections;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -91,6 +92,26 @@ public class Gun : MonoBehaviour
                             if (target.TakeDamage(1))
                             {
                                 playerInfo.kills++;
+                                MemoryStream streamDeath = new MemoryStream();
+                                BinaryWriter writerDeath = new BinaryWriter(streamDeath);
+                                writerDeath.Write(false);
+                                writerDeath.Write((byte)packetType.chat);
+                                if (playerInfo.gm.server)
+                                {
+                                    Debug.Log("Server has killed user!!!!!!!!!!!!!!!");
+                                    string msg = "\n[" + playerInfo.username + "]>>" + hit.collider.name + " has been killed by " + playerInfo.username + "!";
+                                    writerDeath.Write(msg);
+                                    playerInfo.gm.server.newMessage = true;
+                                    playerInfo.gm.server.stringData = msg;
+                                    playerInfo.gm.server.BroadcastServerInfo(streamDeath);
+                                }
+                                else if (playerInfo.gm.client)
+                                {
+                                    Debug.Log("User has killed server!!!!!!!!!!!!!!!");
+                                    writerDeath.Write(playerInfo.uid);
+                                    writerDeath.Write(hit.collider.name + " has been killed by " + playerInfo.username + "!");
+                                    playerInfo.gm.client.SendInfo(streamDeath);
+                                }
                             }
                         }
                     }

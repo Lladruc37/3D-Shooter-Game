@@ -23,10 +23,10 @@ public class Client : MonoBehaviour
 
     //User info
     public uint uuid;
-    public string username;
-    public string serverIP;
+    public string username = "";
+    public string serverIP = "";
     public byte[] data;
-    public string stringData, input;
+    public string stringData = "", input = "";
 
     //Client
     public bool start = false;
@@ -229,15 +229,8 @@ public class Client : MonoBehaviour
                                             SendReceive newPlayer = new SendReceive();
                                             newPlayer.uid = reader.ReadUInt32();
                                             newPlayer.position.x = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+                                            newPlayer.position.y = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
                                             newPlayer.position.z = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
-                                            if (reader.ReadBoolean())
-                                            {
-                                                newPlayer.position.y = manager.groundLevel;
-                                            }
-                                            else
-                                            {
-                                                newPlayer.position.y = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
-                                            }
                                             manager.pScriptsMidGame.Add(newPlayer);
                                         }
                                     }

@@ -248,7 +248,7 @@ public class GameplayManager : MonoBehaviour
         hitMarkImage.enabled = false;
         Cursor.lockState = CursorLockMode.None;
         winnerTimer = 0.0f;
-        RandomizeSpawnPoints();
+        if (server) RandomizeSpawnPoints();
         foreach (SendReceive p in pScripts)
 		{
             if (firstPlayer == p.kills) SendGameState();
@@ -419,25 +419,17 @@ public class GameplayManager : MonoBehaviour
                 //Position
                 ushort x = ConvertToFixed(p.position.x, -130f,0.01f), y = ConvertToFixed(p.position.y, -130f,0.01f), z = ConvertToFixed(p.position.z, -130f,0.01f);
                 writer.Write(x);
+                writer.Write(y);
                 writer.Write(z);
-                if (p.position.y == groundLevel)
-                {
-                    writer.Write(true);
-                }
-                else
-                {
-                    writer.Write(false);
-                    writer.Write(y);
-                }
 
                 //Rotation
-                y = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
-                writer.Write(y);
+                ushort ry = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
+                writer.Write(ry);
 
                 //Weapon Action
                 writer.Write(p.gun.fire);
-                x = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
-                writer.Write(x);
+                ushort rx = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
+                writer.Write(rx);
                 writer.Write(p.uidHit);
                 p.uidHit = -1;
 
@@ -466,7 +458,7 @@ public class GameplayManager : MonoBehaviour
         short header = reader.ReadByte();
 
         uint uid = reader.ReadUInt32();
-        string dump = reader.ReadString();
+        string username = reader.ReadString();
 
         SendReceive pSender = null;
         foreach (SendReceive p in pScripts)
@@ -486,15 +478,8 @@ public class GameplayManager : MonoBehaviour
 
             //Position
             pSender.position.x = ConvertFromFixed(reader.ReadUInt16(),-130f,0.01f);
+            pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
             pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
-            if(reader.ReadBoolean())
-			{
-                pSender.position.y = groundLevel;
-			}
-            else
-			{
-                pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
-			}
 
             //Rotation
             pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;
@@ -515,6 +500,7 @@ public class GameplayManager : MonoBehaviour
                     if (p.uid == UserUid)
                     {
                         p.target.TakeDamage(1);
+                        Debug.Log("ReceiveGameState(): Resulting health: " + p.target.health);
                         break;
                     }
                 }
