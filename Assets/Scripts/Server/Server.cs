@@ -41,6 +41,7 @@ public class Server : MonoBehaviour
     //Gameplay
     public GameObject gameplayScene;
     public GameplayManager manager;
+    public List<int> blacklistedSpawns = new List<int>();
 
     void Update()
     {
@@ -65,7 +66,8 @@ public class Server : MonoBehaviour
             }
 
             //Adds this user to the list of players
-            AddClient(hostUsername, ipep);
+            int spawnIndex = RandomizeSpawnIndex();
+            AddClient(hostUsername, ipep, spawnIndex);
             Debug.Log("Start(): Server started successfully!");
         }
 
@@ -164,12 +166,13 @@ public class Server : MonoBehaviour
         int i = 0;
         foreach (PlayerNetInfo user in lobby.clientList)
         {
-            Debug.Log("SendPlayerList(): Values: " + user.uid + " - " + user.username + " - " + user.ip);
+            Debug.Log("SendPlayerList(): Values: " + user.uid + " - " + user.username + " - " + user.ip + " - " + user.spawnIndex);
             writer.Write(user.uid);
             writer.Write(user.username);
             writer.Write(true);
             writer.Write(user.ip.Address.ToString());
             writer.Write(user.ip.Port);
+            writer.Write(user.spawnIndex);
             i++;
         }
 
@@ -179,12 +182,12 @@ public class Server : MonoBehaviour
     }
 
     //Adds a new client to the list of connected clients
-    PlayerNetInfo AddClient(string username, IPEndPoint ip)
+    PlayerNetInfo AddClient(string username, IPEndPoint ip, int spawnIndex)
     {
         PlayerNetInfo newPlayer = null;
         if(ip.ToString() != "")
         {
-            newPlayer = new PlayerNetInfo(maxUid, username, ip);
+            newPlayer = new PlayerNetInfo(maxUid, username, ip, spawnIndex);
             lobby.clientList.Add(newPlayer);
             maxUid++;
             Debug.Log("AddClient(): Connected to: " + ip.ToString());
@@ -298,7 +301,9 @@ public class Server : MonoBehaviour
                                 sender = (IPEndPoint)remote;
                                 string userName = reader.ReadString();
 
-                                PlayerNetInfo newPlayer = AddClient(userName, sender);
+                                int spawnIndex = RandomizeSpawnIndex();
+
+                                PlayerNetInfo newPlayer = AddClient(userName, sender, spawnIndex);
                                 pingList.Add(newPlayer.uid);
 
                                 stringData = "\nUser '" + userName + "' joined the lobby!";
@@ -429,6 +434,22 @@ public class Server : MonoBehaviour
 			Debug.LogError("ReceiveServer(): Error receiving: " + e);
 		}
 	}
+
+	public int RandomizeSpawnIndex()
+	{
+        int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+        if(blacklistedSpawns.Count == manager.spawnpoints.Count) //in case it is going to perma loop
+		{
+            blacklistedSpawns.Clear();
+		}
+        while (blacklistedSpawns.Contains(randomSpawnIndex))
+        {
+            randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+        }
+
+        blacklistedSpawns.Add(randomSpawnIndex);
+        return randomSpawnIndex;
+    }
 
     //Close all connections
     public void Close()

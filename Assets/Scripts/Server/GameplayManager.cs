@@ -31,14 +31,16 @@ public class PlayerNetInfo
     public uint uid;
     public string username;
     public IPEndPoint ip;
+    public int spawnIndex;
 
     public PlayerNetInfo() { }
 
-    public PlayerNetInfo(uint _uid, string _username, IPEndPoint _ip)
+    public PlayerNetInfo(uint _uid, string _username, IPEndPoint _ip, int _spawnIndex)
     {
         uid = _uid;
         username = _username;
         ip = _ip;
+        spawnIndex = _spawnIndex;
     }
 }
 
@@ -246,6 +248,7 @@ public class GameplayManager : MonoBehaviour
         hitMarkImage.enabled = false;
         Cursor.lockState = CursorLockMode.None;
         winnerTimer = 0.0f;
+        RandomizeSpawnPoints();
         foreach (SendReceive p in pScripts)
 		{
             if (firstPlayer == p.kills) SendGameState();
@@ -260,6 +263,15 @@ public class GameplayManager : MonoBehaviour
         }
         playerList.Clear();
     }
+
+    void RandomizeSpawnPoints()
+	{
+        server.blacklistedSpawns.Clear();
+        foreach(PlayerNetInfo p in lobby.clientList)
+		{
+            p.spawnIndex = server.RandomizeSpawnIndex();
+		}
+	}
 
     ////Debug draw cylinder (automated part)
     //private void OnDrawGizmos()
@@ -297,23 +309,8 @@ public class GameplayManager : MonoBehaviour
         GameObject newPlayer = null;
         if (!midGame)
         {
-            List<int> blacklistedSpawns = new List<int>();
-            int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
-            Debug.Log("CreateNewPlayer(): Chosen Position: " + spawnpoints[randomSpawnIndex]);
-            bool collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, 6);
-            while (collide)
-            {
-                Debug.Log("CreateNewPlayer(): Player detected. Changing spawnpoint");
-                blacklistedSpawns.Add(randomSpawnIndex);
-                randomSpawnIndex = UnityEngine.Random.Range(0, 15);
-                while (blacklistedSpawns.Contains(randomSpawnIndex))
-                {
-                    randomSpawnIndex = UnityEngine.Random.Range(0, 15);
-                }
-                Debug.Log("CreateNewPlayer(): Chosen Position: " + spawnpoints[randomSpawnIndex]);
-                collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, 6);
-            }
-            newPlayer = Instantiate(playerPrefab, spawnpoints[randomSpawnIndex], Quaternion.identity/*, this.transform*/);
+            Debug.Log("CreateNewPlayer(): Chosen Position: " + spawnpoints[u.spawnIndex]);
+            newPlayer = Instantiate(playerPrefab, spawnpoints[u.spawnIndex], Quaternion.identity/*, this.transform*/);
         }
         else
         {

@@ -69,7 +69,7 @@ public class Target : MonoBehaviour
 	{
         List<int> blacklistedSpawns = new List<int>();
         int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
-        bool collide = Physics.CheckSphere(sr.gm.spawnpoints[randomSpawnIndex], 35.0f, playerMask);
+        bool collide = Physics.CheckSphere(sr.gm.spawnpoints[randomSpawnIndex], 35.0f, 6);
         while (collide)
         {
             blacklistedSpawns.Add(randomSpawnIndex);
@@ -78,19 +78,19 @@ public class Target : MonoBehaviour
             {
                 randomSpawnIndex = UnityEngine.Random.Range(0, 15);
             }
-            collide = Physics.CheckSphere(sr.gm.spawnpoints[randomSpawnIndex], 35.0f, playerMask);
+            collide = Physics.CheckSphere(sr.gm.spawnpoints[randomSpawnIndex], 35.0f, 6);
         }
 
         return sr.gm.spawnpoints[randomSpawnIndex];
     }
 
-    private void OnCollisionEnter(Collision collision) //in case you spawn inside another player
-    {
-        if (!collision.transform.GetComponent("Target"))
-        {
-            sr.position = RandomizeSpawn();
-        }
-    }
+    //private void OnCollisionEnter(Collision collision) //in case you spawn inside another player
+    //{
+    //    if (!collision.transform.GetComponent("Target"))
+    //    {
+    //        sr.position = RandomizeSpawn();
+    //    }
+    //}
 
 
     public bool TakeDamage (int amount) //reduce HP and return true if dead

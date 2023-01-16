@@ -361,6 +361,7 @@ public class Client : MonoBehaviour
                 string ipString = reader.ReadString();
                 int port = reader.ReadInt32();
                 IPEndPoint ip = new IPEndPoint(IPAddress.Parse(ipString), port);
+                int spawnIndex = reader.ReadInt32();
                 if (tmpUsername == username)
                 {
                     uuid = uid;
@@ -372,11 +373,12 @@ public class Client : MonoBehaviour
                     lobby.clientList.Find(user => user.uid == uid).uid = uid;
                     lobby.clientList.Find(user => user.uid == uid).username = tmpUsername;
                     lobby.clientList.Find(user => user.uid == uid).ip = ip;
+                    lobby.clientList.Find(user => user.uid == uid).spawnIndex = spawnIndex;
                 }
                 else
                 {
                     Debug.Log("ReceiveList(): Adding data...");
-                    lobby.clientList.Add(new PlayerNetInfo(uid, tmpUsername, ip));
+                    lobby.clientList.Add(new PlayerNetInfo(uid, tmpUsername, ip,spawnIndex));
                 }
             }
             Debug.Log("ReceiveList(): Done reading list");
