@@ -218,7 +218,29 @@ public class Client : MonoBehaviour
                                     stringData = reader.ReadString();
                                     Debug.Log("ReceiveClient(): New server name change detected");
                                     startGame = reader.ReadBoolean();
-                                    if (startGame) Debug.Log("ReceiveClient(): Game in progress detected");
+                                    if (startGame)
+                                    {
+                                        Debug.Log("ReceiveClient(): Game in progress detected");
+                                        manager.matchStarted = true;
+                                        manager.pScriptsMidGame.Clear();
+                                        int count = reader.ReadInt32();
+                                        for (int i = 0; i != count; ++i)
+                                        {
+                                            SendReceive newPlayer = new SendReceive();
+                                            newPlayer.uid = reader.ReadUInt32();
+                                            newPlayer.position.x = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+                                            newPlayer.position.z = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+                                            if (reader.ReadBoolean())
+                                            {
+                                                newPlayer.position.y = manager.groundLevel;
+                                            }
+                                            else
+                                            {
+                                                newPlayer.position.y = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+                                            }
+                                            manager.pScriptsMidGame.Add(newPlayer);
+                                        }
+                                    }
                                     Thread.Sleep(100);
                                     break;
                                 }

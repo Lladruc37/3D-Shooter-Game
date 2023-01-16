@@ -58,6 +58,7 @@ public class GameplayManager : MonoBehaviour
     public LayerMask ceilingMask;
     public Camera lobbyCamera;
     public Image hitMarkImage;
+    public bool newPlayer;
 
     //Threads
     public Thread sendThread = null;
@@ -82,16 +83,32 @@ public class GameplayManager : MonoBehaviour
     //User data
     public uint UserUid;
     public string UserName;
-    public bool start, update = false;
+    public bool matchStarted, start, startTwo, update = false;
 
     //All users data
     public List<GameObject> playerList = new List<GameObject>();
     public List<SendReceive> pScripts;
+    public List<SendReceive> pScriptsMidGame;
     public float groundLevel = 1.234f;
     public List<Vector3> spawnpoints = new List<Vector3>();
 
     void Update()
     {
+        if (startTwo)
+        {
+            foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
+            {
+                if (user.uid == UserUid)
+                {
+                    Debug.Log("StartTwo(): Adding pScripts, values: " + user.uid + " - " + user.username);
+                    GameObject player = CreateNewPlayer(user);
+                    break;
+                }
+            }
+            update = true;
+            startTwo = false;
+        }
+
         if (start)
 		{
             spawnpoints.Add(new Vector3(5.0f, groundLevel, -30.0f));
@@ -121,15 +138,34 @@ public class GameplayManager : MonoBehaviour
                 pScripts.Clear();
                 foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
                 {
-                    Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
-                    GameObject player = CreateNewPlayer(user);
+                    if (matchStarted)
+                    {
+                        if (user.uid != UserUid)
+                        {
+                            Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
+                            GameObject player = CreateNewPlayer(user, true);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
+                        GameObject player = CreateNewPlayer(user);
+                    }
                 }
             }
             Debug.Log("Start(): Player Models: " + playerList.Count);
 
             start = false;
-            update = true;
-		}
+            if (matchStarted)
+            {
+                startTwo = true;
+                matchStarted = false;
+            }
+            else
+            {
+                update = true;
+            }
+        }
 
         if(update) //Updates point system & HP UI
 		{
@@ -138,6 +174,7 @@ public class GameplayManager : MonoBehaviour
             {
                 if (pScripts.Count < lobby.clientList.Count) //In case player joins mid-game
                 {
+                    newPlayer = true;
                     foreach (PlayerNetInfo p in lobby.clientList)
                     {
                         if (!pScripts.Exists(sr => sr.uid == p.uid))
@@ -255,28 +292,45 @@ public class GameplayManager : MonoBehaviour
     //}
 
     //Instantiates new player given player info
-    GameObject CreateNewPlayer(PlayerNetInfo u)
+    GameObject CreateNewPlayer(PlayerNetInfo u, bool midGame = false)
     {
-        List<int> blacklistedSpawns = new List<int>();
-        int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
-        bool collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex],35.0f,playerMask);
-        while (collide)
+        GameObject newPlayer = null;
+        if (!midGame)
         {
-            blacklistedSpawns.Add(randomSpawnIndex);
-            randomSpawnIndex = UnityEngine.Random.Range(0, 15);
-            while (blacklistedSpawns.Contains(randomSpawnIndex))
+            List<int> blacklistedSpawns = new List<int>();
+            int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+            Debug.Log("CreateNewPlayer(): Chosen Position: " + spawnpoints[randomSpawnIndex]);
+            bool collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, 6);
+            while (collide)
             {
+                Debug.Log("CreateNewPlayer(): Player detected. Changing spawnpoint");
+                blacklistedSpawns.Add(randomSpawnIndex);
                 randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+                while (blacklistedSpawns.Contains(randomSpawnIndex))
+                {
+                    randomSpawnIndex = UnityEngine.Random.Range(0, 15);
+                }
+                Debug.Log("CreateNewPlayer(): Chosen Position: " + spawnpoints[randomSpawnIndex]);
+                collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, 6);
             }
-            collide = Physics.CheckSphere(spawnpoints[randomSpawnIndex], 35.0f, playerMask);
+            newPlayer = Instantiate(playerPrefab, spawnpoints[randomSpawnIndex], Quaternion.identity/*, this.transform*/);
+        }
+        else
+        {
+            foreach(SendReceive tmp in pScriptsMidGame)
+            {
+                if (tmp.uid == u.uid)
+                {
+                    newPlayer = Instantiate(playerPrefab, tmp.position, Quaternion.identity);
+                }
+            }
         }
 
-        GameObject newPlayer = Instantiate(playerPrefab, spawnpoints[randomSpawnIndex], Quaternion.identity/*, this.transform*/);
+        Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
         newPlayer.layer = ignoreRaycast;
 
-        Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
 
-        newPlayer.layer = LayerMask.NameToLayer("Players");
+        newPlayer.layer = 6;
         newPlayer.name = u.username;
 
         SendReceive sr = newPlayer.GetComponent<SendReceive>();
@@ -474,12 +528,12 @@ public class GameplayManager : MonoBehaviour
 
     //for positions & rotations
     // 0.01 & 0.0001 precision respectively
-    UInt16 ConvertToFixed(float inNumber, float inMin, float inPrecision)
+    public UInt16 ConvertToFixed(float inNumber, float inMin, float inPrecision)
 	{
         return (UInt16)((inNumber - inMin) /inPrecision);
 	}
 
-    float ConvertFromFixed(UInt16 inNumber, float inMin, float inPrecision)
+    public float ConvertFromFixed(UInt16 inNumber, float inMin, float inPrecision)
 	{
         return (float)(inNumber * inPrecision) + inMin;
 	}

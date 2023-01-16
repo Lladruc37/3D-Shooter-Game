@@ -313,6 +313,26 @@ public class Server : MonoBehaviour
                                 writerHello.Write((byte)packetType.servername);
                                 writerHello.Write(serverName);
                                 writerHello.Write(manager.update);
+                                if (manager.update)
+                                {
+                                    writerHello.Write(manager.pScripts.Count);
+                                    foreach(SendReceive sr in manager.pScripts)
+                                    {
+                                        writerHello.Write(sr.uid);
+                                        ushort x = manager.ConvertToFixed(sr.position.x, -130f, 0.01f), y = manager.ConvertToFixed(sr.position.y, -130f, 0.01f), z = manager.ConvertToFixed(sr.position.z, -130f, 0.01f);
+                                        writerHello.Write(x);
+                                        writerHello.Write(z);
+                                        if (sr.position.y == manager.groundLevel)
+                                        {
+                                            writerHello.Write(true);
+                                        }
+                                        else
+                                        {
+                                            writerHello.Write(false);
+                                            writerHello.Write(y);
+                                        }
+                                    }
+                                }
 
                                 MemoryStream streamChat = new MemoryStream();
                                 BinaryWriter writerChat = new BinaryWriter(streamChat);

@@ -45,8 +45,9 @@ public class SendReceive : MonoBehaviour
             {
                 if (target.health > 0)
                 {
-                    if (myTimer >= interpolationTimer) //Send information in a short period of time
+                    if (myTimer >= interpolationTimer || gm.newPlayer) //Send information in a short period of time
                     {
+                        gm.newPlayer = false;
                         target.bodyMesh.enabled = true;
                         target.gunBarrelMesh.enabled = true;
                         target.gunBodyMesh.enabled = true;

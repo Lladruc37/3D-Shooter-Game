@@ -191,6 +191,15 @@ public class LobbyScripts : MonoBehaviour
         title.enabled = true;
 
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+
+        foreach (SendReceive sr in manager.pScripts)
+        {
+            Destroy(sr.gameObject);
+        }
+
+        manager.pScripts.Clear();
+        manager.playerList.Clear();
+
         gameplayScene.SetActive(false);
         manager.start = false;
         lobbyCamera.enabled = true;
