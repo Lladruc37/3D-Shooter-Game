@@ -22,6 +22,7 @@ public class Target : MonoBehaviour
     public int maxHealth = 5;
     public float respawnTime = 5.0f;
     float deathTimer = 0.0f;
+    public bool healed = false;
 
 	void Update()
 	{
@@ -91,6 +92,16 @@ public class Target : MonoBehaviour
     //        sr.position = RandomizeSpawn();
     //    }
     //}
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Collectible" && healed)
+        {
+            healed = false;
+            sr.gm.healthPack = true;
+        }
+    }
+
 
 
     public bool TakeDamage (int amount) //reduce HP and return true if dead

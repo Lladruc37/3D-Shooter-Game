@@ -94,6 +94,13 @@ public class GameplayManager : MonoBehaviour
     public float groundLevel = 1.234f;
     public List<Vector3> spawnpoints = new List<Vector3>();
 
+    //Health Packs
+    bool healthPackReceived = false;
+    public bool healthPack = false;
+    public int healthPackId = 0;
+    public int healthPackIdReceived = 0;
+    public GameObject healthPackPrefab;
+
     void Update()
     {
         if (startTwo)
@@ -113,67 +120,86 @@ public class GameplayManager : MonoBehaviour
 
         if (start)
 		{
-            spawnpoints.Add(new Vector3(5.0f, groundLevel, -30.0f));
-            spawnpoints.Add(new Vector3(-77.0f, groundLevel, 6.0f));
-            spawnpoints.Add(new Vector3(-105.0f, groundLevel, 75.0f));
-            spawnpoints.Add(new Vector3(-40.0f, groundLevel, 45.0f));
-            spawnpoints.Add(new Vector3(60.0f, groundLevel, 75.0f));
-            spawnpoints.Add(new Vector3(13.0f, groundLevel, 25.0f));
-            spawnpoints.Add(new Vector3(65.0f, groundLevel, -95.0f));
-            spawnpoints.Add(new Vector3(-16.0f, groundLevel, -81.0f));
-            spawnpoints.Add(new Vector3(-105.0f, groundLevel, -105.0f));
-            spawnpoints.Add(new Vector3(-100.0f, groundLevel, -50.0f));
-            spawnpoints.Add(new Vector3(-20.0f, groundLevel, 10.0f));
-            spawnpoints.Add(new Vector3(47.0f, 50.0f, -2.0f));
-            spawnpoints.Add(new Vector3(-15.0f, 50.0f, 50.0f));
-            spawnpoints.Add(new Vector3(-44.0f, 50.0f, -55.0f));
-            spawnpoints.Add(new Vector3(-95.0f, 78.0f, -86.0f));
-            spawnpoints.Add(new Vector3(10.0f, 78.0f, -86.0f));
+			//Spawnpoints
+			spawnpoints.Add(new Vector3(5.0f, groundLevel, -30.0f));
+			spawnpoints.Add(new Vector3(-77.0f, groundLevel, 6.0f));
+			spawnpoints.Add(new Vector3(-105.0f, groundLevel, 75.0f));
+			spawnpoints.Add(new Vector3(-40.0f, groundLevel, 45.0f));
+			spawnpoints.Add(new Vector3(60.0f, groundLevel, 75.0f));
+			spawnpoints.Add(new Vector3(13.0f, groundLevel, 25.0f));
+			spawnpoints.Add(new Vector3(65.0f, groundLevel, -95.0f));
+			spawnpoints.Add(new Vector3(-16.0f, groundLevel, -81.0f));
+			spawnpoints.Add(new Vector3(-105.0f, groundLevel, -105.0f));
+			spawnpoints.Add(new Vector3(-100.0f, groundLevel, -50.0f));
+			spawnpoints.Add(new Vector3(-20.0f, groundLevel, 10.0f));
+			spawnpoints.Add(new Vector3(47.0f, 50.0f, -2.0f));
+			spawnpoints.Add(new Vector3(-15.0f, 50.0f, 50.0f));
+			spawnpoints.Add(new Vector3(-44.0f, 50.0f, -55.0f));
+			spawnpoints.Add(new Vector3(-95.0f, 78.0f, -86.0f));
+			spawnpoints.Add(new Vector3(10.0f, 78.0f, -86.0f));
 
-            Application.targetFrameRate = 60;
-            int c = lobby.clientList.Count;
-            Debug.Log("Start(): Player count: " + c);
+			//Health Packs
+			InstantiateHealthPacks();
 
-            if (c != 0) //Setup gameplay scene
-            {
-                playerList.Clear();
-                pScripts.Clear();
-                foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
-                {
-                    if (matchStarted)
-                    {
-                        if (user.uid != UserUid)
-                        {
-                            Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
-                            GameObject player = CreateNewPlayer(user, true);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
-                        GameObject player = CreateNewPlayer(user);
-                    }
-                }
-            }
-            Debug.Log("Start(): Player Models: " + playerList.Count);
+			Application.targetFrameRate = 60;
+			int c = lobby.clientList.Count;
+			Debug.Log("Start(): Player count: " + c);
 
-            start = false;
-            if (matchStarted)
-            {
-                startTwo = true;
-                matchStarted = false;
-            }
-            else
-            {
-                update = true;
-            }
-        }
+			if (c != 0) //Setup gameplay scene
+			{
+				playerList.Clear();
+				pScripts.Clear();
+				foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
+				{
+					if (matchStarted)
+					{
+						if (user.uid != UserUid)
+						{
+							Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
+							GameObject player = CreateNewPlayer(user, true);
+						}
+					}
+					else
+					{
+						Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
+						GameObject player = CreateNewPlayer(user);
+					}
+				}
+			}
+			Debug.Log("Start(): Player Models: " + playerList.Count);
 
-        if(update) //Updates point system & HP UI
+			start = false;
+			if (matchStarted)
+			{
+				startTwo = true;
+				matchStarted = false;
+			}
+			else
+			{
+				update = true;
+			}
+		}
+
+		if (update) //Updates point system & HP UI
 		{
             hpText.text = "HP: " + targetScript.health.ToString();
             if (!win)
             {
+                if(healthPackReceived)
+				{
+                    healthPackReceived = false;
+                    GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
+                    Debug.Log("HEALTH PACK INFO" + goArr.Length);
+                    foreach (GameObject go in goArr)
+                    {
+                        if (go.GetComponent<SimpleCollectibleScript>().id == healthPackIdReceived)
+                        {
+                            Debug.Log("RECEIVED DELETE HEALTH PACK");
+                            Destroy(go);
+                            break;
+                        }
+                    }
+                }
                 if (pScripts.Count < lobby.clientList.Count) //In case player joins mid-game
                 {
                     newPlayer = true;
@@ -238,8 +264,26 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    //End game setup
-    void GameEnd()
+	private void InstantiateHealthPacks()
+	{
+		GameObject tmpGo = Instantiate(healthPackPrefab, new Vector3(9.5f, 35.0f, -49.0f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 1;
+		tmpGo = Instantiate(healthPackPrefab, new Vector3(-96.5f, 35.0f, -31.5f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 2;
+		tmpGo = Instantiate(healthPackPrefab, new Vector3(-62.75f, 28.0f, 11.25f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 3;
+		tmpGo = Instantiate(healthPackPrefab, new Vector3(-48.5f, 17.0f, 27.0f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 4;
+		tmpGo = Instantiate(healthPackPrefab, new Vector3(-53.25f, 20.0f, 56.25f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 5;
+		tmpGo = Instantiate(healthPackPrefab, new Vector3(14.5f, 17.5f, 46.0f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 6;
+		tmpGo = Instantiate(healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity);
+		tmpGo.GetComponent<SimpleCollectibleScript>().id = 7;
+	}
+
+	//End game setup
+	void GameEnd()
     {
         Debug.Log("GameEnd(): Game finished! Kills: " + firstPlayer);
         winnerBox.SetActive(true);
@@ -435,6 +479,15 @@ public class GameplayManager : MonoBehaviour
                     writer.Write(p.uidHit);
                     p.uidHit = -1;
 
+                    //Health Pack
+                    writer.Write(healthPack);
+                    Debug.Log(healthPack +"SENDING HEALTHPACK");
+                    if (healthPack)
+					{
+                        writer.Write(healthPackId);
+                        healthPack = false;
+					}
+
                     break;
                 }
             }
@@ -510,6 +563,11 @@ public class GameplayManager : MonoBehaviour
                         }
                     }
                 }
+
+                //Health Pack
+                healthPackReceived = reader.ReadBoolean();
+                Debug.Log(healthPackReceived + "RETURN HEALTH");
+                if (healthPackReceived) healthPackIdReceived = reader.ReadInt32();
             }
         }
         data = null;
