@@ -408,32 +408,35 @@ public class GameplayManager : MonoBehaviour
         writer.Write(UserName);
 
         //Position
-        foreach (SendReceive p in pScripts)
+        lock (pScripts)
         {
-            if (p.uid == UserUid)
+            foreach (SendReceive p in pScripts)
             {
-                //Health & Kills
-                writer.Write(p.target.health);
-                writer.Write(p.kills);
+                if (p.uid == UserUid)
+                {
+                    //Health & Kills
+                    writer.Write(p.target.health);
+                    writer.Write(p.kills);
 
-                //Position
-                ushort x = ConvertToFixed(p.position.x, -130f,0.01f), y = ConvertToFixed(p.position.y, -130f,0.01f), z = ConvertToFixed(p.position.z, -130f,0.01f);
-                writer.Write(x);
-                writer.Write(y);
-                writer.Write(z);
+                    //Position
+                    ushort x = ConvertToFixed(p.position.x, -130f, 0.01f), y = ConvertToFixed(p.position.y, -130f, 0.01f), z = ConvertToFixed(p.position.z, -130f, 0.01f);
+                    writer.Write(x);
+                    writer.Write(y);
+                    writer.Write(z);
 
-                //Rotation
-                ushort ry = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
-                writer.Write(ry);
+                    //Rotation
+                    ushort ry = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
+                    writer.Write(ry);
 
-                //Weapon Action
-                writer.Write(p.gun.fire);
-                ushort rx = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
-                writer.Write(rx);
-                writer.Write(p.uidHit);
-                p.uidHit = -1;
+                    //Weapon Action
+                    writer.Write(p.gun.fire);
+                    ushort rx = ConvertToFixed(p.gunDirection.xRotation / 90.0f, -1f, 0.0001f);
+                    writer.Write(rx);
+                    writer.Write(p.uidHit);
+                    p.uidHit = -1;
 
-                break;
+                    break;
+                }
             }
         }
 
@@ -461,47 +464,50 @@ public class GameplayManager : MonoBehaviour
         string username = reader.ReadString();
 
         SendReceive pSender = null;
-        foreach (SendReceive p in pScripts)
+        lock (pScripts)
         {
-            if (p.uid == uid && uid != UserUid)
+            foreach (SendReceive p in pScripts)
             {
-                pSender = p;
-                break;
-            }
-        }
-
-        if (pSender != null)
-        {
-            //Health & Kills
-            pSender.target.health = reader.ReadInt32();
-            pSender.kills = reader.ReadInt32();
-
-            //Position
-            pSender.position.x = ConvertFromFixed(reader.ReadUInt16(),-130f,0.01f);
-            pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
-            pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f,0.01f);
-
-            //Rotation
-            pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;
-
-            //Weapon Action
-            pSender.gun.fire = reader.ReadBoolean();
-            pSender.gunDirection.xRotation = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f) * 90.0f;
-
-            pSender.updateCharacter = true;
-
-            //User who got hit
-            int _uidHit = reader.ReadInt32();
-            Debug.Log("ReceiveGameState(): Hit player: " + _uidHit);
-            if (UserUid == _uidHit)
-            {
-                foreach (SendReceive p in pScripts)
+                if (p.uid == uid && uid != UserUid)
                 {
-                    if (p.uid == UserUid)
+                    pSender = p;
+                    break;
+                }
+            }
+
+            if (pSender != null)
+            {
+                //Health & Kills
+                pSender.target.health = reader.ReadInt32();
+                pSender.kills = reader.ReadInt32();
+
+                //Position
+                pSender.position.x = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+                pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+                pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+
+                //Rotation
+                pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;
+
+                //Weapon Action
+                pSender.gun.fire = reader.ReadBoolean();
+                pSender.gunDirection.xRotation = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f) * 90.0f;
+
+                pSender.updateCharacter = true;
+
+                //User who got hit
+                int _uidHit = reader.ReadInt32();
+                Debug.Log("ReceiveGameState(): Hit player: " + _uidHit);
+                if (UserUid == _uidHit)
+                {
+                    foreach (SendReceive p in pScripts)
                     {
-                        p.target.TakeDamage(1);
-                        Debug.Log("ReceiveGameState(): Resulting health: " + p.target.health);
-                        break;
+                        if (p.uid == UserUid)
+                        {
+                            p.target.TakeDamage(1);
+                            Debug.Log("ReceiveGameState(): Resulting health: " + p.target.health);
+                            break;
+                        }
                     }
                 }
             }
