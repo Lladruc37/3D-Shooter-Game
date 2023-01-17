@@ -29,6 +29,9 @@ public class LobbyScripts : MonoBehaviour
     public Client client;
     public GameObject gameplayScene;
     public List<PlayerNetInfo> clientList = new List<PlayerNetInfo>();
+    public AudioListener mainAudioListener;
+    public AudioSource menuMusic;
+    public AudioSource gameMusic;
 
     //Cap framerate
     private void Start()
@@ -219,10 +222,11 @@ public class LobbyScripts : MonoBehaviour
 
         if (server)
         {
+            Debug.Log("LobbyScripts(): Server start...");
+            startGameButton.SetActive(false);
             server.SendPlayerList();
             manager.UserName = server.hostUsername;
             manager.UserUid = server.uid;
-            startGameButton.SetActive(false);
 
             MemoryStream stream = new MemoryStream();
             BinaryWriter writer = new BinaryWriter(stream);
@@ -235,6 +239,9 @@ public class LobbyScripts : MonoBehaviour
             server.chatManager.SendMsg(msg);
         }
 
+        mainAudioListener.enabled = false;
+        menuMusic.Stop();
+        gameMusic.Play();
         Debug.Log("LobbyScripts(): Game scene enabled...");
     }
 

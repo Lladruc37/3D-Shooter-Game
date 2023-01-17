@@ -81,6 +81,7 @@ public class GameplayManager : MonoBehaviour
     //Other UI
     Target targetScript;
     public Text hpText;
+    public AudioSource victoryJingle;
 
     //User data
     public uint UserUid;
@@ -233,6 +234,9 @@ public class GameplayManager : MonoBehaviour
                     lobby.title.enabled = true;
                     lobby.exitGameButton.SetActive(true);
                     if (server) lobby.startGameButton.SetActive(true);
+
+                    victoryJingle.Stop();
+                    lobby.menuMusic.Play();
                 }
             }
         }
@@ -261,6 +265,9 @@ public class GameplayManager : MonoBehaviour
         {
             Destroy(gO);
         }
+        lobby.mainAudioListener.enabled = true;
+        lobby.gameMusic.Stop();
+        victoryJingle.Play();
         playerList.Clear();
     }
 
@@ -377,6 +384,7 @@ public class GameplayManager : MonoBehaviour
         {
             camera.enabled = false;
         }
+        player.GetComponentInChildren<AudioListener>().enabled = false;
     }
 
     void SetupPlayer(GameObject player)
@@ -394,6 +402,7 @@ public class GameplayManager : MonoBehaviour
         {
             camera.enabled = true;
         }
+        player.GetComponentInChildren<AudioListener>().enabled = true;
     }
 
     public void SendGameState() //YOU SEND YOUR INFO
