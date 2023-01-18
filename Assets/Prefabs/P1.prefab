@@ -5405,10 +5405,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cc: {fileID: 7056015063186161629}
   cam: {fileID: 7056015063285081831}
+  sr: {fileID: 7056015063186161627}
+  gun: {fileID: 7056015062042124901}
+  direction: {x: 0, y: 0, z: 0}
+  lastDir: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   speed: 2
   height: 7.5
-  gravity: -15
   maxStrength: 8
   maxBounces: 8
   groundCheck: {fileID: 7056015063080898629}
@@ -5468,6 +5471,7 @@ MonoBehaviour:
   isControlling: 1
   updateCharacter: 0
   gm: {fileID: 0}
+  move: {fileID: 7056015063186161628}
   kills: 0
   uidHit: -1
   uidReceived: -1

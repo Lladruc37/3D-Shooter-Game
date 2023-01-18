@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Linq;
 using System.IO;
+using UnityEngine.Audio;
+using UnityEngine.Assertions.Must;
 
 public class LobbyScripts : MonoBehaviour
 {
@@ -29,6 +31,8 @@ public class LobbyScripts : MonoBehaviour
     public Client client;
     public GameObject gameplayScene;
     public List<PlayerNetInfo> clientList = new List<PlayerNetInfo>();
+    public AudioMixer mixer;
+    bool isMute = false;
     public AudioListener mainAudioListener;
     public AudioSource menuMusic;
     public AudioSource gameMusic;
@@ -36,11 +40,23 @@ public class LobbyScripts : MonoBehaviour
     //Cap framerate
     private void Start()
 	{
+        Debug.Log("Start(): Setting up app");
+        Physics.gravity = new Vector3(0.0f, -12.0f, 0.0f);
         Application.targetFrameRate = 60;
 	}
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F11))
+        {
+            isMute = !isMute;
+            AudioListener.volume = isMute? 0 : 1;
+        }
+    
+    }
+
     //Create server
-	public void Go2Create()
+    public void Go2Create()
     {
         SceneManager.LoadScene(1);
     }
@@ -154,6 +170,7 @@ public class LobbyScripts : MonoBehaviour
     public void EndServer()
     {
         Debug.Log("EndServer(): Ending server.");
+        server.Close();
         clientList.Clear();
 
         inputCanvas.GetComponent<Canvas>().enabled = true;
@@ -163,7 +180,6 @@ public class LobbyScripts : MonoBehaviour
         inputUserName.text = "";
         inputServer.text = "";
         inputChat.text = "";
-        server.Close();
         title.text = "Host a server!";
         title.enabled = true;
 
