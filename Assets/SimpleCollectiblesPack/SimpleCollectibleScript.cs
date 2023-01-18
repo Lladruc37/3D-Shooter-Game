@@ -24,7 +24,6 @@ public class SimpleCollectibleScript : MonoBehaviour
 
 	void OnTriggerEnter(Collider other)
 	{
-		Debug.Log("COLLISIONSNS");
 		if (other.tag == "Player") {
 			Collect (other.gameObject.GetComponent<Target>());
 		}
@@ -32,11 +31,9 @@ public class SimpleCollectibleScript : MonoBehaviour
 
 	public void Collect(Target t)
 	{
-		Debug.Log("PLAYER COLLISION");
-
 		if (t.health != t.maxHealth)
 		{
-			Debug.Log("HEAL");
+			Debug.Log("heal");
 			if (collectSound)
 				AudioSource.PlayClipAtPoint(collectSound, transform.position);
 			if (collectEffect)
@@ -44,6 +41,7 @@ public class SimpleCollectibleScript : MonoBehaviour
 
 			t.health = t.maxHealth;
 			t.healed = true;
+			t.healthPackId = id;
 			Destroy(gameObject);
 		}
 	}

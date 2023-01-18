@@ -23,6 +23,7 @@ public class Target : MonoBehaviour
     public float respawnTime = 5.0f;
     float deathTimer = 0.0f;
     public bool healed = false;
+    public int healthPackId = 0;
 
 	void Update()
 	{
@@ -99,6 +100,7 @@ public class Target : MonoBehaviour
         {
             healed = false;
             sr.gm.healthPack = true;
+            sr.gm.healthPackId = healthPackId;
         }
     }
 

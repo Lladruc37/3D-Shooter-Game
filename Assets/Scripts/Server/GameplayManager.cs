@@ -189,12 +189,10 @@ public class GameplayManager : MonoBehaviour
 				{
                     healthPackReceived = false;
                     GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
-                    Debug.Log("HEALTH PACK INFO" + goArr.Length);
                     foreach (GameObject go in goArr)
                     {
                         if (go.GetComponent<SimpleCollectibleScript>().id == healthPackIdReceived)
                         {
-                            Debug.Log("RECEIVED DELETE HEALTH PACK");
                             Destroy(go);
                             break;
                         }
@@ -481,7 +479,6 @@ public class GameplayManager : MonoBehaviour
 
                     //Health Pack
                     writer.Write(healthPack);
-                    Debug.Log(healthPack +"SENDING HEALTHPACK");
                     if (healthPack)
 					{
                         writer.Write(healthPackId);
@@ -566,7 +563,6 @@ public class GameplayManager : MonoBehaviour
 
                 //Health Pack
                 healthPackReceived = reader.ReadBoolean();
-                Debug.Log(healthPackReceived + "RETURN HEALTH");
                 if (healthPackReceived) healthPackIdReceived = reader.ReadInt32();
             }
         }
