@@ -16,6 +16,8 @@ public class Gun : MonoBehaviour
     public ParticleSystem muzzleFlash;
     public SendReceive playerInfo;
     public LineRenderer laserLine;
+    public AudioSource hitMarkSFX;
+    public AudioSource shot;
 
     //Gun bools
     public bool isControllingGun = false;
@@ -63,6 +65,7 @@ public class Gun : MonoBehaviour
     IEnumerator ShootLaser()
     {
         muzzleFlash.Play();
+        shot.Play();
         laserLine.enabled = true;
 
         while (fire)
@@ -83,6 +86,7 @@ public class Gun : MonoBehaviour
                     Target target = hit.collider.GetComponent<Target>();
                     if (target != null) //If the target is a player
                     {
+                        hitMarkSFX.Play();
                         hitMark.enabled = true;
                         uint uid = hit.collider.GetComponent<SendReceive>().uid;
                         Debug.Log("ShootLaser(): Hit! UID: " + uid);

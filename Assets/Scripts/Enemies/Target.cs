@@ -17,6 +17,7 @@ public class Target : MonoBehaviour
     public SendReceive sr;
     public GameObject deathBoxUI;
     public Text deathText;
+    public AudioSource hit, revive;
 
     public int health = 5;
     public int maxHealth = 5;
@@ -55,6 +56,7 @@ public class Target : MonoBehaviour
                     Debug.Log("You have respawned!");
                     controller.enabled = true;
                     this.transform.position = RandomizeSpawn();
+                    revive.Play();
                 }
                 else //another player respawns in your world
                 {
@@ -108,6 +110,10 @@ public class Target : MonoBehaviour
 
     public bool TakeDamage (int amount) //reduce HP and return true if dead
     {
+        if (sr.isControlling)
+        {
+            hit.Play();
+        }
         health -= amount;
         if (health <= 0)
         {

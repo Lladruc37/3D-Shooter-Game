@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Threading;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class SendReceive : MonoBehaviour
     public bool isControlling = false;
     public bool updateCharacter;
     public GameplayManager gm;
+    public PlayerMovement move;
 
     //Gun
     public int kills = 0;
@@ -54,6 +56,7 @@ public class SendReceive : MonoBehaviour
                         position = transform.localPosition;
                         rotation = transform.rotation.eulerAngles;
                         rotation.x = gunDirection.xRotation;
+
                         if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
                         {
                             lastHP = target.health;
@@ -93,7 +96,6 @@ public class SendReceive : MonoBehaviour
                         target.gunBodyMesh.enabled = true;
                         gun.enabled = true;
                     }
-                    this.transform.localPosition = position;
                 }
                 //TODO: LERP
             }

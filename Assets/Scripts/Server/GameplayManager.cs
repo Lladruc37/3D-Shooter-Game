@@ -81,6 +81,7 @@ public class GameplayManager : MonoBehaviour
     //Other UI
     Target targetScript;
     public Text hpText;
+    public AudioSource victoryJingle;
 
     //User data
     public uint UserUid;
@@ -257,6 +258,9 @@ public class GameplayManager : MonoBehaviour
                     lobby.title.enabled = true;
                     lobby.exitGameButton.SetActive(true);
                     if (server) lobby.startGameButton.SetActive(true);
+
+                    victoryJingle.Stop();
+                    lobby.menuMusic.Play();
                 }
             }
         }
@@ -303,6 +307,9 @@ public class GameplayManager : MonoBehaviour
         {
             Destroy(gO);
         }
+        lobby.mainAudioListener.enabled = true;
+        lobby.gameMusic.Stop();
+        victoryJingle.Play();
         playerList.Clear();
     }
 
@@ -408,9 +415,12 @@ public class GameplayManager : MonoBehaviour
 
     void SetupOtherPlayer(GameObject player)
 	{
-        player.GetComponent<CharacterController>().enabled = false;
+        player.GetComponent<CharacterController>().enabled = true;
         player.GetComponent<CapsuleCollider>().enabled = true;
-        player.GetComponent<PlayerMovement>().enabled = false;
+        player.GetComponent<PlayerMovement>().enabled = true;
+        //Rigidbody rb = player.AddComponent<Rigidbody>();
+        //rb.constraints = RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+        //rb.useGravity = false;
         player.GetComponent<SendReceive>().isControlling = false;
         player.GetComponentInChildren<MouseLook>().enabled = false;
         player.GetComponentInChildren<Gun>().isControllingGun = false;
@@ -419,6 +429,7 @@ public class GameplayManager : MonoBehaviour
         {
             camera.enabled = false;
         }
+        player.GetComponentInChildren<AudioListener>().enabled = false;
     }
 
     void SetupPlayer(GameObject player)
@@ -436,6 +447,7 @@ public class GameplayManager : MonoBehaviour
         {
             camera.enabled = true;
         }
+        player.GetComponentInChildren<AudioListener>().enabled = true;
     }
 
     public void SendGameState() //YOU SEND YOUR INFO
@@ -465,6 +477,15 @@ public class GameplayManager : MonoBehaviour
                     writer.Write(x);
                     writer.Write(y);
                     writer.Write(z);
+
+                    //Direction
+                    ushort dx = ConvertToFixed(p.move.direction.x, -1f, 0.0001f),
+                        dy = ConvertToFixed(p.move.direction.y, -1f, 0.0001f),
+                        dz = ConvertToFixed(p.move.direction.z, -1f, 0.0001f);
+
+                    writer.Write(dx);
+                    writer.Write(dy);
+                    writer.Write(dz);
 
                     //Rotation
                     ushort ry = ConvertToFixed(p.rotation.y / 360.0f, 0.0f, 0.0001f);
@@ -535,6 +556,11 @@ public class GameplayManager : MonoBehaviour
                 pSender.position.x = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
                 pSender.position.y = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
                 pSender.position.z = ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
+
+                //Direction
+                pSender.move.direction.x = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f);
+                pSender.move.direction.y = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f);
+                pSender.move.direction.z = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f);
 
                 //Rotation
                 pSender.rotation.y = ConvertFromFixed(reader.ReadUInt16(), 0.0f, 0.0001f) * 360.0f;

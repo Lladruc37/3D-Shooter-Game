@@ -6,17 +6,20 @@ public class PlayerMovement : MonoBehaviour
 {
     public CharacterController cc;
     public Camera cam;
+    public SendReceive sr;
+    public Gun gun;
 
     //movement
-    Vector3 direction = new Vector3();
+    public Vector3 direction = new Vector3();
+    public Vector3 lastDir= new Vector3();
     public Vector3 velocity;
     public float speed = 12.0f;
     public float height = 15.0f;
-    public float gravity = -12.0f;
     public float maxStrength = 20.0f;
     public int maxBounces = 5;
     int currentBounceCount = 0;
     float currentStrength = 0.0f;
+    //float groundLevel = 0.735f;
 
     //ground & gun
     public Transform groundCheck;
@@ -29,7 +32,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         //Move with WASD in god mode
-        if (GodMode)
+        if (GodMode && sr.isControlling)
         {
             //Gravity
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
@@ -37,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
             //Jump
             if (Input.GetButtonDown("Jump") && isGrounded)
             {
-                velocity.y = Mathf.Sqrt(3 * -2 * gravity);
+                velocity.y = Mathf.Sqrt(3 * -2 * Physics.gravity.y);
             }
 
             //Move with WASD inputs
@@ -54,13 +57,34 @@ public class PlayerMovement : MonoBehaviour
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
             
             //Shooting depending on the camera rotaion
-            if (Input.GetButtonDown("Fire1") && Cursor.lockState == CursorLockMode.Locked)
+            if (sr.isControlling)
             {
-                velocity = Vector3.zero;
-                if (isGrounded) velocity.y += Mathf.Sqrt(height * -0.1f * gravity);
-                direction = cam.transform.forward;
-                currentBounceCount = maxBounces;
-                currentStrength = maxStrength;
+                if (Input.GetButtonDown("Fire1") && Cursor.lockState == CursorLockMode.Locked)
+                {
+                    velocity = Vector3.zero;
+                    if (isGrounded) velocity.y += Mathf.Sqrt(height * -0.1f * Physics.gravity.y);
+                    direction = cam.transform.forward;
+                    currentBounceCount = maxBounces;
+                    currentStrength = maxStrength;
+                }
+            }
+            else
+            {
+                if (lastDir != direction || gun.fire)
+                {
+                    velocity = Vector3.zero;
+                    if (isGrounded) velocity.y += Mathf.Sqrt(height * -0.1f * Physics.gravity.y);
+                    currentBounceCount = maxBounces;
+                    currentStrength = maxStrength;
+
+                    this.transform.localPosition = sr.position;
+                    lastDir = direction;
+                }
+
+                if (Vector3.Distance(this.transform.localPosition, sr.position) >= 0.5f)
+                {
+                    this.transform.localPosition = sr.position;
+                }
             }
 
             //Handles bounces impact from the recoil
@@ -75,6 +99,9 @@ public class PlayerMovement : MonoBehaviour
             }
             if (cc.enabled) cc.Move(impact * speed * Time.deltaTime);
         }
+        
+        //Movement calculations
+        velocity.y += Physics.gravity.y * Time.deltaTime;
 
         //Handles bounces
         if (isGrounded && velocity.y < 0)
@@ -91,8 +118,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        //Movement calculations
-        velocity.y += gravity * Time.deltaTime;
         if (cc.enabled) cc.Move(velocity * Time.deltaTime);
     }
 }
