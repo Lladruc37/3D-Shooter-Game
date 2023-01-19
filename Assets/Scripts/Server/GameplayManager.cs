@@ -96,11 +96,12 @@ public class GameplayManager : MonoBehaviour
     public List<Vector3> spawnpoints = new List<Vector3>();
 
     //Health Packs
+    public GameObject healthPackPrefab;
+    public List<SimpleCollectibleScript> healthPacks = new List<SimpleCollectibleScript>();
     bool healthPackReceived = false;
     public bool healthPack = false;
     public int healthPackId = 0;
     public int healthPackIdReceived = 0;
-    public GameObject healthPackPrefab;
 
     void Update()
     {
@@ -139,10 +140,67 @@ public class GameplayManager : MonoBehaviour
 			spawnpoints.Add(new Vector3(-95.0f, 78.0f, -86.0f));
 			spawnpoints.Add(new Vector3(10.0f, 78.0f, -86.0f));
 
-			//Health Packs
-            if (!matchStarted) InstantiateHealthPacks();
+            //Health Packs
+            if (!matchStarted)
+            {
+                InstantiateHealthPacks();
+            }
+			else
+			{
+                List<SimpleCollectibleScript> tmpList = new List<SimpleCollectibleScript>();
+                foreach (SimpleCollectibleScript hp in healthPacks)
+                {
+                    Vector3 hpPos = new Vector3();
+                    switch (hp.id)
+                    {
+                        case 1:
+                            {
+                                hpPos = new Vector3(9.5f, 35.0f, -49.0f);
+                                break;
+                            }
+                        case 2:
+                            {
+                                hpPos = new Vector3(-96.5f, 35.0f, -31.5f);
+                                break;
+                            }
+                        case 3:
+                            {
+                                hpPos = new Vector3(-62.75f, 28.0f, 11.25f);
+                                break;
+                            }
+                        case 4:
+                            {
+                                hpPos = new Vector3(-48.5f, 17.0f, 27.0f);
+                                break;
+                            }
+                        case 5:
+                            {
+                                hpPos = new Vector3(-53.25f, 20.0f, 56.25f);
+                                break;
+                            }
+                        case 6:
+                            {
+                                hpPos = new Vector3(14.5f, 17.5f, 46.0f);
+                                break;
+                            }
+                        case 7:
+                            {
+                                hpPos = new Vector3(-14.5f, 17.5f, -14.75f);
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                    }
+                    SimpleCollectibleScript newHp = Instantiate(healthPackPrefab, hpPos, Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+                    newHp.id = hp.id;
+                    tmpList.Add(newHp);
+                }
+                healthPacks = tmpList;
+            }
 
-			Application.targetFrameRate = 60;
+            Application.targetFrameRate = 60;
 			int c = lobby.clientList.Count;
 			Debug.Log("Start(): Player count: " + c);
 
@@ -150,6 +208,7 @@ public class GameplayManager : MonoBehaviour
 			{
 				playerList.Clear();
 				pScripts.Clear();
+                int i = 0;
 				foreach (PlayerNetInfo user in lobby.clientList) //Add players to the list & instantiates them in the world
 				{
 					if (matchStarted)
@@ -165,6 +224,8 @@ public class GameplayManager : MonoBehaviour
 						Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
 						GameObject player = CreateNewPlayer(user);
 					}
+                    ++i;
+                    Debug.Log("COUNT MID GAME: " + i);
 				}
 			}
 			Debug.Log("Start(): Player Models: " + playerList.Count);
@@ -189,12 +250,13 @@ public class GameplayManager : MonoBehaviour
                 if(healthPackReceived)
 				{
                     healthPackReceived = false;
-                    GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
-                    foreach (GameObject go in goArr)
+                    foreach (SimpleCollectibleScript hp in healthPacks)
                     {
-                        if (go.GetComponent<SimpleCollectibleScript>().id == healthPackIdReceived)
+                        if (hp.id == healthPackIdReceived)
                         {
-                            Destroy(go);
+                            GameObject tmp = hp.gameObject;
+                            healthPacks.Remove(hp);
+                            Destroy(tmp);
                             break;
                         }
                     }
@@ -267,27 +329,33 @@ public class GameplayManager : MonoBehaviour
 
     private void InstantiateHealthPacks()
     {
-        GameObject tmpGo = Instantiate(healthPackPrefab, new Vector3(9.5f, 35.0f, -49.0f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 1;
-        tmpGo = Instantiate(healthPackPrefab, new Vector3(-96.5f, 35.0f, -31.5f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 2;
-        tmpGo = Instantiate(healthPackPrefab, new Vector3(-62.75f, 28.0f, 11.25f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 3;
-        tmpGo = Instantiate(healthPackPrefab, new Vector3(-48.5f, 17.0f, 27.0f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 4;
-        tmpGo = Instantiate(healthPackPrefab, new Vector3(-53.25f, 20.0f, 56.25f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 5;
-        tmpGo = Instantiate(healthPackPrefab, new Vector3(14.5f, 17.5f, 46.0f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 6;
-        tmpGo = Instantiate(healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity);
-        tmpGo.GetComponent<SimpleCollectibleScript>().id = 7;
+        SimpleCollectibleScript hp = Instantiate(healthPackPrefab, new Vector3(9.5f, 35.0f, -49.0f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 1;
+        healthPacks.Add(hp);
+        hp = Instantiate(healthPackPrefab, new Vector3(-96.5f, 35.0f, -31.5f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 2;
+        healthPacks.Add(hp);
+        hp = Instantiate(healthPackPrefab, new Vector3(-62.75f, 28.0f, 11.25f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 3;
+        healthPacks.Add(hp);
+        hp = Instantiate(healthPackPrefab, new Vector3(-48.5f, 17.0f, 27.0f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 4;
+        healthPacks.Add(hp);
+        hp = Instantiate(healthPackPrefab, new Vector3(-53.25f, 20.0f, 56.25f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 5;
+        healthPacks.Add(hp);
+        hp = Instantiate(healthPackPrefab, new Vector3(14.5f, 17.5f, 46.0f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 6;
+        healthPacks.Add(hp);
+        hp = Instantiate(healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity).GetComponent<SimpleCollectibleScript>();
+        hp.id = 7;
+        healthPacks.Add(hp);
     }
     public void DeleteHealthPacks()
     {
-        GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
-        foreach (GameObject go in goArr)
+        foreach (SimpleCollectibleScript hp in healthPacks)
         {
-            Destroy(go);
+            Destroy(hp.gameObject);
         }
     }
 

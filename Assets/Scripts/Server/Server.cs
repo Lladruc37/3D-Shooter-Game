@@ -332,11 +332,10 @@ public class Server : MonoBehaviour
                                         writerHello.Write(z);
                                     }
 
-                                    GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
-                                    writerHello.Write(goArr.Length);
-                                    foreach (GameObject go in goArr)
+                                    writerHello.Write(manager.healthPacks.Count);
+                                    foreach (SimpleCollectibleScript go in manager.healthPacks)
                                     {
-                                        writerHello.Write(go.GetComponent<SimpleCollectibleScript>().id);
+                                        writerHello.Write(go.id);
                                     }
                                 }
 

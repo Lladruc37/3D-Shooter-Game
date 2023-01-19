@@ -25,10 +25,19 @@ public class Target : MonoBehaviour
     float deathTimer = 0.0f;
     public bool healed = false;
     public int healthPackId = 0;
+    bool damageTaken = false;
 
 	void Update()
 	{
-		if(health <= 0)
+        if(damageTaken)
+		{
+            damageTaken = false;
+            if (sr.isControlling)
+            {
+                hit.Play();
+            }
+        }
+        if (health <= 0)
 		{
             if (deathTimer <= 0.0f) //first frame you are dead
             {
@@ -104,6 +113,7 @@ public class Target : MonoBehaviour
             healed = false;
             sr.gm.healthPack = true;
             sr.gm.healthPackId = healthPackId;
+            sr.gm.healthPacks.Remove(sr.gm.healthPacks.Find(s => s.id == healthPackId));
         }
     }
 
@@ -111,10 +121,7 @@ public class Target : MonoBehaviour
 
     public bool TakeDamage (int amount) //reduce HP and return true if dead
     {
-        if (sr.isControlling)
-        {
-            hit.Play();
-        }
+        damageTaken = true;
         health -= amount;
         if (health <= 0)
         {
