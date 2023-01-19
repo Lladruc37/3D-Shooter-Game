@@ -266,26 +266,34 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-	private void InstantiateHealthPacks()
-	{
-		GameObject tmpGo = Instantiate(healthPackPrefab, new Vector3(9.5f, 35.0f, -49.0f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 1;
-		tmpGo = Instantiate(healthPackPrefab, new Vector3(-96.5f, 35.0f, -31.5f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 2;
-		tmpGo = Instantiate(healthPackPrefab, new Vector3(-62.75f, 28.0f, 11.25f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 3;
-		tmpGo = Instantiate(healthPackPrefab, new Vector3(-48.5f, 17.0f, 27.0f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 4;
-		tmpGo = Instantiate(healthPackPrefab, new Vector3(-53.25f, 20.0f, 56.25f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 5;
-		tmpGo = Instantiate(healthPackPrefab, new Vector3(14.5f, 17.5f, 46.0f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 6;
-		tmpGo = Instantiate(healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity);
-		tmpGo.GetComponent<SimpleCollectibleScript>().id = 7;
-	}
+    private void InstantiateHealthPacks()
+    {
+        GameObject tmpGo = Instantiate(healthPackPrefab, new Vector3(9.5f, 35.0f, -49.0f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 1;
+        tmpGo = Instantiate(healthPackPrefab, new Vector3(-96.5f, 35.0f, -31.5f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 2;
+        tmpGo = Instantiate(healthPackPrefab, new Vector3(-62.75f, 28.0f, 11.25f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 3;
+        tmpGo = Instantiate(healthPackPrefab, new Vector3(-48.5f, 17.0f, 27.0f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 4;
+        tmpGo = Instantiate(healthPackPrefab, new Vector3(-53.25f, 20.0f, 56.25f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 5;
+        tmpGo = Instantiate(healthPackPrefab, new Vector3(14.5f, 17.5f, 46.0f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 6;
+        tmpGo = Instantiate(healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity);
+        tmpGo.GetComponent<SimpleCollectibleScript>().id = 7;
+    }
+    private void DeleteHealthPacks()
+    {
+        GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
+        foreach (GameObject go in goArr)
+        {
+            Destroy(go);
+        }
+    }
 
-	//End game setup
-	void GameEnd()
+    //End game setup
+    void GameEnd()
     {
         Debug.Log("GameEnd(): Game finished! Kills: " + firstPlayer);
         winnerBox.SetActive(true);
@@ -295,6 +303,7 @@ public class GameplayManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         winnerTimer = 0.0f;
         if (server) RandomizeSpawnPoints();
+        DeleteHealthPacks();
         foreach (SendReceive p in pScripts)
 		{
             if (firstPlayer == p.kills) SendGameState();

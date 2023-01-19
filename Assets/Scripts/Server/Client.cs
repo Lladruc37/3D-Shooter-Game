@@ -233,6 +233,61 @@ public class Client : MonoBehaviour
                                             newPlayer.position.z = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
                                             manager.pScriptsMidGame.Add(newPlayer);
                                         }
+                                        count = reader.ReadInt32();
+                                        for(int i = 0; i != count; ++i)
+										{
+                                            int healthPackId = reader.ReadInt32();
+                                            GameObject tmpGo = null;
+                                            switch (healthPackId)
+                                            {
+                                                case 1:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(9.5f, 35.0f, -49.0f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 1;
+                                                        break;
+                                                    }
+                                                case 2:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(-96.5f, 35.0f, -31.5f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 2;
+                                                        break;
+                                                    }
+                                                case 3:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(-62.75f, 28.0f, 11.25f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 3;
+                                                        break;
+                                                    }
+                                                case 4:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(-48.5f, 17.0f, 27.0f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 4;
+                                                        break;
+                                                    }
+                                                case 5:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(-53.25f, 20.0f, 56.25f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 5;
+                                                        break;
+                                                    }
+                                                case 6:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(14.5f, 17.5f, 46.0f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 6;
+                                                        break;
+                                                    }
+                                                case 7:
+                                                    {
+                                                        tmpGo = Instantiate(manager.healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity);
+                                                        tmpGo.GetComponent<SimpleCollectibleScript>().id = 7;
+                                                        break;
+                                                    }
+                                                default:
+                                                    {
+                                                        break;
+                                                    }
+                                            }
+										}
                                     }
                                     Thread.Sleep(100);
                                     break;
