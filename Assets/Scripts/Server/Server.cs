@@ -324,19 +324,20 @@ public class Server : MonoBehaviour
                                     writerHello.Write(manager.pScripts.Count);
                                     foreach(SendReceive sr in manager.pScripts)
                                     {
+                                        Debug.Log("ReceiveServer(): Sending data of " + sr.uid + " - " + sr.username);
                                         writerHello.Write(sr.uid);
                                         ushort x = manager.ConvertToFixed(sr.position.x, -130f, 0.01f), y = manager.ConvertToFixed(sr.position.y, -130f, 0.01f), z = manager.ConvertToFixed(sr.position.z, -130f, 0.01f);
                                         writerHello.Write(x);
                                         writerHello.Write(y);
                                         writerHello.Write(z);
                                     }
+
                                     GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
                                     writerHello.Write(goArr.Length);
                                     foreach (GameObject go in goArr)
                                     {
                                         writerHello.Write(go.GetComponent<SimpleCollectibleScript>().id);
                                     }
-
                                 }
 
                                 MemoryStream streamChat = new MemoryStream();

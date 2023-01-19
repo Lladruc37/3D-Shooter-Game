@@ -1,15 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-[RequireComponent(typeof(AudioSource))]
 public class SimpleCollectibleScript : MonoBehaviour
 {
 	public bool rotate = true;
 	public int id = 0;
 	public float rotationSpeed = 1.0f;
-	public AudioClip collectSound;
-	public GameObject collectEffect;
 
 	// Use this for initialization
 	void Start ()
@@ -34,10 +30,6 @@ public class SimpleCollectibleScript : MonoBehaviour
 		if (t.health != t.maxHealth)
 		{
 			Debug.Log("heal");
-			if (collectSound)
-				AudioSource.PlayClipAtPoint(collectSound, transform.position);
-			if (collectEffect)
-				Instantiate(collectEffect, transform.position, Quaternion.identity);
 
 			t.health = t.maxHealth;
 			t.healed = true;

@@ -216,6 +216,7 @@ public class LobbyScripts : MonoBehaviour
             Destroy(sr.gameObject);
         }
 
+        manager.DeleteHealthPacks();
         manager.pScripts.Clear();
         manager.playerList.Clear();
 
@@ -225,6 +226,9 @@ public class LobbyScripts : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
 
         lobbyCanvas.GetComponent<Canvas>().enabled = true;
+
+        menuMusic.Play();
+        gameMusic.Stop();
     }
 
     //Called when game starts

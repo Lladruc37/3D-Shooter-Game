@@ -140,7 +140,7 @@ public class GameplayManager : MonoBehaviour
 			spawnpoints.Add(new Vector3(10.0f, 78.0f, -86.0f));
 
 			//Health Packs
-			InstantiateHealthPacks();
+            if (!matchStarted) InstantiateHealthPacks();
 
 			Application.targetFrameRate = 60;
 			int c = lobby.clientList.Count;
@@ -209,7 +209,6 @@ public class GameplayManager : MonoBehaviour
                             GameObject player = CreateNewPlayer(p);
                         }
                     }
-
                 }
                 else if (pScripts.Count > lobby.clientList.Count) //In case player leaves mid-game
                 {
@@ -283,7 +282,7 @@ public class GameplayManager : MonoBehaviour
         tmpGo = Instantiate(healthPackPrefab, new Vector3(-14.5f, 17.5f, -14.75f), Quaternion.identity);
         tmpGo.GetComponent<SimpleCollectibleScript>().id = 7;
     }
-    private void DeleteHealthPacks()
+    public void DeleteHealthPacks()
     {
         GameObject[] goArr = GameObject.FindGameObjectsWithTag("Collectible");
         foreach (GameObject go in goArr)
@@ -427,9 +426,6 @@ public class GameplayManager : MonoBehaviour
         player.GetComponent<CharacterController>().enabled = true;
         player.GetComponent<CapsuleCollider>().enabled = true;
         player.GetComponent<PlayerMovement>().enabled = true;
-        //Rigidbody rb = player.AddComponent<Rigidbody>();
-        //rb.constraints = RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
-        //rb.useGravity = false;
         player.GetComponent<SendReceive>().isControlling = false;
         player.GetComponentInChildren<MouseLook>().enabled = false;
         player.GetComponentInChildren<Gun>().isControllingGun = false;
@@ -557,6 +553,8 @@ public class GameplayManager : MonoBehaviour
 
             if (pSender != null)
             {
+                pSender.updateCharacter = true;
+
                 //Health & Kills
                 pSender.target.health = reader.ReadInt32();
                 pSender.kills = reader.ReadInt32();
@@ -577,8 +575,6 @@ public class GameplayManager : MonoBehaviour
                 //Weapon Action
                 pSender.gun.fire = reader.ReadBoolean();
                 pSender.gunDirection.xRotation = ConvertFromFixed(reader.ReadUInt16(), -1f, 0.0001f) * 90.0f;
-
-                pSender.updateCharacter = true;
 
                 //User who got hit
                 int _uidHit = reader.ReadInt32();

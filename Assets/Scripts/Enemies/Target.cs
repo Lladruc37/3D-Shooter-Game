@@ -17,7 +17,7 @@ public class Target : MonoBehaviour
     public SendReceive sr;
     public GameObject deathBoxUI;
     public Text deathText;
-    public AudioSource hit, revive;
+    public AudioSource hit, revive, collectSound;
 
     public int health = 5;
     public int maxHealth = 5;
@@ -100,6 +100,7 @@ public class Target : MonoBehaviour
     {
         if (other.tag == "Collectible" && healed)
         {
+            collectSound.Play();
             healed = false;
             sr.gm.healthPack = true;
             sr.gm.healthPackId = healthPackId;

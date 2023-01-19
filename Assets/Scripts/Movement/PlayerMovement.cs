@@ -77,13 +77,8 @@ public class PlayerMovement : MonoBehaviour
                     currentBounceCount = maxBounces;
                     currentStrength = maxStrength;
 
-                    this.transform.localPosition = sr.position;
+                    this.transform.position = sr.position;
                     lastDir = direction;
-                }
-
-                if (Vector3.Distance(this.transform.localPosition, sr.position) >= 0.5f)
-                {
-                    this.transform.localPosition = sr.position;
                 }
             }
 
@@ -119,5 +114,13 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (cc.enabled) cc.Move(velocity * Time.deltaTime);
+
+        if (!sr.isControlling)
+        {
+            if (Vector3.Distance(this.transform.position, sr.position) >= 0.5f)
+            {
+                this.transform.position = sr.position;
+            }
+        }
     }
 }

@@ -49,7 +49,6 @@ public class SendReceive : MonoBehaviour
                 {
                     if (myTimer >= interpolationTimer || gm.newPlayer) //Send information in a short period of time
                     {
-                        gm.newPlayer = false;
                         target.bodyMesh.enabled = true;
                         target.gunBarrelMesh.enabled = true;
                         target.gunBodyMesh.enabled = true;
@@ -57,8 +56,9 @@ public class SendReceive : MonoBehaviour
                         rotation = transform.rotation.eulerAngles;
                         rotation.x = gunDirection.xRotation;
 
-                        if (Vector3.Distance(lastp, position) > 0.0f || Vector3.Angle(lastr, rotation) > 0.0f || gun.fire || lastHP != target.health)
+                        if (Vector3.Distance(lastp, position) > 0.0f || lastr != rotation || gun.fire || lastHP != target.health || gm.newPlayer)
                         {
+                            gm.newPlayer = false;
                             lastHP = target.health;
                             lastp = position;
                             lastr = rotation;
