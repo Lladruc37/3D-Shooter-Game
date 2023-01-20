@@ -1,17 +1,29 @@
 # **Backfired!:** A 3D Shooter Game
-We are developing a 3D shooter game for the Networks and Online Games subject of the Videogame Development & Design bachelor's degree.
+We are developing a 3D shooter game for the Networks and Online Games subject of the Videogame Development & Design bachelor's degree. The intended goal is to have 4 different players in the game.
 
-[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=share_link) and [link to see the Exercise 4: World State Replication](https://drive.google.com/file/d/1Gcl3fany79bvKzFyl4_L0UMVU383DUOp/view?usp=share_link) (UPC Login is required)
-[Link to the GiHub Repository](https://github.com/Lladruc37/3D-Shooter-Game)
+[Link to Drive to see the deliveries](https://drive.google.com/drive/folders/1cDQBShDQWu6GQNSsq3fKlyPHRGm_DSiF?usp=share_link) and [link to see Exercise 4: World State Replication](https://drive.google.com/file/d/1Gcl3fany79bvKzFyl4_L0UMVU383DUOp/view?usp=share_link) (UPC Login is required)
+[Link to the GitHub Repository](https://github.com/Lladruc37/3D-Shooter-Game)
 
 ### About the game
-_Backfired!_ is a FPS where the end goal is to get 5 points. The twist is that, when you shoot, you are also move backwards, which can be used to jump and move in a fun and unique way. The intended goal is to have 4 different players in the game.
+_Backfired!_ is an FPS free-for-all where the end goal is to get 5 points. Here's the twist, when you shoot you are also moved backwards, which can be used to jump and move in a fun and unique way. All the players can't move by any other means they would expect.
+
+### Networking Aspects
+- Connectivity method: We use _**UDP**_ since our game is a FPS we want a fast connectivity even if we lose some packets.
+- Syncronization model: We use _**snapshot interpolation**_ in combination with _**state interpolation**_.
+- Network architecture: Our game has a _**client-server architecture**_ and the server is not authorative since the server is listen-based.
+- Object replication: We have the _**4 steps**_ that are recomended (mark, uniquely identify, indicate class, serialize) however we don't send multiple objects per packet since each client only sends their _**own player object**_.
+- Object serialization: We use _**streams**_ to send the data. The structure we use is:
+	- Header (information about the packet type and who is sending it).
+	- Data (depending on the packet type).
+- Snapshot compression: We use _**fixed point**_ to send less data losing very little precision. We also use _**geometry compression**_ to use 3 numbers instead of 4 for the rotation.
+- Latency hiding: We use _**client side prediction**_ with _**client side interpolation**_ to have both the smoothness of interpolating between packets and have less frames of delay.
+- Scalability: We use _**instanciating**_ both for the players and the healthpacks.
 
 ### Team Contributions:
-- [Sergi Colomer](https://github.com/Lladruc37): Bug Fixing & QA, Ping System
-- [Guillem Alava](https://github.com/WillyTrek19): Bug Fixing & Optimizations, Ingame Console, Ping System
-- [Carles López](https://github.com/carlesli): Bug Fixing & QA, Gameplay
-- [Núria Lamonja](https://github.com/Needlesslord): Bug Fixing & Optimizations
+- [Sergi Colomer](https://github.com/Lladruc37): UI, Gameplay, Ping System, Sockets & Ports, Server to Client comunication, Chat, UIDs, Lock protection, Lerping, Closing Connections, Bug Fixing & Optimizations, QA
+- [Guillem Alava](https://github.com/WillyTrek19): UI, Gameplay, Ping System, Scenes Creation & Structure, Chat, UIDs, Lock protection, Lerping, Music & SFX, Closing Connections, Ingame Console, Bug Fixing & Optimizations, QA
+- [Carles López](https://github.com/carlesli): Gameplay, Bug Fixing, QA
+- [Núria Lamonja](https://github.com/Needlesslord): Bug Fixing, QA
 
 ### Instructions to start the game:
 
@@ -19,7 +31,7 @@ As of now, Backfired! only works on LAN.
 
 - If working with 2 or more separate computers:
      - Load HostJoin scene
-     - Press "Create" in one PC, "Join" in the others
+     - Press "Create" on one PC and "Join" on the others
 
 - If working on the same computer (as shown in the demo video):
     - Build the project with the following scenes
@@ -29,32 +41,28 @@ As of now, Backfired! only works on LAN.
     - Open any instances of the .exe generated in the same computer
 
 #### How to Play
-To create a server:
-- Fill-in the input fields and press the corresponding button
+Creating/Joining a lobby:
+- Fill in the input fields and press the corresponding button
      - As the Host, you will be asked for your name and the server's name
      - As a Player, you will be asked for your name and the server's IP
      
-To play:
- - To unlock the mouse view used to aim, press [F1]. To lock it again, press it again.
- - To chat, simply type whatever you want in the input fields after joining/hosting and press Return to send a message. If you want to use the funcion in-game, you need to press [F1] first and to continue playing, it has to be locked again to continue playing
- - To shoot press [M1]. You can use it also to boost yourself up in the air
- - To look backwards press [M2] or [Alt].
- - Use the mouse to control where the camera points
- - To activate console press [F12]
+In-game Features:
+ - To toggle locking & unlocking the mouse, press [F1].
+ - To chat, click on the input field and simply write whatever you want and press Return to send the message.
+ - To shoot press [M1]. This is used both for shooting at your enemy and for movement.
+ - To look behind you press [M2] or [Left Alt].
+ - Use the mouse to control where the camera points.
+ - To mute all sound press [F11].
+ - To activate the in-game console press [F12].
 
 ### Changes/Errors fixed from previous delivery:
-- Added an ingame console to showcase the commands "Debug.Log" inbuild. This has made debugging much easier.
-- Solved the lag issue. It was due to an overuse of the function "Thread.Sleep()". We have reduced the times and removed unnecessary calls of such functions.
-- Removed all usage of strings and special characters from packets. All packets are now sent as raw data from a MemoryStream, and use IDS to identify the type of package sent (declared in GameplayManager.cs). We have also reduced the size of packets send from 1024 bytes to multiples of 256 bytes (256 being the smallest size).
-- Players are now instantiated instead of prefixed to a set number of characters and spawn in a random position. Therefore, there's no limit to how many players can join in the same game. Players can now join and leave in the middle of the match, and the server will update the games accordingly.
-- Sockets & server now closed properly. No warnings appear regarding aborted threads and aborted connections (to our knowledge).
-- Added a ping system that constantly sends and recieves information to ensure that the connection is still active. If a time has passed without recieving pings from a lagging/disconnected user, the player is removed from the server entirely. If a user doesn't recieve pings from a server, they return to the "Join server" screen.
-- Reduced the amount of lists/dictionaries used in the application from 6 to 3 (1 for networking & 2 for the game). All info regarding the clients is now stored in the same class (Also in GameplayManager.cs)
+- When a player joins, information about all players is sent, even if they aren't moving.
+- The players now spawn in a random spawnpoint of a few. By doing this, we don't have to worry about the problem of spawning inside a building or too close to another player.
+- We added lock protection to the lists that could be modified and read simultaniously.
 
 ### Known bugs:
-- If players are completely still when a new player joins, their positions won't be updated for the joining user. This is because packages of updated positions are only sent when players changed positions.
-- POLTERBUG: Player may appear inside of a building when spawning (when starting game or after death) or outside the arena alltogether. The first instance (inside the building spawn) we have tried to fix it by using "Physics.CheckSphere" & "Physics.CheckCapsule" with specific hitboxes and, as of this delivery, it happens only 1 - 5% of the time. The second one (outside the arena spawn) we don't know why it happens, and it's extremely rare. We theorize it is due package sending issues (a package is sent with an erroneous position that overrides the random spawn position update).
-- Due to delays between threads, there may be instances when the exception "InvalidOperationException: Collection was modified; enumeration operation may not execute" appears and stops the connection alltogether. This is because there are times in which lists are being modified as other threads are using them. However, from our testing, this is extremely rare, as the code is fast/optimized enough so that they don't coincide often. We believe it happens more when, for example, the server is ran in the Unity Engine directly and the users are ran in builds, when there's jitter/slow internet connections or when too many packages are sent due to the amount of players connected in the same match (as in, for example, 15 - 20 players at the same time).
+- If the server is completely still when a new client joins mid-game, they won't see this player until they move themselves or even the mouse.
+- Sometimes lerping and correcting the error makes the world desync a little bit (very little from our testing).
 
 ### Credits:
 - Environment used by _ZENRIN CO., LTD._, available in the [Unity Asset Store](https://assetstore.unity.com/packages/3d/environments/urban/japanese-otaku-city-20359)
