@@ -4,18 +4,20 @@ using UnityEngine;
 
 public class MouseLook : MonoBehaviour
 {
+    //Cameras
     public Camera lobbyCamera;
     public Camera playerCam;
     public Camera camBack;
-    public bool start = false;
 
+    //Internal
+    public bool start = false;
     public float sensibility = 100.0f;
     public Transform playerBody;
     public float xRotation;
 
     void Update()
     {
-        if (start) //game starts
+        if (start) //Game starts
         {
             start = false;
             lobbyCamera.enabled = false;
@@ -25,7 +27,7 @@ public class MouseLook : MonoBehaviour
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.F1)) // lock/unlock mouse
+            if (Input.GetKeyDown(KeyCode.F1)) // Lock/unlock mouse
             {
                 switch(Cursor.lockState)
                 {
@@ -41,7 +43,7 @@ public class MouseLook : MonoBehaviour
                         }
                 }
             }
-            if (Input.GetButton("Fire2")) //back camera
+            if (Input.GetButton("Fire2")) //Back camera
             {
                 playerCam.enabled = false;
                 camBack.enabled = true;
@@ -52,7 +54,7 @@ public class MouseLook : MonoBehaviour
                 camBack.enabled = false;
             }
 
-            if (Cursor.lockState == CursorLockMode.Locked) //camera rotation using the mouse
+            if (Cursor.lockState == CursorLockMode.Locked) //Camera rotation using the mouse
             {
                 float mouseX = Input.GetAxis("Mouse X") * sensibility * Time.deltaTime;
                 float mouseY = Input.GetAxis("Mouse Y") * sensibility * Time.deltaTime;

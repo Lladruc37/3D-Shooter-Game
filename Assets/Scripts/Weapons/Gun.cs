@@ -11,6 +11,7 @@ public class Gun : MonoBehaviour
     public float range = 100f;
     public float laserDuration = 0.05f;
 
+    //UI
     public Image hitMark;
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
@@ -96,26 +97,7 @@ public class Gun : MonoBehaviour
                             if (target.TakeDamage(1))
                             {
                                 playerInfo.kills++;
-                                MemoryStream streamDeath = new MemoryStream();
-                                BinaryWriter writerDeath = new BinaryWriter(streamDeath);
-                                writerDeath.Write(false);
-                                writerDeath.Write((byte)packetType.chat);
-                                if (playerInfo.gm.server)
-                                {
-                                    Debug.Log("Server has killed user!!!!!!!!!!!!!!!");
-                                    string msg = "\n[" + playerInfo.username + "]>>" + hit.collider.name + " has been killed by " + playerInfo.username + "!";
-                                    writerDeath.Write(msg);
-                                    playerInfo.gm.server.newMessage = true;
-                                    playerInfo.gm.server.stringData = msg;
-                                    playerInfo.gm.server.BroadcastServerInfo(streamDeath);
-                                }
-                                else if (playerInfo.gm.client)
-                                {
-                                    Debug.Log("User has killed server!!!!!!!!!!!!!!!");
-                                    writerDeath.Write(playerInfo.uid);
-                                    writerDeath.Write(hit.collider.name + " has been killed by " + playerInfo.username + "!");
-                                    playerInfo.gm.client.SendInfo(streamDeath);
-                                }
+                                SendDeathMessage(hit.collider.name);
                             }
                         }
                     }
@@ -135,4 +117,31 @@ public class Gun : MonoBehaviour
             fire = false;
         }
     }
+
+    //Chat message sent when a kill happens
+    private void SendDeathMessage(string victim)
+    {
+        if (!playerInfo.gm.win)
+        {
+            MemoryStream streamDeath = new MemoryStream();
+            BinaryWriter writerDeath = new BinaryWriter(streamDeath);
+            writerDeath.Write(false);
+            writerDeath.Write((byte)packetType.chat);
+            if (playerInfo.gm.server)
+            {
+                string msg = "\n[" + playerInfo.username + "]>>" + victim + " has been killed by " + playerInfo.username + "!";
+                writerDeath.Write(msg);
+                playerInfo.gm.server.newMessage = true;
+                playerInfo.gm.server.stringData = msg;
+                playerInfo.gm.server.BroadcastServerInfo(streamDeath);
+            }
+            else if (playerInfo.gm.client)
+            {
+                writerDeath.Write(playerInfo.uid);
+                writerDeath.Write(victim + " has been killed by " + playerInfo.username + "!");
+                playerInfo.gm.client.SendInfo(streamDeath);
+            }
+        }
+    }
+
 }

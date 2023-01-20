@@ -35,8 +35,6 @@ public class Client : MonoBehaviour
     public bool messageReceived = false;
     public bool newServerName = false;
     public bool newServerIP = false;
-    bool startGame = false;
-    bool endGame = false;
     public float pingTime = 6.0f;
     float pingTimer = 0.0f;
 
@@ -49,6 +47,8 @@ public class Client : MonoBehaviour
     //Gameplay
     public GameObject gameplayScene;
     public GameplayManager manager;
+    bool startGame = false;
+    bool endGame = false;
 
     void Update()
     {
@@ -220,6 +220,7 @@ public class Client : MonoBehaviour
                                     startGame = reader.ReadBoolean();
                                     if (startGame)
                                     {
+                                        //Setup players with information from game in progress
                                         Debug.Log("ReceiveClient(): Game in progress detected");
                                         manager.pScriptsMidGame.Clear();
                                         int count = reader.ReadInt32();
@@ -232,6 +233,7 @@ public class Client : MonoBehaviour
                                             newPlayer.position.z = manager.ConvertFromFixed(reader.ReadUInt16(), -130f, 0.01f);
                                             manager.pScriptsMidGame.Add(newPlayer);
                                         }
+
                                         manager.healthPacks.Clear();
                                         count = reader.ReadInt32();
                                         for(int i = 0; i != count; ++i)

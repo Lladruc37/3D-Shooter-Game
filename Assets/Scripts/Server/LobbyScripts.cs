@@ -8,6 +8,7 @@ using System.Linq;
 using System.IO;
 using UnityEngine.Audio;
 using UnityEngine.Assertions.Must;
+using UnityEngine.PlayerLoop;
 
 public class LobbyScripts : MonoBehaviour
 {
@@ -267,6 +268,27 @@ public class LobbyScripts : MonoBehaviour
         menuMusic.Stop();
         gameMusic.Play();
         Debug.Log("LobbyScripts(): Game scene enabled...");
+    }
+
+    //Return to game after victory
+    public void EndGame()
+    {
+        GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
+
+        manager.win = false;
+        manager.winnerText.text = "";
+        manager.winnerTimer = 0.0f;
+        manager.update = false;
+        manager.winnerBox.SetActive(false);
+        gameplayScene.SetActive(false);
+
+        title.enabled = true;
+        bg.enabled = true;
+        exitGameButton.SetActive(true);
+        if (server) startGameButton.SetActive(true);
+
+        manager.victoryJingle.Stop();
+        menuMusic.Play();
     }
 
     //Show the IP of the player that creates the server

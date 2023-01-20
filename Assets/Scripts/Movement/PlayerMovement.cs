@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    //Needed components
     public CharacterController cc;
     public Camera cam;
     public SendReceive sr;
     public Gun gun;
 
-    //movement
+    //Movement
     public Vector3 direction = new Vector3();
     public Vector3 lastDir= new Vector3();
     public Vector3 velocity;
@@ -19,39 +20,17 @@ public class PlayerMovement : MonoBehaviour
     public int maxBounces = 5;
     int currentBounceCount = 0;
     float currentStrength = 0.0f;
-    //float groundLevel = 0.735f;
 
-    //ground & gun
+    //Ground & Gun
     public Transform groundCheck;
     public float groundDistance = 0.4f;
     public LayerMask floorMask;
     public bool isGrounded;
-    public bool GodMode = false;
     public bool WeaponMode = true;
 
     void Update()
     {
-        //Move with WASD in god mode
-        if (GodMode && sr.isControlling)
-        {
-            //Gravity
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
-
-            //Jump
-            if (Input.GetButtonDown("Jump") && isGrounded)
-            {
-                velocity.y = Mathf.Sqrt(3 * -2 * Physics.gravity.y);
-            }
-
-            //Move with WASD inputs
-            float x = Input.GetAxis("Horizontal");
-            float z = Input.GetAxis("Vertical");
-
-            //Movement calculations
-            Vector3 move = transform.right * x + transform.forward * z;
-            if (cc.enabled) cc.Move(speed * Time.deltaTime * move);
-        }
-		else if (WeaponMode) //Move with the recoil of the weapons
+        if (WeaponMode) //Move with the recoil of the weapons
         {
             //Gravity
             isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, floorMask);
@@ -70,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
+                // Update other characters in scene (other players)
                 if (lastDir != direction || gun.fire)
                 {
                     velocity = Vector3.zero;
@@ -115,6 +95,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (cc.enabled) cc.Move(velocity * Time.deltaTime);
 
+        //Position corrector (In case prediction doesn't work)
         if (!sr.isControlling)
         {
             if (Vector3.Distance(this.transform.position, sr.position) >= 0.5f)

@@ -8,10 +8,12 @@ public class console : MonoBehaviour
     string filename = "";
     bool doShow = false;
     int kChars = 700;
-    void OnEnable() {
+    void OnEnable()
+    {
         Application.logMessageReceivedThreaded += Log;
     }
-    void OnDisable() {
+    void OnDisable()
+    {
         Application.logMessageReceivedThreaded -= Log;
     }
     void Update() { if (Input.GetKeyDown(KeyCode.F12)) { doShow = !doShow; } }

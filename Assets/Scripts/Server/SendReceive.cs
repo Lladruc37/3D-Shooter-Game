@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class SendReceive : MonoBehaviour
 {
+    public GameplayManager gm;
+
     //User info
     public uint uid;
     public string username;
     public bool isControlling = false;
     public bool updateCharacter;
-    public GameplayManager gm;
     public PlayerMovement move;
 
     //Gun
@@ -97,7 +98,6 @@ public class SendReceive : MonoBehaviour
                         gun.enabled = true;
                     }
                 }
-                //TODO: LERP
             }
         }
     }

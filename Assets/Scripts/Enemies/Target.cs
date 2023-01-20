@@ -5,20 +5,25 @@ using UnityEngine.UI;
 
 public class Target : MonoBehaviour
 {
+    // Meshes
     public MeshRenderer bodyMesh;
     public MeshRenderer gunBarrelMesh;
     public MeshRenderer gunBodyMesh;
 
+    // Gameplay
     public LayerMask ceilingMask;
     public LayerMask playerMask;
     public Gun gun;
     public CharacterController controller;
     public CapsuleCollider bodyCollider;
     public SendReceive sr;
+
+    // UI
     public GameObject deathBoxUI;
     public Text deathText;
     public AudioSource hit, revive, collectSound;
 
+    // Data
     public int health = 5;
     public int maxHealth = 5;
     public float respawnTime = 5.0f;
@@ -39,10 +44,10 @@ public class Target : MonoBehaviour
         }
         if (health <= 0)
 		{
-            if (deathTimer <= 0.0f) //first frame you are dead
+            if (deathTimer <= 0.0f) //First frame you are dead
             {
                 Die();
-                if (sr.isControlling) //you died
+                if (sr.isControlling) //You died
                 {
                     deathBoxUI.SetActive(true);
                     deathText.text = "You are dead!";
@@ -50,7 +55,7 @@ public class Target : MonoBehaviour
             }
 
             deathTimer += Time.deltaTime;
-            if(deathTimer >= respawnTime) //respawning
+            if(deathTimer >= respawnTime) //Respawning
 			{
                 deathBoxUI.SetActive(false);
                 deathText.text = "";
@@ -59,15 +64,13 @@ public class Target : MonoBehaviour
                 gunBarrelMesh.enabled = true;
                 gunBodyMesh.enabled = true;
                 gun.enabled = true;
-                Debug.Log("Respawning entity...");
-                if (sr.isControlling) //you respawn
+                if (sr.isControlling) //You respawn
                 {
-                    Debug.Log("You have respawned!");
                     controller.enabled = true;
                     this.transform.position = RandomizeSpawn();
                     revive.Play();
                 }
-                else //another player respawns in your world
+                else //Another player respawns in your world
                 {
                     bodyCollider.enabled = true;
                     sr.position = RandomizeSpawn();
@@ -78,7 +81,7 @@ public class Target : MonoBehaviour
         }
 	}
 
-    public Vector3 RandomizeSpawn() //return a random position within the map bounds
+    public Vector3 RandomizeSpawn() //Return a random position within the map bounds
 	{
         List<int> blacklistedSpawns = new List<int>();
         int randomSpawnIndex = UnityEngine.Random.Range(0, 15);
@@ -97,15 +100,7 @@ public class Target : MonoBehaviour
         return sr.gm.spawnpoints[randomSpawnIndex];
     }
 
-    //private void OnCollisionEnter(Collision collision) //in case you spawn inside another player
-    //{
-    //    if (!collision.transform.GetComponent("Target"))
-    //    {
-    //        sr.position = RandomizeSpawn();
-    //    }
-    //}
-
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other) // Collect health packs
     {
         if (other.tag == "Collectible" && healed)
         {
@@ -117,9 +112,7 @@ public class Target : MonoBehaviour
         }
     }
 
-
-
-    public bool TakeDamage (int amount) //reduce HP and return true if dead
+    public bool TakeDamage (int amount) //Reduce HP and return true if dead
     {
         damageTaken = true;
         health -= amount;
@@ -131,7 +124,7 @@ public class Target : MonoBehaviour
         return false;
     }
 
-    void Die() //handles death
+    void Die() //Handles death
     {
         bodyMesh.enabled = false;
         gunBarrelMesh.enabled = false;

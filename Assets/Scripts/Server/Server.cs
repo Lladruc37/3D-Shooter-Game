@@ -111,7 +111,7 @@ public class Server : MonoBehaviour
             List<PlayerNetInfo> currentList = lobby.clientList;
             foreach (PlayerNetInfo user in currentList)
             {
-                if (!pingList.Contains(user.uid))
+                if (!pingList.Contains(user.uid)) //Check if server has not recieved a ping from a player
                 {
                     Debug.Log("Ping(): No ping from " + user.uid + ": " + user.username);
                     GoodbyeUser(user.uid);
@@ -313,6 +313,7 @@ public class Server : MonoBehaviour
                                 string tmp = stringData;
                                 Debug.Log("ReceiveServer(): " + stringData);
 
+                                // Send info to new player from the server (and establish connection)
                                 MemoryStream streamHello = new MemoryStream();
                                 BinaryWriter writerHello = new BinaryWriter(streamHello);
                                 writerHello.Write(false);
@@ -321,6 +322,7 @@ public class Server : MonoBehaviour
                                 writerHello.Write(manager.update);
                                 if (manager.update)
                                 {
+                                    //If game has started, send current & relevant game info for the first frames (positions)
                                     writerHello.Write(manager.pScripts.Count);
                                     foreach(SendReceive sr in manager.pScripts)
                                     {
@@ -339,6 +341,7 @@ public class Server : MonoBehaviour
                                     }
                                 }
 
+                                // Chat message
                                 MemoryStream streamChat = new MemoryStream();
                                 BinaryWriter writerChat = new BinaryWriter(streamChat);
                                 writerChat.Write(false);
@@ -347,10 +350,12 @@ public class Server : MonoBehaviour
 
                                 SendPlayerList();
                                 Thread.Sleep(100);
+
                                 byte[] dataTMP = streamHello.GetBuffer();
                                 EndPoint playerEP = (EndPoint)newPlayer.ip;
                                 socket.SendTo(dataTMP, dataTMP.Length, SocketFlags.None, playerEP);
                                 Thread.Sleep(100);
+
                                 BroadcastServerInfo(streamChat);
                                 break;
                             }
@@ -376,6 +381,7 @@ public class Server : MonoBehaviour
                                 uint uid = reader.ReadUInt32();
                                 string m = reader.ReadString();
 
+                                // Send correct message to other players
                                 MemoryStream streamChat = new MemoryStream();
                                 BinaryWriter writerChat = new BinaryWriter(streamChat);
                                 writerChat.Write(false);
@@ -435,11 +441,12 @@ public class Server : MonoBehaviour
 		}
 	}
 
+    //Select new spawnpoint from the available ones
 	public int RandomizeSpawnIndex()
 	{
         var rand = new System.Random();
         int randomSpawnIndex = rand.Next(0, 15);
-        if(blacklistedSpawns.Count == manager.spawnpoints.Count) //in case it is going to perma loop
+        if(blacklistedSpawns.Count == manager.spawnpoints.Count) //In case it is going to perma loop
 		{
             blacklistedSpawns.Clear();
 		}

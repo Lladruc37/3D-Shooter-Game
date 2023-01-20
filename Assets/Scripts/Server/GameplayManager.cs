@@ -71,7 +71,7 @@ public class GameplayManager : MonoBehaviour
     public int firstPlayer = 0;
     public string firstPlayerUsername = "";
     public float winnerTime = 5.0f;
-    float winnerTimer = 0.0f;
+    public float winnerTimer = 0.0f;
     public Text firstPlayerText; //winning player
     public Text playerText; //you
     public bool win = false;
@@ -213,7 +213,7 @@ public class GameplayManager : MonoBehaviour
 				{
 					if (matchStarted)
 					{
-						if (user.uid != UserUid)
+						if (user.uid != UserUid) //Instantiate all except player
 						{
 							Debug.Log("Start(): Adding pScripts, values: " + user.uid + " - " + user.username);
 							GameObject player = CreateNewPlayer(user, true);
@@ -309,20 +309,7 @@ public class GameplayManager : MonoBehaviour
                 winnerTimer += Time.deltaTime;
                 if (winnerTimer >= winnerTime) //Return to lobby
                 {
-                    win = false;
-                    winnerText.text = "";
-                    winnerTimer = 0.0f;
-                    update = false;
-                    winnerBox.SetActive(false);
-                    lobby.gameplayScene.SetActive(false);
-                    
-                    lobby.title.enabled = true;
-                    lobby.bg.enabled = true;
-                    lobby.exitGameButton.SetActive(true);
-                    if (server) lobby.startGameButton.SetActive(true);
-
-                    victoryJingle.Stop();
-                    lobby.menuMusic.Play();
+                    lobby.EndGame();
                 }
             }
         }
@@ -367,9 +354,13 @@ public class GameplayManager : MonoBehaviour
         winnerBox.SetActive(true);
         winnerText.text = firstPlayerUsername + " wins the game!";
         win = true;
+        winnerTimer = 0.0f;
+        firstPlayer = 0;
+
         hitMarkImage.enabled = false;
         Cursor.lockState = CursorLockMode.None;
-        winnerTimer = 0.0f;
+        playerText.text = 0.ToString();
+
         if (server) RandomizeSpawnPoints();
         DeleteHealthPacks();
         foreach (SendReceive p in pScripts)
@@ -377,19 +368,19 @@ public class GameplayManager : MonoBehaviour
             if (firstPlayer == p.kills) SendGameState();
         }
         pScripts.Clear();
-        firstPlayer = 0;
-        playerText.text = 0.ToString();
         lobbyCamera.enabled = true;
         foreach (GameObject gO in playerList)
         {
             Destroy(gO);
         }
+
         lobby.mainAudioListener.enabled = true;
         lobby.gameMusic.Stop();
         victoryJingle.Play();
         playerList.Clear();
     }
 
+    //Randomize spawnpoints for beginning a game if not midgame
     void RandomizeSpawnPoints()
 	{
         server.blacklistedSpawns.Clear();
@@ -399,36 +390,6 @@ public class GameplayManager : MonoBehaviour
 		}
 	}
 
-    ////Debug draw cylinder (automated part)
-    //private void OnDrawGizmos()
-    //{
-    //    DrawSphere(lp, Quaternion.identity, 350, 1);
-    //}
-
-    ////Debug draw cylinder (points & lines part)
-    //public static void DrawCylinder(Vector3 position, Quaternion orientation, float height, float radius)
-    //{
-    //    Vector3 localUp = orientation * Vector3.up;
-    //    Vector3 localRight = orientation * Vector3.right;
-    //    Vector3 localForward = orientation * Vector3.forward;
-
-    //    Vector3 basePosition = position;
-    //    Vector3 topPosition = basePosition + localUp * height;
-
-    //    Vector3 pointA = basePosition + localRight * radius;
-    //    Vector3 pointB = basePosition + localForward * radius;
-    //    Vector3 pointC = basePosition - localRight * radius;
-    //    Vector3 pointD = basePosition - localForward * radius;
-
-    //    Gizmos.DrawLine(pointA, pointA + (localUp * height));
-    //    Gizmos.DrawLine(pointC, pointC + (localUp * height));
-    //    Gizmos.DrawLine(pointD, pointD + (localUp * height));
-    //    Gizmos.DrawLine(pointB, pointB + (localUp * height));
-
-    //    Gizmos.DrawSphere(basePosition, radius);
-    //    Gizmos.DrawSphere(topPosition, radius);
-    //}
-
     //Instantiates new player given player info
     GameObject CreateNewPlayer(PlayerNetInfo u, bool midGame = false)
     {
@@ -436,7 +397,7 @@ public class GameplayManager : MonoBehaviour
         if (!midGame)
         {
             Debug.Log("CreateNewPlayer(): Chosen Position: " + spawnpoints[u.spawnIndex]);
-            newPlayer = Instantiate(playerPrefab, spawnpoints[u.spawnIndex], Quaternion.identity/*, this.transform*/);
+            newPlayer = Instantiate(playerPrefab, spawnpoints[u.spawnIndex], Quaternion.identity);
         }
         else
         {
@@ -448,10 +409,6 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
-
-        Debug.Log("CreateNewPlayer(): Initial Position: " + newPlayer.transform.localPosition);
-        newPlayer.layer = ignoreRaycast;
-
 
         newPlayer.layer = 6;
         newPlayer.name = u.username;
@@ -524,7 +481,7 @@ public class GameplayManager : MonoBehaviour
         player.GetComponentInChildren<AudioListener>().enabled = true;
     }
 
-    public void SendGameState() //YOU SEND YOUR INFO
+    public void SendGameState() //User sends their information to other players
     {
         MemoryStream stream = new MemoryStream();
         BinaryWriter writer = new BinaryWriter(stream);
@@ -535,7 +492,6 @@ public class GameplayManager : MonoBehaviour
         writer.Write(UserUid);
         writer.Write(UserName);
 
-        //Position
         lock (pScripts)
         {
             foreach (SendReceive p in pScripts)
@@ -595,7 +551,7 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    public void ReceiveGameState() //GATHER OTHERS INFO
+    public void ReceiveGameState() //User recieves info from other players
     {
         MemoryStream stream = new MemoryStream(data);
         BinaryReader reader = new BinaryReader(stream);
@@ -669,7 +625,7 @@ public class GameplayManager : MonoBehaviour
         data = null;
     }
 
-    //for positions & rotations
+    // For positions & rotations
     // 0.01 & 0.0001 precision respectively
     public UInt16 ConvertToFixed(float inNumber, float inMin, float inPrecision)
 	{
