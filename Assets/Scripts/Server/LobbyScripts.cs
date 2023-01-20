@@ -13,6 +13,7 @@ public class LobbyScripts : MonoBehaviour
 {
     //UI
     public Text title;
+    public Image bg;
     public Camera lobbyCamera;
     public Canvas lobbyCanvas;
     public Canvas inputCanvas;
@@ -182,6 +183,7 @@ public class LobbyScripts : MonoBehaviour
         inputChat.text = "";
         title.text = "Host a server!";
         title.enabled = true;
+        bg.enabled = true;
 
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
         gameplayScene.SetActive(false);
@@ -208,6 +210,7 @@ public class LobbyScripts : MonoBehaviour
         client.Leave();
         title.text = "Join a server!";
         title.enabled = true;
+        bg.enabled = true;
 
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
 
@@ -237,6 +240,7 @@ public class LobbyScripts : MonoBehaviour
         GameplayManager manager = gameplayScene.GetComponent<GameplayManager>();
         gameplayScene.SetActive(true);
         title.enabled = false;
+        bg.enabled = false;
         manager.start = true;
         exitGameButton.SetActive(false);
 

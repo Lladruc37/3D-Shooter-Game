@@ -317,6 +317,7 @@ public class GameplayManager : MonoBehaviour
                     lobby.gameplayScene.SetActive(false);
                     
                     lobby.title.enabled = true;
+                    lobby.bg.enabled = true;
                     lobby.exitGameButton.SetActive(true);
                     if (server) lobby.startGameButton.SetActive(true);
 
