@@ -62,7 +62,7 @@ In-game Features:
 
 ### Known bugs:
 - If the server is completely still when a new client joins mid-game, they won't see this player until they move themselves or even the mouse.
-- Sometimes lerping and correcting the error makes the world desync a little bit (very little from our testing).
+- Sometimes lerping and correcting the error makes the player jitter trying to correct their position. This is probably because of the difference in ms between sending and recieving messages. It is more clear when you do singular shots, as it is when the position is more dependant in predictions by the program rather than accurate positions sent by the original client.
 
 ### Credits:
 - Environment used by _ZENRIN CO., LTD._, available in the [Unity Asset Store](https://assetstore.unity.com/packages/3d/environments/urban/japanese-otaku-city-20359)
